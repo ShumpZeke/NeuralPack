@@ -1,0 +1,65 @@
+.venv/
+.cache/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+experiments/artifacts/
+experiments/models/
+experiments/results/**/cache/
+Neural Pack/.obsidian/workspace*.json
+.env
+.env.*
+*.key
+secrets/
+.tmp/
+
+# Compiled context artifacts are reproducible from source
+*.npk
+*.npk.blob
+experiments/runs/packs/
+# Reproducible real-repository scratch packs/contexts and response caches.
+# Frozen reports and raw answer traces are archived under experiments/results.
+experiments/runs/repository-*/
+# Raw experiment runs contain local source snapshots, request/response payloads,
+# and generated packs. Keep the reproducible scripts and frozen reports instead.
+experiments/runs/
+# Binary and transient outputs are reproducible and can make a source checkout
+# unnecessarily large. JSON/XML/Markdown reports remain tracked as evidence.
+experiments/results/**/*.zip
+experiments/results/**/*.gz
+experiments/results/**/*.xz
+experiments/results/**/*.log
+experiments/results/**/*.pstats
+experiments/results/**/*.safetensors
+experiments/results/**/*.pyc
+experiments/results/**/*.png
+experiments/results/**/*.jpg
+experiments/results/**/*.jpeg
+experiments/results/**/*.npk
+experiments/results/**/*.npk.blob
+# Per-run result tables and copied dependency trees are local audit material;
+# compact summaries, plans, and top-level evidence files remain publishable.
+experiments/results/**/results.json
+experiments/results/**/mutated_source/
+# Cycle 13 raw requests, responses and exact source are archived under results.
+experiments/runs/cycle13-diagnostic-*/
+# Cycle 14 source, vectors and raw answer records are archived under results.
+experiments/runs/cycle14-seed-*/
+# Byte-exact compressed counterpart is retained in version control.
+experiments/results/cycle14-storage-profile.json
+# Cycle 15 byte-exact input/response evidence is archived under results.
+experiments/runs/cycle15-hierarchy-live-v1/
+# Cycle 18 completed evidence and immutable plans are archived under results.
+# The running second-model ledger remains local until its final audit.
+experiments/runs/cycle18-clause-live-v1/
+# Raw repeated messages are retained byte-exactly in the checkpoint archive.
+experiments/results/cycle18-message-profile.json
+# Superseded compression trial; final evidence uses standard XZ.
+experiments/results/cycle18-checkpoint-evidence.json.gz
+# Cycle 19 completed requests, replays and source are in the XZ evidence archive.
+experiments/runs/cycle19-manual-live-v1/
+
