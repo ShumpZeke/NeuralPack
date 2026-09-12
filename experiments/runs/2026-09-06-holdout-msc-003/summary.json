@@ -1,0 +1,1361 @@
+{
+  "run_id": "2026-09-06-holdout-msc-003",
+  "provider": "mock",
+  "model": "default",
+  "total_tasks": 50,
+  "total_baseline_tokens": 46980,
+  "total_standard_rag_tokens": 19956,
+  "total_neuralpack_tokens": 12324,
+  "total_tokens_avoided": 34656,
+  "overall_token_reduction_pct": 73.77,
+  "baseline_accuracy": 0.0,
+  "standard_rag_accuracy": 0.0,
+  "neuralpack_accuracy": 0.0,
+  "quality_retention_pct": 100.0,
+  "critical_context_recall_pct": 100.0,
+  "overall_context_efficiency_pct": 154.09,
+  "domain_breakdown": {
+    "code": {
+      "tasks": 10,
+      "baseline_accuracy": 0.0,
+      "standard_rag_accuracy": 0.0,
+      "neuralpack_accuracy": 0.0,
+      "token_reduction_pct": 78.51,
+      "avg_critical_recall": 100.0
+    },
+    "doc": {
+      "tasks": 10,
+      "baseline_accuracy": 0.0,
+      "standard_rag_accuracy": 0.0,
+      "neuralpack_accuracy": 0.0,
+      "token_reduction_pct": 81.0,
+      "avg_critical_recall": 100.0
+    },
+    "convo": {
+      "tasks": 10,
+      "baseline_accuracy": 0.0,
+      "standard_rag_accuracy": 0.0,
+      "neuralpack_accuracy": 0.0,
+      "token_reduction_pct": 31.82,
+      "avg_critical_recall": 100.0
+    },
+    "trace": {
+      "tasks": 10,
+      "baseline_accuracy": 0.0,
+      "standard_rag_accuracy": 0.0,
+      "neuralpack_accuracy": 0.0,
+      "token_reduction_pct": 18.18,
+      "avg_critical_recall": 100.0
+    },
+    "adversarial": {
+      "tasks": 10,
+      "baseline_accuracy": 0.0,
+      "standard_rag_accuracy": 0.0,
+      "neuralpack_accuracy": 0.0,
+      "token_reduction_pct": 0.0,
+      "avg_critical_recall": 100.0
+    }
+  },
+  "task_records": [
+    {
+      "id": "code_h1_db_max_conn",
+      "domain": "code",
+      "msc_tokens": 406,
+      "baseline": {
+        "tokens": 2764,
+        "passed": false,
+        "latency_ms": 0.1
+      },
+      "standard_rag": {
+        "tokens": 116,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 536,
+        "passed": false,
+        "latency_ms": 4.4,
+        "tokens_avoided": 2228,
+        "reduction_pct": 80.61,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 75.75,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "code_h2_jwt_expiration",
+      "domain": "code",
+      "msc_tokens": 698,
+      "baseline": {
+        "tokens": 2770,
+        "passed": false,
+        "latency_ms": 0.1
+      },
+      "standard_rag": {
+        "tokens": 210,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 458,
+        "passed": false,
+        "latency_ms": 3.1,
+        "tokens_avoided": 2312,
+        "reduction_pct": 83.47,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 152.4,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "code_h3_rbac_delete_org",
+      "domain": "code",
+      "msc_tokens": 522,
+      "baseline": {
+        "tokens": 2764,
+        "passed": false,
+        "latency_ms": 0.1
+      },
+      "standard_rag": {
+        "tokens": 152,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 400,
+        "passed": false,
+        "latency_ms": 3.2,
+        "tokens_avoided": 2364,
+        "reduction_pct": 85.53,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 130.5,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "code_h4_stripe_pro_price",
+      "domain": "code",
+      "msc_tokens": 363,
+      "baseline": {
+        "tokens": 2770,
+        "passed": false,
+        "latency_ms": 0.1
+      },
+      "standard_rag": {
+        "tokens": 128,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 622,
+        "passed": false,
+        "latency_ms": 3.1,
+        "tokens_avoided": 2148,
+        "reduction_pct": 77.55,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 58.36,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "code_h5_tax_rate_invoice",
+      "domain": "code",
+      "msc_tokens": 713,
+      "baseline": {
+        "tokens": 2768,
+        "passed": false,
+        "latency_ms": 0.1
+      },
+      "standard_rag": {
+        "tokens": 126,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 620,
+        "passed": false,
+        "latency_ms": 3.7,
+        "tokens_avoided": 2148,
+        "reduction_pct": 77.6,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 115.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "code_h6_worker_concurrency",
+      "domain": "code",
+      "msc_tokens": 241,
+      "baseline": {
+        "tokens": 2766,
+        "passed": false,
+        "latency_ms": 0.1
+      },
+      "standard_rag": {
+        "tokens": 90,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 510,
+        "passed": false,
+        "latency_ms": 4.6,
+        "tokens_avoided": 2256,
+        "reduction_pct": 81.56,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 47.25,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "code_h7_rate_limit_setting",
+      "domain": "code",
+      "msc_tokens": 196,
+      "baseline": {
+        "tokens": 2762,
+        "passed": false,
+        "latency_ms": 0.1
+      },
+      "standard_rag": {
+        "tokens": 82,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 630,
+        "passed": false,
+        "latency_ms": 3.8,
+        "tokens_avoided": 2132,
+        "reduction_pct": 77.19,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 31.11,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "code_h8_redis_cache_host",
+      "domain": "code",
+      "msc_tokens": 188,
+      "baseline": {
+        "tokens": 2768,
+        "passed": false,
+        "latency_ms": 0.1
+      },
+      "standard_rag": {
+        "tokens": 80,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 500,
+        "passed": false,
+        "latency_ms": 3.4,
+        "tokens_avoided": 2268,
+        "reduction_pct": 81.94,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 37.6,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "code_h9_not_found_status",
+      "domain": "code",
+      "msc_tokens": 372,
+      "baseline": {
+        "tokens": 2766,
+        "passed": false,
+        "latency_ms": 0.1
+      },
+      "standard_rag": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 594,
+        "passed": false,
+        "latency_ms": 3.4,
+        "tokens_avoided": 2172,
+        "reduction_pct": 78.52,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 62.63,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "code_h10_theme_primary_color",
+      "domain": "code",
+      "msc_tokens": 111,
+      "baseline": {
+        "tokens": 2768,
+        "passed": false,
+        "latency_ms": 0.1
+      },
+      "standard_rag": {
+        "tokens": 64,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 1076,
+        "passed": false,
+        "latency_ms": 3.3,
+        "tokens_avoided": 1692,
+        "reduction_pct": 61.13,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 10.32,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "doc_h1_kms_rotation",
+      "domain": "doc",
+      "msc_tokens": 1276,
+      "baseline": {
+        "tokens": 1486,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 1486,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 172,
+        "passed": false,
+        "latency_ms": 1.3,
+        "tokens_avoided": 1314,
+        "reduction_pct": 88.43,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 741.86,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "doc_h2_rpo_target",
+      "domain": "doc",
+      "msc_tokens": 1276,
+      "baseline": {
+        "tokens": 1494,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 1494,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 180,
+        "passed": false,
+        "latency_ms": 1.2,
+        "tokens_avoided": 1314,
+        "reduction_pct": 87.95,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 708.89,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "doc_h3_snapshot_retention",
+      "domain": "doc",
+      "msc_tokens": 1276,
+      "baseline": {
+        "tokens": 1490,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 1490,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 176,
+        "passed": false,
+        "latency_ms": 1.2,
+        "tokens_avoided": 1314,
+        "reduction_pct": 88.19,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 725.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "doc_h4_enterprise_sla",
+      "domain": "doc",
+      "msc_tokens": 1276,
+      "baseline": {
+        "tokens": 1492,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 1492,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 580,
+        "passed": false,
+        "latency_ms": 1.2,
+        "tokens_avoided": 912,
+        "reduction_pct": 61.13,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 220.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "doc_h5_downtime_minutes",
+      "domain": "doc",
+      "msc_tokens": 1276,
+      "baseline": {
+        "tokens": 1494,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 1494,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 260,
+        "passed": false,
+        "latency_ms": 1.1,
+        "tokens_avoided": 1234,
+        "reduction_pct": 82.6,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 490.77,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "doc_h6_api_shutdown_date",
+      "domain": "doc",
+      "msc_tokens": 1276,
+      "baseline": {
+        "tokens": 1496,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 1496,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 110,
+        "passed": false,
+        "latency_ms": 1.3,
+        "tokens_avoided": 1386,
+        "reduction_pct": 92.65,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 1160.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "doc_h7_sdk_min_version",
+      "domain": "doc",
+      "msc_tokens": 1276,
+      "baseline": {
+        "tokens": 1496,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 1496,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 110,
+        "passed": false,
+        "latency_ms": 1.1,
+        "tokens_avoided": 1386,
+        "reduction_pct": 92.65,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 1160.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "doc_h8_dlq_queue_name",
+      "domain": "doc",
+      "msc_tokens": 1276,
+      "baseline": {
+        "tokens": 1494,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 1494,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 502,
+        "passed": false,
+        "latency_ms": 1.2,
+        "tokens_avoided": 992,
+        "reduction_pct": 66.4,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 254.18,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "doc_h9_webhook_retry_count",
+      "domain": "doc",
+      "msc_tokens": 1276,
+      "baseline": {
+        "tokens": 1498,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 1498,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 568,
+        "passed": false,
+        "latency_ms": 1.1,
+        "tokens_avoided": 930,
+        "reduction_pct": 62.08,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 224.65,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "doc_h10_encryption_algorithm",
+      "domain": "doc",
+      "msc_tokens": 1276,
+      "baseline": {
+        "tokens": 1494,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 1494,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 180,
+        "passed": false,
+        "latency_ms": 1.1,
+        "tokens_avoided": 1314,
+        "reduction_pct": 87.95,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 708.89,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "convo_h1_port_shift",
+      "domain": "convo",
+      "msc_tokens": 121,
+      "baseline": {
+        "tokens": 176,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 176,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.4,
+        "tokens_avoided": 56,
+        "reduction_pct": 31.82,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 100.83,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "convo_h2_port_shift",
+      "domain": "convo",
+      "msc_tokens": 121,
+      "baseline": {
+        "tokens": 176,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 176,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 56,
+        "reduction_pct": 31.82,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 100.83,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "convo_h3_port_shift",
+      "domain": "convo",
+      "msc_tokens": 121,
+      "baseline": {
+        "tokens": 176,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 176,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 56,
+        "reduction_pct": 31.82,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 100.83,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "convo_h4_port_shift",
+      "domain": "convo",
+      "msc_tokens": 121,
+      "baseline": {
+        "tokens": 176,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 176,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 56,
+        "reduction_pct": 31.82,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 100.83,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "convo_h5_port_shift",
+      "domain": "convo",
+      "msc_tokens": 121,
+      "baseline": {
+        "tokens": 176,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 176,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 56,
+        "reduction_pct": 31.82,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 100.83,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "convo_h6_port_shift",
+      "domain": "convo",
+      "msc_tokens": 121,
+      "baseline": {
+        "tokens": 176,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 176,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 56,
+        "reduction_pct": 31.82,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 100.83,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "convo_h7_port_shift",
+      "domain": "convo",
+      "msc_tokens": 121,
+      "baseline": {
+        "tokens": 176,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 176,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 56,
+        "reduction_pct": 31.82,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 100.83,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "convo_h8_port_shift",
+      "domain": "convo",
+      "msc_tokens": 121,
+      "baseline": {
+        "tokens": 176,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 176,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 56,
+        "reduction_pct": 31.82,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 100.83,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "convo_h9_port_shift",
+      "domain": "convo",
+      "msc_tokens": 121,
+      "baseline": {
+        "tokens": 176,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 176,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 56,
+        "reduction_pct": 31.82,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 100.83,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "convo_h10_port_shift",
+      "domain": "convo",
+      "msc_tokens": 121,
+      "baseline": {
+        "tokens": 176,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 176,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 56,
+        "reduction_pct": 31.82,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 100.83,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "trace_h1_bastion_ip",
+      "domain": "trace",
+      "msc_tokens": 101,
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 126,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 28,
+        "reduction_pct": 18.18,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 80.16,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "trace_h2_bastion_ip",
+      "domain": "trace",
+      "msc_tokens": 101,
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 126,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 28,
+        "reduction_pct": 18.18,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 80.16,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "trace_h3_bastion_ip",
+      "domain": "trace",
+      "msc_tokens": 101,
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 126,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 28,
+        "reduction_pct": 18.18,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 80.16,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "trace_h4_bastion_ip",
+      "domain": "trace",
+      "msc_tokens": 101,
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 126,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 28,
+        "reduction_pct": 18.18,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 80.16,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "trace_h5_bastion_ip",
+      "domain": "trace",
+      "msc_tokens": 101,
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 126,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 28,
+        "reduction_pct": 18.18,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 80.16,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "trace_h6_bastion_ip",
+      "domain": "trace",
+      "msc_tokens": 101,
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 126,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 28,
+        "reduction_pct": 18.18,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 80.16,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "trace_h7_bastion_ip",
+      "domain": "trace",
+      "msc_tokens": 101,
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 126,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 28,
+        "reduction_pct": 18.18,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 80.16,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "trace_h8_bastion_ip",
+      "domain": "trace",
+      "msc_tokens": 101,
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 126,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 28,
+        "reduction_pct": 18.18,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 80.16,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "trace_h9_bastion_ip",
+      "domain": "trace",
+      "msc_tokens": 101,
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 126,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 28,
+        "reduction_pct": 18.18,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 80.16,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "trace_h10_bastion_ip",
+      "domain": "trace",
+      "msc_tokens": 101,
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 126,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 28,
+        "reduction_pct": 18.18,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 80.16,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "adv_h1_tax_rate",
+      "domain": "adversarial",
+      "msc_tokens": 20,
+      "baseline": {
+        "tokens": 108,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 52,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 108,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 18.52,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "adv_h2_tax_rate",
+      "domain": "adversarial",
+      "msc_tokens": 20,
+      "baseline": {
+        "tokens": 108,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 52,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 108,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 18.52,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "adv_h3_tax_rate",
+      "domain": "adversarial",
+      "msc_tokens": 20,
+      "baseline": {
+        "tokens": 108,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 52,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 108,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 18.52,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "adv_h4_tax_rate",
+      "domain": "adversarial",
+      "msc_tokens": 20,
+      "baseline": {
+        "tokens": 108,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 52,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 108,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 18.52,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "adv_h5_tax_rate",
+      "domain": "adversarial",
+      "msc_tokens": 20,
+      "baseline": {
+        "tokens": 108,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 52,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 108,
+        "passed": false,
+        "latency_ms": 0.4,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 18.52,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "adv_h6_tax_rate",
+      "domain": "adversarial",
+      "msc_tokens": 20,
+      "baseline": {
+        "tokens": 108,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 52,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 108,
+        "passed": false,
+        "latency_ms": 0.4,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 18.52,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "adv_h7_tax_rate",
+      "domain": "adversarial",
+      "msc_tokens": 20,
+      "baseline": {
+        "tokens": 108,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 52,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 108,
+        "passed": false,
+        "latency_ms": 0.4,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 18.52,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "adv_h8_tax_rate",
+      "domain": "adversarial",
+      "msc_tokens": 20,
+      "baseline": {
+        "tokens": 108,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 52,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 108,
+        "passed": false,
+        "latency_ms": 0.4,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 18.52,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "adv_h9_tax_rate",
+      "domain": "adversarial",
+      "msc_tokens": 20,
+      "baseline": {
+        "tokens": 108,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 52,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 108,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 18.52,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "adv_h10_tax_rate",
+      "domain": "adversarial",
+      "msc_tokens": 20,
+      "baseline": {
+        "tokens": 108,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "standard_rag": {
+        "tokens": 52,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "neuralpack": {
+        "tokens": 108,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "missing_blocks": [],
+        "context_efficiency_pct": 18.52,
+        "plan": "aggressive_hybrid_compress"
+      }
+    }
+  ]
+}

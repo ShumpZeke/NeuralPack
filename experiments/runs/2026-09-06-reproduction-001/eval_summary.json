@@ -1,0 +1,313 @@
+{
+  "provider": "nvidia_nim",
+  "model": "meta/llama-3.2-11b-vision-instruct",
+  "total_tasks": 9,
+  "total_baseline_tokens": 4283,
+  "total_standard_rag_tokens": 2960,
+  "total_neuralpack_tokens": 2120,
+  "total_tokens_avoided_by_neuralpack": 2163,
+  "neuralpack_token_reduction_pct": 50.5,
+  "baseline_accuracy": 100.0,
+  "standard_rag_accuracy": 88.89,
+  "neuralpack_accuracy": 100.0,
+  "quality_retention_pct": 100.0,
+  "quality_adjusted_savings_pct": 50.5,
+  "task_records": [
+    {
+      "id": "code_auth_superadmin",
+      "baseline_text": "The role strictly required to authorize the 'delete_tenant' resource in auth.py is \"superadmin\". This is because in the auth.py file, the function `authorize_request` checks if the user's role is \"superadmin\" when the resource is \"delete_tenant\". If the user's role is not \"superadmin\", the function will return False, indicating that the request is not authorized.",
+      "optimized_text": "According to the `auth.py` file, the `authorize_request` function checks if the `user` has the `superadmin` role to authorize the 'delete_tenant' resource. \n\nThe line `if resource == \"delete_tenant\": return user.is_admin()` specifically checks for the `superadmin` role, which is defined in the `User` class in `user_model.py` as `self.role == \"superadmin\"`.\n\nTherefore, the role strictly required to authorize the 'delete_tenant' resource in `auth.py` is `superadmin`.",
+      "category": "coding",
+      "query": "Which role is strictly required to authorize the 'delete_tenant' resource in auth.py?",
+      "expected": "superadmin",
+      "baseline": {
+        "tokens": 679,
+        "passed": true,
+        "latency_ms": 4054.2
+      },
+      "standard_rag": {
+        "tokens": 123,
+        "passed": true,
+        "latency_ms": 11585.3
+      },
+      "neuralpack": {
+        "tokens": 173,
+        "passed": true,
+        "latency_ms": 5157.5,
+        "tokens_avoided": 506,
+        "reduction_pct": 74.52,
+        "plan": "aggressive_hybrid_compress",
+        "strategies": [
+          "deduplicate",
+          "provider_prefix_cache",
+          "symbol_dependency_slice",
+          "extractive_compression"
+        ],
+        "reason": "Selected lowest-cost candidate (aggressive_hybrid_compress) satisfying confidence 0.950"
+      }
+    },
+    {
+      "id": "code_db_max_retries",
+      "baseline_text": "The maximum retry count for the database connection pool is configured in the `config.py` file as `MAX_RETRIES = 5`. This value is then imported and used in the `database.py` file to set the `retries` attribute of the `ConnectionPool` class.",
+      "optimized_text": "According to the provided code, the maximum retry count is configured in the `config.py` file as `MAX_RETRIES = 5`. This value is then imported and used in the `database.py` file to initialize the `ConnectionPool` class.\n\nSo, the maximum retry count configured for the database connection pool is 5.",
+      "category": "coding",
+      "query": "What is the maximum retry count configured for the database connection pool?",
+      "expected": "5",
+      "baseline": {
+        "tokens": 674,
+        "passed": true,
+        "latency_ms": 1499.5
+      },
+      "standard_rag": {
+        "tokens": 132,
+        "passed": false,
+        "latency_ms": 5190.2
+      },
+      "neuralpack": {
+        "tokens": 214,
+        "passed": true,
+        "latency_ms": 2104.7,
+        "tokens_avoided": 460,
+        "reduction_pct": 68.25,
+        "plan": "aggressive_hybrid_compress",
+        "strategies": [
+          "deduplicate",
+          "provider_prefix_cache",
+          "symbol_dependency_slice",
+          "extractive_compression"
+        ],
+        "reason": "Selected lowest-cost candidate (aggressive_hybrid_compress) satisfying confidence 0.950"
+      }
+    },
+    {
+      "id": "doc_rate_limit_pro",
+      "baseline_text": "The exact rate limit for the Pro Tier is 600 requests per minute.",
+      "optimized_text": "The exact rate limit for the Pro Tier is 600 requests per minute.",
+      "category": "documentation",
+      "query": "What is the exact rate limit for the Pro Tier in Section 2?",
+      "expected": "600",
+      "baseline": {
+        "tokens": 652,
+        "passed": true,
+        "latency_ms": 2375.5
+      },
+      "standard_rag": {
+        "tokens": 648,
+        "passed": true,
+        "latency_ms": 565.9
+      },
+      "neuralpack": {
+        "tokens": 315,
+        "passed": true,
+        "latency_ms": 598.4,
+        "tokens_avoided": 337,
+        "reduction_pct": 51.69,
+        "plan": "aggressive_hybrid_compress",
+        "strategies": [
+          "deduplicate",
+          "provider_prefix_cache",
+          "symbol_dependency_slice",
+          "extractive_compression"
+        ],
+        "reason": "Selected lowest-cost candidate (aggressive_hybrid_compress) satisfying confidence 0.950"
+      }
+    },
+    {
+      "id": "doc_deprecated_endpoint",
+      "baseline_text": "According to Section 3: Deprecated v1 Endpoints, the endpoint that replaces the deprecated `/v1/users/batch_export` endpoint is `/v2/jobs/export`.",
+      "optimized_text": "According to Section 3, the endpoint that replaces the deprecated `/v1/users/batch_export` endpoint is `/v2/jobs/export`.",
+      "category": "documentation",
+      "query": "Which endpoint replaces the deprecated /v1/users/batch_export endpoint according to Section 3?",
+      "expected": "/v2/jobs/export",
+      "baseline": {
+        "tokens": 656,
+        "passed": true,
+        "latency_ms": 1924.4
+      },
+      "standard_rag": {
+        "tokens": 652,
+        "passed": true,
+        "latency_ms": 1474.4
+      },
+      "neuralpack": {
+        "tokens": 152,
+        "passed": true,
+        "latency_ms": 2509.8,
+        "tokens_avoided": 504,
+        "reduction_pct": 76.83,
+        "plan": "aggressive_hybrid_compress",
+        "strategies": [
+          "deduplicate",
+          "provider_prefix_cache",
+          "symbol_dependency_slice",
+          "extractive_compression"
+        ],
+        "reason": "Selected lowest-cost candidate (aggressive_hybrid_compress) satisfying confidence 0.950"
+      }
+    },
+    {
+      "id": "convo_final_port",
+      "baseline_text": "Based on the conversation, the final configuration constraints are:\n\n- Deployment target: Kubernetes on AWS EKS\n- Cluster region: us-west-2\n- Output format: JSON formatted Kubernetes manifest\n- Port: 8080\n\nThe earlier port specified (3000) was superseded by the updated port 8080.",
+      "optimized_text": "Based on the conversation, the final updated target port specified by the user is 8080. This is because the user explicitly stated to disregard port 3000 and use port 8080 instead.",
+      "category": "conversation",
+      "query": "What is the final updated target port specified by the user? (Note: check if any earlier port was superseded)",
+      "expected": "8080",
+      "baseline": {
+        "tokens": 272,
+        "passed": true,
+        "latency_ms": 2341.2
+      },
+      "standard_rag": {
+        "tokens": 268,
+        "passed": true,
+        "latency_ms": 1928.8
+      },
+      "neuralpack": {
+        "tokens": 188,
+        "passed": true,
+        "latency_ms": 3112.1,
+        "tokens_avoided": 84,
+        "reduction_pct": 30.88,
+        "plan": "aggressive_hybrid_compress",
+        "strategies": [
+          "deduplicate",
+          "provider_prefix_cache",
+          "convo_compaction",
+          "extractive_compression"
+        ],
+        "reason": "Selected lowest-cost candidate (aggressive_hybrid_compress) satisfying confidence 0.950"
+      }
+    },
+    {
+      "id": "convo_format_constraint",
+      "baseline_text": "The strict format constraint established by the user is that the Kubernetes manifests must be output in JSON format, not YAML.",
+      "optimized_text": "The strict format constraint established by the user is that the output must be in JSON format, specifically JSON Kubernetes manifests.",
+      "category": "conversation",
+      "query": "What strict format constraint did the user establish for outputting manifests?",
+      "expected": "JSON",
+      "baseline": {
+        "tokens": 261,
+        "passed": true,
+        "latency_ms": 744.6
+      },
+      "standard_rag": {
+        "tokens": 257,
+        "passed": true,
+        "latency_ms": 5861.9
+      },
+      "neuralpack": {
+        "tokens": 177,
+        "passed": true,
+        "latency_ms": 4470.6,
+        "tokens_avoided": 84,
+        "reduction_pct": 32.18,
+        "plan": "aggressive_hybrid_compress",
+        "strategies": [
+          "deduplicate",
+          "provider_prefix_cache",
+          "convo_compaction",
+          "extractive_compression"
+        ],
+        "reason": "Selected lowest-cost candidate (aggressive_hybrid_compress) satisfying confidence 0.950"
+      }
+    },
+    {
+      "id": "trace_firewall_finding",
+      "baseline_text": "Based on the provided tool execution trace, the critical firewall discovery was identified in Step 17. \n\nThe blocked port is 5432, which is the standard PostgreSQL port. \n\nThe Security Group ID is sg-0a8b1c2d3e, which is located on subnet-east.",
+      "optimized_text": "Based on the provided tool execution trace, the critical firewall discovery identified is:\n\n* Ingress port 5432 is blocked by AWS Security Group sg-0a8b1c2d3e on subnet-east.\n\nThis discovery was made in Step 17 of the tool execution trace, where the `check_network_firewall_rule` tool call returned a critical finding.",
+      "category": "agent_trace",
+      "query": "What was the critical firewall discovery identified in the tool execution trace? State the blocked port and Security Group ID.",
+      "expected": "sg-0a8b1c2d3e",
+      "baseline": {
+        "tokens": 610,
+        "passed": true,
+        "latency_ms": 1382.6
+      },
+      "standard_rag": {
+        "tokens": 606,
+        "passed": true,
+        "latency_ms": 1659.4
+      },
+      "neuralpack": {
+        "tokens": 459,
+        "passed": true,
+        "latency_ms": 4362.4,
+        "tokens_avoided": 151,
+        "reduction_pct": 24.75,
+        "plan": "aggressive_hybrid_compress",
+        "strategies": [
+          "deduplicate",
+          "provider_prefix_cache",
+          "trace_compaction",
+          "extractive_compression"
+        ],
+        "reason": "Selected lowest-cost candidate (aggressive_hybrid_compress) satisfying confidence 0.950"
+      }
+    },
+    {
+      "id": "adversarial_eu_tax",
+      "baseline_text": "In the `tax_eu.py` file, the following values are specifically defined for the EU:\n\n1. `TAX_RATE`: This is set to `0.20`, which represents the standard Value Added Tax (VAT) rate in the EU.\n2. `VAT_IDENTIFIER`: This is set to `\"EU-VAT-2026\"`, which is the identifier for the EU-VAT tax.",
+      "optimized_text": "In the `tax_eu.py` file, the following values are specifically defined for the EU:\n\n- `TAX_RATE`: This is set to 0.20, which represents the standard Value Added Tax (VAT) rate in the EU.\n- `VAT_IDENTIFIER`: This is set to \"EU-VAT-2026\", which is the identifier for the EU-VAT tax.",
+      "category": "adversarial",
+      "query": "What is the TAX_RATE and VAT_IDENTIFIER specifically defined for the EU in tax_eu.py?",
+      "expected": "0.2",
+      "baseline": {
+        "tokens": 237,
+        "passed": true,
+        "latency_ms": 1669.9
+      },
+      "standard_rag": {
+        "tokens": 128,
+        "passed": true,
+        "latency_ms": 4269.8
+      },
+      "neuralpack": {
+        "tokens": 237,
+        "passed": true,
+        "latency_ms": 4716.5,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "plan": "aggressive_hybrid_compress",
+        "strategies": [
+          "deduplicate",
+          "provider_prefix_cache",
+          "extractive_compression"
+        ],
+        "reason": "Selected lowest-cost candidate (aggressive_hybrid_compress) satisfying confidence 0.950"
+      }
+    },
+    {
+      "id": "adversarial_security_bypass",
+      "baseline_text": "The value of `DEBUG_BYPASS_PAYMENT` in `billing_service.py` is `False`.\n\nAccording to the code, there is a critical security note that warns against enabling `DEBUG_BYPASS_PAYMENT` in production under any circumstance. This suggests that the variable is intended to be used for debugging purposes only, and its value should be set to `True` only during development or testing, and then set back to `False` before deploying the code to production.",
+      "optimized_text": "The value of `DEBUG_BYPASS_PAYMENT` in `billing_service.py` is `False`.\n\nAccording to the code, there is a critical security note that warns against enabling `DEBUG_BYPASS_PAYMENT` in production under any circumstance. This suggests that the variable is intended to be used for debugging purposes only, and its value should be set to `True` only during development or testing, and then set back to `False` before deploying the code to production.",
+      "category": "adversarial",
+      "query": "What is the value of DEBUG_BYPASS_PAYMENT in billing_service.py, and what is the rule about enabling it?",
+      "expected": "False",
+      "baseline": {
+        "tokens": 242,
+        "passed": true,
+        "latency_ms": 3382.9
+      },
+      "standard_rag": {
+        "tokens": 146,
+        "passed": true,
+        "latency_ms": 4922.2
+      },
+      "neuralpack": {
+        "tokens": 205,
+        "passed": true,
+        "latency_ms": 2615.0,
+        "tokens_avoided": 37,
+        "reduction_pct": 15.29,
+        "plan": "aggressive_hybrid_compress",
+        "strategies": [
+          "deduplicate",
+          "provider_prefix_cache",
+          "symbol_dependency_slice",
+          "extractive_compression"
+        ],
+        "reason": "Selected lowest-cost candidate (aggressive_hybrid_compress) satisfying confidence 0.950"
+      }
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "status": "CHECKPOINT",
+  "cycle_complete": false,
+  "goal_complete": false,
+  "verdict": "PIVOT REQUIRED",
+  "created_utc": "2026-09-08T00:36:37.993856+00:00",
+  "tests_passed": 826,
+  "tests_skipped": 2,
+  "mutants_killed": 76,
+  "audited_rival_selections": 8610,
+  "source_items_checked": 86871,
+  "tokenizer_usage_matches": 74,
+  "new_api_calls": 0,
+  "unattempted_prepared_api_requests": 152,
+  "supersession": {
+    "status": "SUPERSEDED_BEFORE_LIVE",
+    "old_plan_sha256": "040cbc3d81ac75b0e9419ed499709c0f6f5764f1f0b73be9efc1e2f6c1671914",
+    "replacement_plan_sha256": "706df3c5da9b0b95cd08d6dde8e32529dfdc7d4607f5ddf6f6b1ed5fc160e2fd",
+    "identical_request_identities": 249,
+    "identical_observations": 270,
+    "new_api_calls_in_either_plan": 0,
+    "reason": "Version 2 shuffles the same request identities before any new target call"
+  },
+  "production_selector_changed": false,
+  "limitations": [
+    "Recognized credential patterns only, not universal secret detection",
+    "Source retention on inspected tasks is not answer accuracy",
+    "SQLAlchemy acquisition/retrieval data remain in the working cycle and require the final cycle archive"
+  ],
+  "next": "Repair exact local budgeting; build code-aware seed challengers against the audited CRISP structural baseline; validate behavior answers",
+  "archive": "cycle28-rival-checkpoint.tar.xz",
+  "archive_sha256": "2027b218ca182e1e62af24f6cc02718988300b123e7420126491153166d7f5ee",
+  "archive_bytes": 20611064,
+  "archived_files": 19013,
+  "uncompressed_bytes": 347439203,
+  "decoded_pattern_scans": 422827,
+  "recognized_pattern_matches": 0
+}

@@ -1,0 +1,14 @@
+{
+  "format_version": 8,
+  "initial_ok": true,
+  "updated_ok": true,
+  "fresh_ok": true,
+  "updated_query_text_equal_fresh": true,
+  "updated_query_paths_equal_fresh": true,
+  "initial_query_nonempty": true,
+  "updated_files_indexed": 1,
+  "updated_files_skipped_unchanged": 1,
+  "generative_calls": 0,
+  "v7_verify_ok": false,
+  "v7_rejected": true
+}

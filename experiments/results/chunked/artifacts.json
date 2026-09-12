@@ -1,0 +1,58 @@
+[
+  {
+    "context_tokens": 1024,
+    "tokenization_ms": 1.8606,
+    "compile_prefill_ms": 130.3632,
+    "offload_ms": 7.4222,
+    "serialize_hash_fsync_ms": 44.0365,
+    "quantize_ms": 13.8856,
+    "int8_serialize_ms": 25.1273,
+    "kv_file_bytes": 12586720,
+    "int8_file_bytes": 6298840,
+    "kv_tensor_bytes": 12582912,
+    "int8_tensor_bytes": 6291648,
+    "context_source": "deterministic repeated technical sentence; token ids defined in harness"
+  },
+  {
+    "context_tokens": 4096,
+    "tokenization_ms": 0.9071,
+    "compile_prefill_ms": 774.1834,
+    "offload_ms": 20.8269,
+    "serialize_hash_fsync_ms": 131.8947,
+    "quantize_ms": 32.3724,
+    "int8_serialize_ms": 78.5091,
+    "kv_file_bytes": 50335520,
+    "int8_file_bytes": 25173272,
+    "kv_tensor_bytes": 50331648,
+    "int8_tensor_bytes": 25166016,
+    "context_source": "deterministic repeated technical sentence; token ids defined in harness"
+  },
+  {
+    "context_tokens": 8192,
+    "tokenization_ms": 1.4732,
+    "compile_prefill_ms": 1399.2432,
+    "offload_ms": 15.8657,
+    "serialize_hash_fsync_ms": 167.2879,
+    "quantize_ms": 36.6369,
+    "int8_serialize_ms": 95.7708,
+    "kv_file_bytes": 100667184,
+    "int8_file_bytes": 50339120,
+    "kv_tensor_bytes": 100663296,
+    "int8_tensor_bytes": 50331840,
+    "context_source": "deterministic repeated technical sentence; token ids defined in harness"
+  },
+  {
+    "context_tokens": 16384,
+    "tokenization_ms": 1.6997,
+    "compile_prefill_ms": 3217.2098,
+    "offload_ms": 27.7314,
+    "serialize_hash_fsync_ms": 463.9723,
+    "quantize_ms": 111.6163,
+    "int8_serialize_ms": 194.5347,
+    "kv_file_bytes": 201330576,
+    "int8_file_bytes": 100670824,
+    "kv_tensor_bytes": 201326592,
+    "int8_tensor_bytes": 100663488,
+    "context_source": "deterministic repeated technical sentence; token ids defined in harness"
+  }
+]

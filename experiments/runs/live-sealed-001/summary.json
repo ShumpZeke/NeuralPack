@@ -1,0 +1,352 @@
+{
+  "run_id": "live-sealed-001",
+  "evidence_mode": "LIVE",
+  "provider": "nvidia_nim",
+  "model": "meta/llama-3.2-11b-vision-instruct",
+  "budget_tokens": 1500,
+  "metric": "task_accuracy (real model answers), graded by deterministic string check",
+  "by_arm": {
+    "full_context": {
+      "task_accuracy_pct": 75.0,
+      "mean_prompt_tokens_sent": 7930.9,
+      "forbidden_leak_pct": 12.5,
+      "median_latency_ms": 3740.7,
+      "n": 8,
+      "quality_retention_vs_full_context_pct": 100.0,
+      "token_reduction_vs_full_context_pct": 0.0
+    },
+    "bm25_tuned": {
+      "task_accuracy_pct": 87.5,
+      "mean_prompt_tokens_sent": 787.0,
+      "forbidden_leak_pct": 0.0,
+      "median_latency_ms": 2986.1,
+      "n": 8,
+      "quality_retention_vs_full_context_pct": 116.67,
+      "token_reduction_vs_full_context_pct": 90.1
+    },
+    "neuralpack": {
+      "task_accuracy_pct": 100.0,
+      "mean_prompt_tokens_sent": 207.5,
+      "forbidden_leak_pct": 0.0,
+      "median_latency_ms": 3837.3,
+      "n": 8,
+      "quality_retention_vs_full_context_pct": 133.33,
+      "token_reduction_vs_full_context_pct": 97.4
+    }
+  },
+  "suite": {
+    "n_tasks": 8,
+    "context_tokens_per_task": {
+      "min": 467,
+      "median": 10013,
+      "max": 14143
+    },
+    "splits": {
+      "dev": 0,
+      "sealed": 8
+    },
+    "by_family": {
+      "multi_hop": {
+        "n": 2,
+        "min": 8374,
+        "max": 14143
+      },
+      "dynamic_indirection": {
+        "n": 1,
+        "min": 8326,
+        "max": 8326
+      },
+      "config_indirection": {
+        "n": 1,
+        "min": 10013,
+        "max": 10013
+      },
+      "symbol_collision": {
+        "n": 1,
+        "min": 13100,
+        "max": 13100
+      },
+      "multi_fact": {
+        "n": 1,
+        "min": 9849,
+        "max": 9849
+      },
+      "negative_constraint": {
+        "n": 1,
+        "min": 467,
+        "max": 467
+      },
+      "version_conflict": {
+        "n": 1,
+        "min": 10561,
+        "max": 10561
+      }
+    }
+  },
+  "rows": [
+    {
+      "task_id": "multi_hop_2_000",
+      "family": "multi_hop",
+      "arm": "full_context",
+      "available_context_tokens": 8374,
+      "prompt_tokens_sent": 6820,
+      "answer": "To determine the integer that `resolve_billing_surcharge` ultimately produces, we need to follow the call stack:\n\n1. `resolve_billing_surcharge` calls `stage_1_value()`.\n2. `stage_1_value()` calls `stage_2_value()`.\n3. `stage_2_value()` returns `60000`.\n\nTherefore, `resolve_billing_surcharge` ultima",
+      "correct": true,
+      "forbidden_leaked": false,
+      "latency_ms": 4531.0
+    },
+    {
+      "task_id": "multi_hop_2_000",
+      "family": "multi_hop",
+      "arm": "bm25_tuned",
+      "available_context_tokens": 8374,
+      "prompt_tokens_sent": 148,
+      "answer": "The function `resolve_billing_surcharge` in `entry_point.py` calls `stage_1_value` which in turn calls `stage_2_value` in `stage_2.py`. The `stage_2_value` function returns the integer 60000.\n\nSo, the function call sequence is:\n\n- `resolve_billing_surcharge` calls `stage_1_value`\n- `stage_1_value` c",
+      "correct": true,
+      "forbidden_leaked": false,
+      "latency_ms": 2986.1
+    },
+    {
+      "task_id": "multi_hop_2_000",
+      "family": "multi_hop",
+      "arm": "neuralpack",
+      "available_context_tokens": 8374,
+      "prompt_tokens_sent": 148,
+      "answer": "To find the integer that `resolve_billing_surcharge` ultimately produces, we need to follow the function calls:\n\n1. `resolve_billing_surcharge()` calls `stage_1_value()`\n2. `stage_1_value()` calls `stage_2_value()`\n3. `stage_2_value()` returns `60000`\n\nSo, the final integer that `resolve_billing_sur",
+      "correct": true,
+      "forbidden_leaked": false,
+      "latency_ms": 3837.3
+    },
+    {
+      "task_id": "multi_hop_7_000",
+      "family": "multi_hop",
+      "arm": "full_context",
+      "available_context_tokens": 14143,
+      "prompt_tokens_sent": 10994,
+      "answer": "To determine the integer that `resolve_billing_surcharge` ultimately produces, we need to follow the function calls in the provided code.\n\n`resolve_billing_surcharge` calls `stage_1_value()`, which is defined in `stage_1.py`. \n\n`stage_1_value()` calls `stage_2_value()`, which is defined in `stage_2.",
+      "correct": false,
+      "forbidden_leaked": false,
+      "latency_ms": 4466.5
+    },
+    {
+      "task_id": "multi_hop_7_000",
+      "family": "multi_hop",
+      "arm": "bm25_tuned",
+      "available_context_tokens": 14143,
+      "prompt_tokens_sent": 1234,
+      "answer": "To find the integer that `resolve_billing_surcharge` ultimately produces, we need to follow the call chain from `resolve_billing_surcharge` to `stage_7_value`.\n\nHere's the call chain:\n\n1. `resolve_billing_surcharge` calls `stage_1_value`.\n2. `stage_1_value` calls `stage_2_value`.\n3. `stage_2_value` ",
+      "correct": false,
+      "forbidden_leaked": false,
+      "latency_ms": 4540.9
+    },
+    {
+      "task_id": "multi_hop_7_000",
+      "family": "multi_hop",
+      "arm": "neuralpack",
+      "available_context_tokens": 14143,
+      "prompt_tokens_sent": 293,
+      "answer": "The function `resolve_billing_surcharge` in `entry_point.py` calls `stage_1_value()`, which in turn calls `stage_2_value()`, and so on, until it reaches `stage_7_value()` in `stage_7.py`. \n\n`stage_7_value()` directly returns an integer, 60000. \n\nTherefore, `resolve_billing_surcharge` ultimately prod",
+      "correct": true,
+      "forbidden_leaked": false,
+      "latency_ms": 5564.7
+    },
+    {
+      "task_id": "dynamic_indirection_000",
+      "family": "dynamic_indirection",
+      "arm": "full_context",
+      "available_context_tokens": 8326,
+      "prompt_tokens_sent": 6594,
+      "answer": "The `get_retry_budget` function imports the `RETRY_BUDGET` variable from the `policies.aggressive` module, which is set to 1200. Therefore, `get_retry_budget` returns 1200.",
+      "correct": true,
+      "forbidden_leaked": false,
+      "latency_ms": 3740.7
+    },
+    {
+      "task_id": "dynamic_indirection_000",
+      "family": "dynamic_indirection",
+      "arm": "bm25_tuned",
+      "available_context_tokens": 8326,
+      "prompt_tokens_sent": 1132,
+      "answer": "The `get_retry_budget` function in `policy_loader.py` imports the `RETRY_BUDGET` value from the module specified by the `ACTIVE_POLICY` variable, which is set to `\"aggressive\"`. \n\nIn the `policies/aggressive.py` file, the `RETRY_BUDGET` variable is set to `1200`. \n\nTherefore, the `get_retry_budget` ",
+      "correct": true,
+      "forbidden_leaked": false,
+      "latency_ms": 2452.1
+    },
+    {
+      "task_id": "dynamic_indirection_000",
+      "family": "dynamic_indirection",
+      "arm": "neuralpack",
+      "available_context_tokens": 8326,
+      "prompt_tokens_sent": 155,
+      "answer": "The `get_retry_budget` function imports the module corresponding to the `ACTIVE_POLICY` variable, which is set to `\"aggressive\"`. It then returns the value of the `RETRY_BUDGET` attribute from that module.\n\nIn this case, the `RETRY_BUDGET` attribute is defined in the `aggressive.py` module and has a",
+      "correct": true,
+      "forbidden_leaked": false,
+      "latency_ms": 3712.2
+    },
+    {
+      "task_id": "config_indirection_000",
+      "family": "config_indirection",
+      "arm": "full_context",
+      "available_context_tokens": 10013,
+      "prompt_tokens_sent": 8058,
+      "answer": "The effective upload cap in kilobytes is 8800.",
+      "correct": true,
+      "forbidden_leaked": false,
+      "latency_ms": 2069.2
+    },
+    {
+      "task_id": "config_indirection_000",
+      "family": "config_indirection",
+      "arm": "bm25_tuned",
+      "available_context_tokens": 10013,
+      "prompt_tokens_sent": 123,
+      "answer": "The effective upload cap in kilobytes is 8800.",
+      "correct": true,
+      "forbidden_leaked": false,
+      "latency_ms": 711.6
+    },
+    {
+      "task_id": "config_indirection_000",
+      "family": "config_indirection",
+      "arm": "neuralpack",
+      "available_context_tokens": 10013,
+      "prompt_tokens_sent": 123,
+      "answer": "The effective upload cap in kilobytes is 8800.",
+      "correct": true,
+      "forbidden_leaked": false,
+      "latency_ms": 2445.4
+    },
+    {
+      "task_id": "symbol_collision_000",
+      "family": "symbol_collision",
+      "arm": "full_context",
+      "available_context_tokens": 13100,
+      "prompt_tokens_sent": 13254,
+      "answer": "The REQUEST_TIMEOUT is not specified in the provided code snippet for the billing service. However, it is mentioned in the code snippet for the search service (services/search/limits.py) and the auth service (services/auth/limits.py) as 9100 and 9101 respectively.",
+      "correct": false,
+      "forbidden_leaked": true,
+      "latency_ms": 3309.1
+    },
+    {
+      "task_id": "symbol_collision_000",
+      "family": "symbol_collision",
+      "arm": "bm25_tuned",
+      "available_context_tokens": 13100,
+      "prompt_tokens_sent": 749,
+      "answer": "The REQUEST_TIMEOUT in the billing service is 5100.",
+      "correct": true,
+      "forbidden_leaked": false,
+      "latency_ms": 553.0
+    },
+    {
+      "task_id": "symbol_collision_000",
+      "family": "symbol_collision",
+      "arm": "neuralpack",
+      "available_context_tokens": 13100,
+      "prompt_tokens_sent": 119,
+      "answer": "REQUEST_TIMEOUT in the billing service is 5100.",
+      "correct": true,
+      "forbidden_leaked": false,
+      "latency_ms": 7751.9
+    },
+    {
+      "task_id": "multi_fact_000",
+      "family": "multi_fact",
+      "arm": "full_context",
+      "available_context_tokens": 9849,
+      "prompt_tokens_sent": 8089,
+      "answer": "BASE_FEE_CENTS, SURCHARGE_CENTS, and TAX_CENTS are constants defined in separate files.\n\n- BASE_FEE_CENTS is defined in `pricing/base.py` as 200.\n- SURCHARGE_CENTS is defined in `pricing/surcharge.py` as 300.\n- TAX_CENTS is defined in `pricing/tax.py` as 400.\n\nThese constants appear to represent fee",
+      "correct": true,
+      "forbidden_leaked": false,
+      "latency_ms": 6288.3
+    },
+    {
+      "task_id": "multi_fact_000",
+      "family": "multi_fact",
+      "arm": "bm25_tuned",
+      "available_context_tokens": 9849,
+      "prompt_tokens_sent": 1051,
+      "answer": "BASE_FEE_CENTS, SURCHARGE_CENTS, and TAX_CENTS are constants defined in separate files:\n\n- BASE_FEE_CENTS is defined in `pricing/base.py` as 200.\n- SURCHARGE_CENTS is defined in `pricing/surcharge.py` as 300.\n- TAX_CENTS is defined in `pricing/tax.py` as 400.",
+      "correct": true,
+      "forbidden_leaked": false,
+      "latency_ms": 8230.2
+    },
+    {
+      "task_id": "multi_fact_000",
+      "family": "multi_fact",
+      "arm": "neuralpack",
+      "available_context_tokens": 9849,
+      "prompt_tokens_sent": 127,
+      "answer": "BASE_FEE_CENTS is 200 cents.\nSURCHARGE_CENTS is 300 cents.\nTAX_CENTS is 400 cents.",
+      "correct": true,
+      "forbidden_leaked": false,
+      "latency_ms": 2700.8
+    },
+    {
+      "task_id": "negative_constraint_000",
+      "family": "negative_constraint",
+      "arm": "full_context",
+      "available_context_tokens": 467,
+      "prompt_tokens_sent": 531,
+      "answer": "The FINAL deployment region is eu-central-0.",
+      "correct": true,
+      "forbidden_leaked": false,
+      "latency_ms": 798.4
+    },
+    {
+      "task_id": "negative_constraint_000",
+      "family": "negative_constraint",
+      "arm": "bm25_tuned",
+      "available_context_tokens": 467,
+      "prompt_tokens_sent": 531,
+      "answer": "The FINAL deployment region is eu-central-0.",
+      "correct": true,
+      "forbidden_leaked": false,
+      "latency_ms": 914.3
+    },
+    {
+      "task_id": "negative_constraint_000",
+      "family": "negative_constraint",
+      "arm": "neuralpack",
+      "available_context_tokens": 467,
+      "prompt_tokens_sent": 531,
+      "answer": "The FINAL deployment region is eu-central-0.",
+      "correct": true,
+      "forbidden_leaked": false,
+      "latency_ms": 6125.5
+    },
+    {
+      "task_id": "version_conflict_000",
+      "family": "version_conflict",
+      "arm": "full_context",
+      "available_context_tokens": 10561,
+      "prompt_tokens_sent": 9107,
+      "answer": "The batch size in the current (non-deprecated) version is 512.",
+      "correct": true,
+      "forbidden_leaked": false,
+      "latency_ms": 3669.3
+    },
+    {
+      "task_id": "version_conflict_000",
+      "family": "version_conflict",
+      "arm": "bm25_tuned",
+      "available_context_tokens": 10561,
+      "prompt_tokens_sent": 1328,
+      "answer": "The batch size in the current (non-deprecated) version is 512.",
+      "correct": true,
+      "forbidden_leaked": false,
+      "latency_ms": 7617.6
+    },
+    {
+      "task_id": "version_conflict_000",
+      "family": "version_conflict",
+      "arm": "neuralpack",
+      "available_context_tokens": 10561,
+      "prompt_tokens_sent": 164,
+      "answer": "The batch size in the current (non-deprecated) version is 512.",
+      "correct": true,
+      "forbidden_leaked": false,
+      "latency_ms": 2423.7
+    }
+  ]
+}

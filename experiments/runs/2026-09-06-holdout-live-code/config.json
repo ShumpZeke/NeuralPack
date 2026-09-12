@@ -1,0 +1,6 @@
+{
+  "provider": "nvidia_nim",
+  "model": "meta/llama-3.2-11b-vision-instruct",
+  "tasks": 10,
+  "run_id": "2026-09-06-holdout-live-code"
+}

@@ -1,0 +1,5 @@
+{
+  "provider": "nvidia_nim",
+  "model": "meta/llama-3.2-11b-vision-instruct",
+  "tasks": 9
+}

@@ -1,0 +1,1 @@
+benchmarks/evaluation_suite.py --provider nvidia --model meta/llama-3.2-11b-vision-instruct --output experiments/runs/2026-09-06-reproduction-001

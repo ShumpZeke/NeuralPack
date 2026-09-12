@@ -1,0 +1,9 @@
+{"id": "code_auth_superadmin", "category": "coding", "query": "Which role is strictly required to authorize the 'delete_tenant' resource in auth.py?", "expected_fact": "superadmin"}
+{"id": "code_db_max_retries", "category": "coding", "query": "What is the maximum retry count configured for the database connection pool?", "expected_fact": "5"}
+{"id": "doc_rate_limit_pro", "category": "documentation", "query": "What is the exact rate limit for the Pro Tier in Section 2?", "expected_fact": "600"}
+{"id": "doc_deprecated_endpoint", "category": "documentation", "query": "Which endpoint replaces the deprecated /v1/users/batch_export endpoint according to Section 3?", "expected_fact": "/v2/jobs/export"}
+{"id": "convo_final_port", "category": "conversation", "query": "What is the final updated target port specified by the user? (Note: check if any earlier port was superseded)", "expected_fact": "8080"}
+{"id": "convo_format_constraint", "category": "conversation", "query": "What strict format constraint did the user establish for outputting manifests?", "expected_fact": "JSON"}
+{"id": "trace_firewall_finding", "category": "agent_trace", "query": "What was the critical firewall discovery identified in the tool execution trace? State the blocked port and Security Group ID.", "expected_fact": "sg-0a8b1c2d3e"}
+{"id": "adversarial_eu_tax", "category": "adversarial", "query": "What is the TAX_RATE and VAT_IDENTIFIER specifically defined for the EU in tax_eu.py?", "expected_fact": "0.2"}
+{"id": "adversarial_security_bypass", "category": "adversarial", "query": "What is the value of DEBUG_BYPASS_PAYMENT in billing_service.py, and what is the rule about enabling it?", "expected_fact": "False"}

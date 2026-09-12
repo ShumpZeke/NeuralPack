@@ -1,0 +1,690 @@
+{
+  "status": "AUDITED",
+  "evidence_mode": "LOCAL",
+  "generative_calls": 0,
+  "new_api_calls": 0,
+  "revision": "2dc98e2afe4face0e4ce40972a915c45368bd34a",
+  "plan_sha256": "706df3c5da9b0b95cd08d6dde8e32529dfdc7d4607f5ddf6f6b1ed5fc160e2fd",
+  "rows": [
+    {
+      "request_sha256": "fd4ca1edc8fb7639476442e93ff7a4712dd287a98299c6dc51530ca8a3d357ce",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 4089,
+      "local_framed_tokens": 4089,
+      "delta": 0,
+      "local_context_tokens": 3770,
+      "context_chars4_estimate": 3967
+    },
+    {
+      "request_sha256": "1d801d238487f89b6765d65f6f8eff866de8fcb212f3a9cbfb229d7ea5852a3a",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 3788,
+      "local_framed_tokens": 3788,
+      "delta": 0,
+      "local_context_tokens": 3422,
+      "context_chars4_estimate": 3642
+    },
+    {
+      "request_sha256": "ef70b81c42b6a71dd5ebce6caf7bd9fd03949b132f566c7b2d40d56ce41bdea0",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 1299,
+      "local_framed_tokens": 1299,
+      "delta": 0,
+      "local_context_tokens": 920,
+      "context_chars4_estimate": 1020
+    },
+    {
+      "request_sha256": "58102242c976991dbf264d0b2379cd16ee419c6fe8fb33a1329bcf734f0806ed",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 3764,
+      "local_framed_tokens": 3764,
+      "delta": 0,
+      "local_context_tokens": 3464,
+      "context_chars4_estimate": 3672
+    },
+    {
+      "request_sha256": "3591cff57f2cb448da640c8ec081b42e002f2ef36ba44598fd0a298959d530fe",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 4054,
+      "local_framed_tokens": 4054,
+      "delta": 0,
+      "local_context_tokens": 3693,
+      "context_chars4_estimate": 4007
+    },
+    {
+      "request_sha256": "eb4478201b5d021d2e6a32348bfc6bf64cd3734d0d93fc166e0d551610c4efe8",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 1286,
+      "local_framed_tokens": 1286,
+      "delta": 0,
+      "local_context_tokens": 920,
+      "context_chars4_estimate": 1020
+    },
+    {
+      "request_sha256": "5a6c3fa6a7071dcf603601c2375f0ea27009a777aa074fc33c243df5d5fa4bbc",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 4020,
+      "local_framed_tokens": 4020,
+      "delta": 0,
+      "local_context_tokens": 3635,
+      "context_chars4_estimate": 3995
+    },
+    {
+      "request_sha256": "bc31e220d4d0b9978a0c65368ecaacd1087bf6dc8a249a8a7c23b148ca73ec04",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 1222,
+      "local_framed_tokens": 1222,
+      "delta": 0,
+      "local_context_tokens": 912,
+      "context_chars4_estimate": 892
+    },
+    {
+      "request_sha256": "9f071b0e99e61acf1f0e7a2ed8957f3e30fcad59315f646d8646414cdfaa34b9",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 1266,
+      "local_framed_tokens": 1266,
+      "delta": 0,
+      "local_context_tokens": 966,
+      "context_chars4_estimate": 1024
+    },
+    {
+      "request_sha256": "4d66fdc2a2983d5fb3c11f7f86a9b4d90981c3f1e320202f8310693d53713fa4",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 1284,
+      "local_framed_tokens": 1284,
+      "delta": 0,
+      "local_context_tokens": 961,
+      "context_chars4_estimate": 1022
+    },
+    {
+      "request_sha256": "992a52c1334f3ff169363145c8cefa3cc9046323c217ae390a65a45734edc276",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 1334,
+      "local_framed_tokens": 1334,
+      "delta": 0,
+      "local_context_tokens": 980,
+      "context_chars4_estimate": 977
+    },
+    {
+      "request_sha256": "7747dc1179886c48a93bdc2e14966299ce8f4022bd2987dd54216addfeff9e44",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 3892,
+      "local_framed_tokens": 3892,
+      "delta": 0,
+      "local_context_tokens": 3584,
+      "context_chars4_estimate": 3807
+    },
+    {
+      "request_sha256": "17f9bd929ea98ddfd347974e59d1eb2980fe21b9dd44d796346788c4fc18d157",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 1277,
+      "local_framed_tokens": 1277,
+      "delta": 0,
+      "local_context_tokens": 920,
+      "context_chars4_estimate": 1020
+    },
+    {
+      "request_sha256": "de1d0842d6de74dfabe16471304f32469cc7ca4339fc330589c583088e1544bf",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 1338,
+      "local_framed_tokens": 1338,
+      "delta": 0,
+      "local_context_tokens": 1019,
+      "context_chars4_estimate": 988
+    },
+    {
+      "request_sha256": "f404f0c60bd92bf343354ffa6ddeac7f88e7ff51369c22eab28599640cc07d7c",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 322,
+      "local_framed_tokens": 322,
+      "delta": 0,
+      "local_context_tokens": 0,
+      "context_chars4_estimate": 0
+    },
+    {
+      "request_sha256": "876b73dfda3942d84f83d9ddaa033674bb36536363ae8cc64b42c09cc5954230",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 4079,
+      "local_framed_tokens": 4079,
+      "delta": 0,
+      "local_context_tokens": 3779,
+      "context_chars4_estimate": 3974
+    },
+    {
+      "request_sha256": "38de5dc43a8655c8ecb6d3fe6e44099c4211e7d28135677a21c834f3caf2caf2",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 4070,
+      "local_framed_tokens": 4070,
+      "delta": 0,
+      "local_context_tokens": 3691,
+      "context_chars4_estimate": 3948
+    },
+    {
+      "request_sha256": "40c8356039d25fb218f31f7a7fde9902b436c81b249c09206a7de3dc4c93e8de",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 1044,
+      "local_framed_tokens": 1044,
+      "delta": 0,
+      "local_context_tokens": 725,
+      "context_chars4_estimate": 817
+    },
+    {
+      "request_sha256": "035658adce41fa123f67b2754c1511f18acc5f363c867f132e9c6b2d699cb34c",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 318,
+      "local_framed_tokens": 318,
+      "delta": 0,
+      "local_context_tokens": 0,
+      "context_chars4_estimate": 0
+    },
+    {
+      "request_sha256": "9fc0d8913ffe3989b36e0d31aa8d2c8da534c9cfdac701749b2a1c9619c12bb1",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 353,
+      "local_framed_tokens": 353,
+      "delta": 0,
+      "local_context_tokens": 0,
+      "context_chars4_estimate": 0
+    },
+    {
+      "request_sha256": "b6c41aab2a49496efd1e93b6f5329c7f0c5fe0158af11a53e0b5b12f490356d0",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 385,
+      "local_framed_tokens": 385,
+      "delta": 0,
+      "local_context_tokens": 0,
+      "context_chars4_estimate": 0
+    },
+    {
+      "request_sha256": "2de90df6714d9fc176a8b8205660451cd4e4262f866e6bee65420e0199ff38cd",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 1020,
+      "local_framed_tokens": 1020,
+      "delta": 0,
+      "local_context_tokens": 725,
+      "context_chars4_estimate": 817
+    },
+    {
+      "request_sha256": "4a6373c1c8bb15ed8cbe262807d2d760c29b4a2b2d4833f53c2ecae07384e5ab",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 3795,
+      "local_framed_tokens": 3795,
+      "delta": 0,
+      "local_context_tokens": 3488,
+      "context_chars4_estimate": 3655
+    },
+    {
+      "request_sha256": "f3406bcaaad03eeb6a4ab142833f0b3977e26a40bfba20cc958ba569c1a486eb",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 4314,
+      "local_framed_tokens": 4314,
+      "delta": 0,
+      "local_context_tokens": 3960,
+      "context_chars4_estimate": 4086
+    },
+    {
+      "request_sha256": "62945d326223636a9afa17f4fe55e5abd62f8015edc6e736dd4a90f2542aee52",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 1115,
+      "local_framed_tokens": 1115,
+      "delta": 0,
+      "local_context_tokens": 730,
+      "context_chars4_estimate": 865
+    },
+    {
+      "request_sha256": "6d34ec9afa28ea151a10a9ffa79ef6e4d4a40e5a972bbd235e0bbf3076026223",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 3812,
+      "local_framed_tokens": 3812,
+      "delta": 0,
+      "local_context_tokens": 3433,
+      "context_chars4_estimate": 3640
+    },
+    {
+      "request_sha256": "55ae96a221cfac6c5803b4e6ddec7b384639ab40ce86890950874ff39327ba6a",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 790,
+      "local_framed_tokens": 790,
+      "delta": 0,
+      "local_context_tokens": 467,
+      "context_chars4_estimate": 524
+    },
+    {
+      "request_sha256": "85eded97c3d6018ce4dfacf96b9315b8b77f68d2eb807202dac9adbfa989fe0d",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 355,
+      "local_framed_tokens": 355,
+      "delta": 0,
+      "local_context_tokens": 0,
+      "context_chars4_estimate": 0
+    },
+    {
+      "request_sha256": "5b7465f5c3794bb05714e7ef5f9a924f994d07d4eeea7fff4c36846ba85a4452",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 1318,
+      "local_framed_tokens": 1318,
+      "delta": 0,
+      "local_context_tokens": 961,
+      "context_chars4_estimate": 1022
+    },
+    {
+      "request_sha256": "5ed7e80b5569536d87b830c4cc0347c5a721aa9e8d80fe4e69e4656b4016c2fa",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 1317,
+      "local_framed_tokens": 1317,
+      "delta": 0,
+      "local_context_tokens": 961,
+      "context_chars4_estimate": 1022
+    },
+    {
+      "request_sha256": "7e2de447b0b47ff19b3e4b5dcca1c490e6e9f8332755c3faf9fd60cb148b2540",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 1266,
+      "local_framed_tokens": 1266,
+      "delta": 0,
+      "local_context_tokens": 954,
+      "context_chars4_estimate": 999
+    },
+    {
+      "request_sha256": "15634d93d7e67597f71f67b06da949746696edf79279904fab8e24e335d70600",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 373,
+      "local_framed_tokens": 373,
+      "delta": 0,
+      "local_context_tokens": 0,
+      "context_chars4_estimate": 0
+    },
+    {
+      "request_sha256": "5fc2a5b96f527dd47cd7758a7b62ca7a4f082d3bc05eb4ce4e7d2e99d7f5714f",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 3880,
+      "local_framed_tokens": 3880,
+      "delta": 0,
+      "local_context_tokens": 3532,
+      "context_chars4_estimate": 3688
+    },
+    {
+      "request_sha256": "762d52d79c8c16286bbe0b5b71d97c0ca22e90f46a6421690322d3c96100cbec",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 1125,
+      "local_framed_tokens": 1125,
+      "delta": 0,
+      "local_context_tokens": 814,
+      "context_chars4_estimate": 822
+    },
+    {
+      "request_sha256": "5c9dc21468df84def7f4c1aeb8295009451828bc1787343a76ef240ad978486e",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 1058,
+      "local_framed_tokens": 1058,
+      "delta": 0,
+      "local_context_tokens": 746,
+      "context_chars4_estimate": 819
+    },
+    {
+      "request_sha256": "81d1d0a693840158518fb5b561b4cd318348602779f85495165500857bc00460",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 3738,
+      "local_framed_tokens": 3738,
+      "delta": 0,
+      "local_context_tokens": 3430,
+      "context_chars4_estimate": 3648
+    },
+    {
+      "request_sha256": "183243e14d153b3641350fe0a5b333c8d01150614a45128836deec76d4c4f581",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 306,
+      "local_framed_tokens": 306,
+      "delta": 0,
+      "local_context_tokens": 0,
+      "context_chars4_estimate": 0
+    },
+    {
+      "request_sha256": "4b2d6144224723e77e5ceb95c374e6b20b111ccf16bdb5899afa3a6980b00ff5",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 4461,
+      "local_framed_tokens": 4461,
+      "delta": 0,
+      "local_context_tokens": 4107,
+      "context_chars4_estimate": 4096
+    },
+    {
+      "request_sha256": "cc6c3dccc7cbd265b06db49ca9503eeaaf728e931b2ad72a0373a49998982a8d",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 3729,
+      "local_framed_tokens": 3729,
+      "delta": 0,
+      "local_context_tokens": 3406,
+      "context_chars4_estimate": 3627
+    },
+    {
+      "request_sha256": "e088c75495c174e892a6635d7f84dd67ebce29722908376d1500e149b3a0d2eb",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 4128,
+      "local_framed_tokens": 4128,
+      "delta": 0,
+      "local_context_tokens": 3762,
+      "context_chars4_estimate": 4014
+    },
+    {
+      "request_sha256": "bda2abbab304b9d02cb495330fba745fe6d8dc16594cf0752133008bb0f48c98",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 294,
+      "local_framed_tokens": 294,
+      "delta": 0,
+      "local_context_tokens": 0,
+      "context_chars4_estimate": 0
+    },
+    {
+      "request_sha256": "39d5506a002a88d546e4a0ef2f0fc67f156170efbbecace215bdf148c0e843c8",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 1310,
+      "local_framed_tokens": 1310,
+      "delta": 0,
+      "local_context_tokens": 961,
+      "context_chars4_estimate": 1022
+    },
+    {
+      "request_sha256": "0e5b820f542baaa476c4ed2801a8d323eee9568cc9b0d698d1343e5b489b7b6f",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 378,
+      "local_framed_tokens": 378,
+      "delta": 0,
+      "local_context_tokens": 0,
+      "context_chars4_estimate": 0
+    },
+    {
+      "request_sha256": "f5dc669bf2539a4b6d910a2ac0f577d7e36b9a788ac74428369f141134065c2f",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 4162,
+      "local_framed_tokens": 4162,
+      "delta": 0,
+      "local_context_tokens": 3852,
+      "context_chars4_estimate": 4030
+    },
+    {
+      "request_sha256": "fc250c80ad10d82732d542200f7459fcde4f8fe24bdf0f5ebd74ade42484092e",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 869,
+      "local_framed_tokens": 869,
+      "delta": 0,
+      "local_context_tokens": 495,
+      "context_chars4_estimate": 525
+    },
+    {
+      "request_sha256": "4c19759cac71e711df5eaa1d05b9f65c88571889607354a87994fc8b7ac48bf8",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 4001,
+      "local_framed_tokens": 4001,
+      "delta": 0,
+      "local_context_tokens": 3616,
+      "context_chars4_estimate": 3978
+    },
+    {
+      "request_sha256": "cc43c119de73ef8ca212f2936d9a72a6dad76f086d52acb36fec0563a1ffed99",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 1282,
+      "local_framed_tokens": 1282,
+      "delta": 0,
+      "local_context_tokens": 975,
+      "context_chars4_estimate": 989
+    },
+    {
+      "request_sha256": "d8bc309acb1c17f9332ca214596900617ef85903c9ba98ddfdca2796a50d28c3",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 1282,
+      "local_framed_tokens": 1282,
+      "delta": 0,
+      "local_context_tokens": 988,
+      "context_chars4_estimate": 1001
+    },
+    {
+      "request_sha256": "010371f690ece77fc877ae32cb434ab5929d0cbf04ce2d16201748ce863cbb83",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 1095,
+      "local_framed_tokens": 1095,
+      "delta": 0,
+      "local_context_tokens": 730,
+      "context_chars4_estimate": 865
+    },
+    {
+      "request_sha256": "7c73dfcc6ffe8be7722c4ae434599751a49619de974936ab3f407fef88019183",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 365,
+      "local_framed_tokens": 365,
+      "delta": 0,
+      "local_context_tokens": 0,
+      "context_chars4_estimate": 0
+    },
+    {
+      "request_sha256": "75a1377e82a9eff32a32630eab6ca75cd44d3ac305318e97a05594b593c32a98",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 1085,
+      "local_framed_tokens": 1085,
+      "delta": 0,
+      "local_context_tokens": 730,
+      "context_chars4_estimate": 865
+    },
+    {
+      "request_sha256": "bea9f2d64ee218d10468230c00cfa332f1ddc7d6574399736c4bf3a1b960c790",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 902,
+      "local_framed_tokens": 902,
+      "delta": 0,
+      "local_context_tokens": 541,
+      "context_chars4_estimate": 525
+    },
+    {
+      "request_sha256": "97721e69eda23e996acd59053339d463b30a4e364c7dc0205a03c7b46a2bdafc",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 3763,
+      "local_framed_tokens": 3763,
+      "delta": 0,
+      "local_context_tokens": 3440,
+      "context_chars4_estimate": 3674
+    },
+    {
+      "request_sha256": "2c728423c8394c087d5b2cc2e391403e9cbac238bd5d9165311b88fa888f9f0b",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 4033,
+      "local_framed_tokens": 4033,
+      "delta": 0,
+      "local_context_tokens": 3738,
+      "context_chars4_estimate": 3989
+    },
+    {
+      "request_sha256": "66ada0a12b8e10f515b5b97d33d9164de02ca721d83909a2d44c97578fe467a2",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 1025,
+      "local_framed_tokens": 1025,
+      "delta": 0,
+      "local_context_tokens": 725,
+      "context_chars4_estimate": 817
+    },
+    {
+      "request_sha256": "ee0098b7eb2aba87c1f9314129c170f5b16211b97d30d753db0d351e15dfc669",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 1091,
+      "local_framed_tokens": 1091,
+      "delta": 0,
+      "local_context_tokens": 730,
+      "context_chars4_estimate": 865
+    },
+    {
+      "request_sha256": "89116871466dbdb7d803a323c6d8b7bd90ca932e72330eebe9252a6b8415a8cf",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 1360,
+      "local_framed_tokens": 1360,
+      "delta": 0,
+      "local_context_tokens": 1053,
+      "context_chars4_estimate": 1015
+    },
+    {
+      "request_sha256": "26f84cf94c541cee04e8e512cf0f74e2fa9cb1030b17c0b79f45acd04f51ba2e",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 4245,
+      "local_framed_tokens": 4245,
+      "delta": 0,
+      "local_context_tokens": 3884,
+      "context_chars4_estimate": 4085
+    },
+    {
+      "request_sha256": "ac5fbdd854f07dfcdd68379873b5e2f9fdc2d347e3ea6d3fa838a7d91d738327",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 347,
+      "local_framed_tokens": 347,
+      "delta": 0,
+      "local_context_tokens": 0,
+      "context_chars4_estimate": 0
+    },
+    {
+      "request_sha256": "7d478684d3cfe98bdc4c7e67e3473ddb404b0340aab44e2d6daa0b4e1fc22c33",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 348,
+      "local_framed_tokens": 348,
+      "delta": 0,
+      "local_context_tokens": 0,
+      "context_chars4_estimate": 0
+    },
+    {
+      "request_sha256": "edf750bee3c736d5b790b87897baf426e8aad0339d8cb55ba8d5aafc93428778",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 1372,
+      "local_framed_tokens": 1372,
+      "delta": 0,
+      "local_context_tokens": 1006,
+      "context_chars4_estimate": 1016
+    },
+    {
+      "request_sha256": "8729601a590f88a34ff3cd25137717b8ec999f8ff7bc8e852187b468a9a8b5bb",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 4022,
+      "local_framed_tokens": 4022,
+      "delta": 0,
+      "local_context_tokens": 3665,
+      "context_chars4_estimate": 3895
+    },
+    {
+      "request_sha256": "96630109ecf652281452ca1e21ce9dbe857b8366c9992c412d9aaaf4e67529ec",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 3813,
+      "local_framed_tokens": 3813,
+      "delta": 0,
+      "local_context_tokens": 3465,
+      "context_chars4_estimate": 3632
+    },
+    {
+      "request_sha256": "8c71d0aa17f4948ddc312ec38300a5ca6e28baf7ae7a639ad385a6458ac5d4d4",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 3790,
+      "local_framed_tokens": 3790,
+      "delta": 0,
+      "local_context_tokens": 3441,
+      "context_chars4_estimate": 3682
+    },
+    {
+      "request_sha256": "ef0b93c4883c8fe67971633b6035f43bb4bf5f0a41eda10ba3e882babd9b535d",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 365,
+      "local_framed_tokens": 365,
+      "delta": 0,
+      "local_context_tokens": 0,
+      "context_chars4_estimate": 0
+    },
+    {
+      "request_sha256": "b18ae763e0aaf08aa13a1483ffba528b8519728b4705f0e6b2944bc51085d108",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 4004,
+      "local_framed_tokens": 4004,
+      "delta": 0,
+      "local_context_tokens": 3649,
+      "context_chars4_estimate": 3973
+    },
+    {
+      "request_sha256": "1f345b0eedbca297a8a41a60ca636b6e5bd4a0c3ee5894ef2ffa54d0401ab1ae",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 4076,
+      "local_framed_tokens": 4076,
+      "delta": 0,
+      "local_context_tokens": 3720,
+      "context_chars4_estimate": 3908
+    },
+    {
+      "request_sha256": "b536f7948737705da2e076776accc2986ffa271aa7f063288a265cd75b1f27d4",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 3811,
+      "local_framed_tokens": 3811,
+      "delta": 0,
+      "local_context_tokens": 3445,
+      "context_chars4_estimate": 3665
+    },
+    {
+      "request_sha256": "eafeac396925c02af67f0ab4e71d5d2acbbb016c8002cd40598d0a7132622891",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 4235,
+      "local_framed_tokens": 4235,
+      "delta": 0,
+      "local_context_tokens": 3928,
+      "context_chars4_estimate": 4082
+    },
+    {
+      "request_sha256": "c489e30f4f31dc045369451a007f6bdaca11eb944483458440bcd89daed4bd13",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 4064,
+      "local_framed_tokens": 4064,
+      "delta": 0,
+      "local_context_tokens": 3751,
+      "context_chars4_estimate": 3957
+    },
+    {
+      "request_sha256": "9b044f17c3f41d6cadbc071586d98866b7b132376fc22fa4fd86a7e062a8a392",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 1356,
+      "local_framed_tokens": 1356,
+      "delta": 0,
+      "local_context_tokens": 1002,
+      "context_chars4_estimate": 1024
+    },
+    {
+      "request_sha256": "7599209b0072587c2545206bef494ed9889da02c5fea4d80e47f73f80768cbce",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 3997,
+      "local_framed_tokens": 3997,
+      "delta": 0,
+      "local_context_tokens": 3636,
+      "context_chars4_estimate": 3967
+    },
+    {
+      "request_sha256": "f432542d6640d19ab9e22bce0b031d0e618853c00b4e34918073ef4c0c487684",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 3682,
+      "local_framed_tokens": 3682,
+      "delta": 0,
+      "local_context_tokens": 3370,
+      "context_chars4_estimate": 3668
+    },
+    {
+      "request_sha256": "68a902574d989f88aeafff6214a5efa3a0c040306ec2b004f288b988df60697c",
+      "evidence_mode": "REPLAY",
+      "reported_prompt_tokens": 299,
+      "local_framed_tokens": 299,
+      "delta": 0,
+      "local_context_tokens": 0,
+      "context_chars4_estimate": 0
+    }
+  ],
+  "versions": {
+    "tokenizers": "0.22.2",
+    "jinja2": "3.1.6"
+  },
+  "matching_usage_records": 74,
+  "records": 74,
+  "delta_counts": {
+    "0": 74
+  },
+  "limitations": [
+    "Comparisons reuse completed responses; no failed request is retried",
+    "Matching sampled usage does not prove that the hosted implementation never changes",
+    "Different framing counts must be reported before claiming exact hosted prompt budgets"
+  ]
+}

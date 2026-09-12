@@ -1,0 +1,35 @@
+[
+  {
+    "context_tokens": 1024,
+    "tokenization_ms": 1.1695,
+    "compile_prefill_ms": 168.8101,
+    "offload_ms": 4.2662,
+    "serialize_hash_fsync_ms": 39.5902,
+    "quantize_ms": 8.0282,
+    "int8_serialize_ms": 21.7132,
+    "kv_file_bytes": 12586720,
+    "int8_file_bytes": 6298840,
+    "kv_tensor_bytes": 12582912,
+    "int8_tensor_bytes": 6291648,
+    "context_source": "deterministic repeated technical sentence; token ids defined in harness"
+  },
+  {
+    "context_tokens": 4096,
+    "tokenization_ms": 0.7561,
+    "compile_prefill_ms": 1833.8302,
+    "offload_ms": 12.4221,
+    "serialize_hash_fsync_ms": 111.9267,
+    "quantize_ms": 21.8538,
+    "int8_serialize_ms": 73.9228,
+    "kv_file_bytes": 50335520,
+    "int8_file_bytes": 25173272,
+    "kv_tensor_bytes": 50331648,
+    "int8_tensor_bytes": 25166016,
+    "context_source": "deterministic repeated technical sentence; token ids defined in harness"
+  },
+  {
+    "context_tokens": 16384,
+    "status": "out_of_memory",
+    "error": "CUDA out of memory. Tried to allocate 14.06 GiB. GPU 0 has a total capacity of 8.00 GiB of which 4.48 GiB is free. Of the allocated memory 2.32 GiB is allocated by PyTorch, and 202.69 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)"
+  }
+]

@@ -1,0 +1,21 @@
+{
+  "os": "Microsoft Windows 11 Home",
+  "build": "26200",
+  "arch": "64-bit",
+  "boot_time": "2026-09-05T15:05:55.5-04:00",
+  "computer": "DESKTOP-NH8HKE9",
+  "manufacturer": "Micro-Star International Co., Ltd.",
+  "model": "MS-7D46",
+  "cpu": "12th Gen Intel(R) Core(TM) i5-12400F",
+  "cpu_cores": 6,
+  "cpu_threads": 12,
+  "ram_total_gb": 15.9,
+  "ram_free_gb": 7.3,
+  "gpus": [
+    {
+      "name": "NVIDIA GeForce RTX 3050",
+      "vram_gb": 4.0,
+      "driver": "32.0.16.1664"
+    }
+  ]
+}

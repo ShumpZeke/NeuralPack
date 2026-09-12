@@ -1,0 +1,776 @@
+"""Local query-time retrieval over a compiled .npk; zero generative LLM calls.
+
+BM25 is the default. Hybrid fusion, conflict deletion and dependency expansion
+are explicit experiments. Cycle 3 corrected the old benchmark and found no
+general advantage from combining these systems. See EVOLUTION_LOG.md.
+
+PROVED UNDER ASSUMPTIONS: dependency reachability cannot expand an empty seed
+set without another source of seeds. Failed retrieval requires explicit fallback.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+import collections
+import copy
+import math
+import re
+import sqlite3
+import time
+from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
+
+from .format import Block, PackError, connect, load_blocks, open_pack, read_manifest, require_supported, require_encoder_match
+from .search import CODE_WORDS, analyzed_terms, requested_raise_names, surface_names
+from .tokenizer import LocalTokenizer
+
+RRF_K = 60
+
+#: Escalation ladder. Strictly local and deterministic; no step contacts a
+#: remote provider, and no step invokes a generative model.
+ESCALATION_STEPS = ("widen_retrieval", "expand_dependencies", "raw_fallback")
+
+
+def _context_tokens(evidence: Sequence[Evidence]) -> int:
+    """Same estimate as compile. Includes default context_text separators."""
+    chars = sum(len(e.text) for e in evidence) + max(0, len(evidence) - 1) * 2
+    return max(1, chars // 4) if evidence else 0
+
+
+#: Function words carry no evidence, so they must not count toward retrieval
+#: coverage. Counting them made coverage look poor for perfectly good
+#: selections ("explain", "how", "works" never appear in source code).
+STOPWORDS = frozenset("""
+a an the and or but if then else for while of in on at to from by with without
+what which who whom whose when where why how is are was were be been being do
+does did done have has had having can could should would may might must will
+shall this that these those it its as not no yes into about over under again
+value values return returns get set use used using exactly exact configured
+""".split())
+FUNCTION_WORDS = STOPWORDS - CODE_WORDS
+
+
+def _query_terms(query: str) -> List[str]:
+    """Tokenize a query, additionally splitting snake_case/dotted identifiers."""
+    raw = re.findall(r"\w+", query.lower())
+    terms: List[str] = []
+    for tok in raw:
+        terms.append(tok)
+        if "_" in tok:
+            terms.extend(p for p in tok.split("_") if len(p) > 2)
+    for tok in raw:
+        parts = re.findall(r"[a-z]+|[A-Z][a-z]*|\d+", tok)
+        if len(parts) > 1:
+            terms.extend(p.lower() for p in parts if len(p) > 2)
+    return list(dict.fromkeys(terms))
+
+
+def _content_terms(query: str) -> List[str]:
+    """Evidence-bearing query terms, used for coverage scoring and lexical matching."""
+    return [t for t in _query_terms(query) if t not in FUNCTION_WORDS and len(t) > 2]
+
+
+def _identifier_candidates(query: str) -> List[str]:
+    """Identifiers a user is likely naming: CamelCase, snake_case, dotted."""
+    out: List[str] = []
+    for tok in re.findall(r"[A-Za-z_][A-Za-z0-9_.]{2,}", query):
+        out.append(tok)
+        if "." in tok:
+            out.extend(p for p in tok.split(".") if len(p) > 2)
+    return list(dict.fromkeys(out))
+
+
+@dataclass
+class Evidence:
+    """One selected block, with the provenance a caller needs to cite it."""
+
+    block_id: int
+    path: str
+    span: str
+    kind: str
+    name: Optional[str]
+    tokens: int
+    text: str
+    score: float
+    channels: List[str] = field(default_factory=list)
+
+    def as_dict(self, include_text: bool = True) -> Dict[str, Any]:
+        d = {
+            "block_id": self.block_id, "path": self.path, "span": self.span,
+            "kind": self.kind, "name": self.name, "tokens": self.tokens,
+            "score": round(self.score, 6), "channels": self.channels,
+        }
+        if include_text:
+            d["text"] = self.text
+        return d
+
+
+@dataclass
+class Selection:
+    """Result of a query. Carries its own uncertainty and fallback reasoning."""
+
+    query: str
+    evidence: List[Evidence]
+    total_tokens: int
+    budget_tokens: int
+    available_tokens: Optional[int]
+    channels_used: List[str]
+    escalations: List[str]
+    risk_band: str
+    seed_failed: bool
+    latency_ms: float
+    used_generative_llm: bool = False   # invariant: always False on this path
+    notes: List[str] = field(default_factory=list)
+    #: Contradicting variants that were dropped, and why. Never silent.
+    conflicts_resolved: List[Dict[str, Any]] = field(default_factory=list)
+    tokenizer: Optional[Dict[str, Any]] = None
+    available_tokens_estimate: Optional[int] = None
+
+    def context_text(self, separator: str = "\n\n", *, order: str = "relevance",
+                     tokenizer: Optional[LocalTokenizer] = None) -> str:
+        """Render evidence; canonical order needs its own exact budget check.
+
+        total_tokens describes relevance order with default separators.
+        Reordering can change tokenizer merges. For an exact selection, supply
+        the matching local tokenizer when requesting canonical emission.
+        """
+        if order == "relevance":
+            return separator.join(e.text for e in self.evidence)
+        if order == "canonical":
+            ordered = sorted(self.evidence, key=_source_order)
+            text = separator.join(e.text for e in ordered)
+            if self.tokenizer is not None:
+                if (not isinstance(tokenizer, LocalTokenizer)
+                        or tokenizer.sha256 != self.tokenizer.get("asset_sha256")):
+                    raise ValueError("canonical exact context requires the matching local tokenizer")
+                count = tokenizer.count(text)
+            else:
+                count = max(1, len(text) // 4) if text else 0
+            if count > self.budget_tokens:
+                raise PackError("canonical context exceeds token budget; use relevance order or a lower selection budget")
+            return text
+        raise ValueError(f"unknown order {order!r}; expected 'relevance' or 'canonical'")
+
+    def as_dict(self, include_text: bool = True) -> Dict[str, Any]:
+        return {
+            "query": self.query,
+            "evidence": [e.as_dict(include_text) for e in self.evidence],
+            "total_tokens": self.total_tokens,
+            "budget_tokens": self.budget_tokens,
+            "available_tokens": self.available_tokens,
+            "available_tokens_estimate": self.available_tokens_estimate,
+            "reduction_pct": (
+                round(100.0 * (self.available_tokens - self.total_tokens) / self.available_tokens, 2)
+                if self.available_tokens and self.evidence and not self.seed_failed else None
+            ),
+            "status": "fallback_required" if self.seed_failed or not self.evidence else "selected",
+            "token_accounting": ("exact for supplied tokenizer JSON including default separators; excludes query and caller wrappers"
+                                 if self.tokenizer else "estimated chars/4 including default separators; excludes query and caller wrappers"),
+            "tokenizer": self.tokenizer,
+            "sufficiency": "unverified" if self.evidence else "no_evidence",
+            "channels_used": self.channels_used,
+            "escalations": self.escalations,
+            "risk_band": self.risk_band,
+            "seed_failed": self.seed_failed,
+            "used_generative_llm": self.used_generative_llm,
+            "latency_ms": round(self.latency_ms, 2),
+            "notes": self.notes,
+            "conflicts_resolved": self.conflicts_resolved,
+        }
+
+
+# ---------------------------------------------------------------------------
+# Channels
+# ---------------------------------------------------------------------------
+
+def _source_order(evidence: Evidence) -> Tuple[str, int, int]:
+    start, end = evidence.span.rsplit(":", 1)[1].split("-")
+    return evidence.path, int(start), int(end)
+
+
+def _copy_selection(selection: Selection) -> Selection:
+    """Copy the public mutable result without traversing immutable source text."""
+    result = copy.copy(selection)
+    result.evidence = []
+    for original in selection.evidence:
+        evidence = copy.copy(original)
+        evidence.channels = list(original.channels)
+        result.evidence.append(evidence)
+    result.channels_used = list(selection.channels_used)
+    result.escalations = list(selection.escalations)
+    result.notes = list(selection.notes)
+    result.conflicts_resolved = copy.deepcopy(selection.conflicts_resolved)
+    result.tokenizer = copy.deepcopy(selection.tokenizer)
+    return result
+
+
+def _symbol_channel(con: sqlite3.Connection, query: str, limit: int) -> List[int]:
+    idents = _identifier_candidates(query)
+    if not idents:
+        return []
+    marks = ",".join("?" * len(idents))
+    rows = con.execute(
+        f"SELECT s.block_id, SUM(s.is_def) d, COUNT(*) c FROM symbols s "
+        f"JOIN blocks b ON b.id=s.block_id JOIN files f ON f.id=b.file_id "
+        f"WHERE s.name IN ({marks}) GROUP BY s.block_id "
+        f"ORDER BY d DESC,c DESC,f.path COLLATE BINARY,b.ordinal LIMIT ?",
+        (*idents, limit),
+    ).fetchall()
+    return [r["block_id"] for r in rows]
+
+
+def _explicit_literals(query: str) -> List[str]:
+    """Atomic inline code references override prose stopwords/length filters.
+
+    Dotted references retain both the full spelling and its components. This
+    narrow rule does not interpret code fences or rewrite the caller's query.
+    """
+    literals = re.findall(r"(?<!`)`(\w+(?:\.\w+)*)`(?!`)", query)
+    return list(dict.fromkeys(part.lower() for literal in literals
+                             for part in (literal, *literal.split("."))))
+
+
+def _lexical_terms(_con: sqlite3.Connection, query: str) -> List[str]:
+    """Analyze query words exactly as format-v8 search fields are analyzed.
+
+    Whole identifiers and their components coexist in the index, so no
+    request-time vocabulary probes or corpus-dependent rewriting are needed.
+    Backticked literals survive function-word and short-token filtering.
+    """
+    explicit = set(_explicit_literals(query))
+    terms = [
+        term for term in analyzed_terms(query)
+        if (term not in FUNCTION_WORDS and len(term) > 1) or term in explicit
+    ]
+    terms.extend(term for term in explicit if term not in terms)
+    return list(dict.fromkeys(terms))
+
+
+def _whole_lexical_terms(query: str) -> List[str]:
+    """Whole query spellings before identifier-component expansion."""
+    explicit = set(_explicit_literals(query))
+    terms = [
+        term.lower() for term in re.findall(r"\w+", query, re.UNICODE)
+        if (term.lower() not in FUNCTION_WORDS and len(term) > 1)
+        or term.lower() in explicit
+    ]
+    terms.extend(term for term in explicit if term not in terms)
+    return list(dict.fromkeys(terms))
+
+
+def _rank_lexical_terms(
+    con: sqlite3.Connection, terms: Sequence[str], limit: int
+) -> List[int]:
+    if not terms:
+        return []
+    match = " OR ".join(f'"{term}"' for term in terms)
+    rows = con.execute(
+        "SELECT lexical.rowid AS block_id FROM lexical JOIN blocks b ON b.id=lexical.rowid "
+        "JOIN files f ON f.id=b.file_id WHERE lexical MATCH ? "
+        "ORDER BY bm25(lexical,1.0,1.0,1.0),"
+        "f.path COLLATE BINARY,b.ordinal LIMIT ?",
+        (match, limit),
+    ).fetchall()
+    return [row["block_id"] for row in rows]
+
+
+def _lexical_channel(con: sqlite3.Connection, query: str, limit: int) -> List[int]:
+    try:
+        terms = _lexical_terms(con, query)
+        if not terms:
+            return []
+        expanded = _rank_lexical_terms(con, terms, limit)
+        whole_terms = _whole_lexical_terms(query)
+        if whole_terms == terms or len(whole_terms) != 1:
+            return expanded
+        whole = _rank_lexical_terms(con, whole_terms, limit)
+        # A one-symbol lookup with an exact corpus spelling is unambiguous.
+        # Admitting component-only matches here turns ``item1`` into a match for
+        # every ``itemN`` and can consume the context budget with distractors.
+        # Expansion remains the fallback for spelling aliases such as a camel
+        # query against a snake_case definition when no exact spelling exists.
+        return whole or expanded
+    except sqlite3.OperationalError:
+        return []
+
+
+def _relation_channel(con: sqlite3.Connection, query: str, limit: int) -> List[int]:
+    """Rank selective literal raise sites for explicit positive raise intent."""
+    _whole, expanded = surface_names(query)
+    arguments = requested_raise_names(query, expanded)
+    if not arguments:
+        return []
+    marks = ",".join("?" * len(arguments))
+    try:
+        total = con.execute("SELECT COUNT(*) FROM blocks").fetchone()[0]
+        cap = max(1, int(total * 0.02))
+        rows = con.execute(
+            "WITH selective(name) AS ("
+            " SELECT name FROM relations WHERE kind='raises' "
+            f" AND name IN ({marks}) GROUP BY name "
+            " HAVING COUNT(DISTINCT block_id)<=?"
+            ") "
+            "SELECT DISTINCT r.block_id,f.path,b.ordinal "
+            "FROM relations r JOIN selective s ON s.name=r.name "
+            "JOIN blocks b ON b.id=r.block_id JOIN files f ON f.id=b.file_id "
+            "WHERE r.kind='raises'",
+            (*arguments, cap),
+        ).fetchall()
+    except sqlite3.OperationalError:
+        return []
+    scope = {
+        row["path"].split("/", 1)[0].lower()
+        for row in rows
+        if row["path"].split("/", 1)[0].lower() in expanded
+    }
+    ordered = sorted(rows, key=lambda row: (
+        bool(scope) and row["path"].split("/", 1)[0].lower() not in scope,
+        row["path"], row["ordinal"], row["block_id"],
+    ))
+    return [row["block_id"] for row in ordered[:limit]]
+
+
+def _embedding_channel(con: sqlite3.Connection, query: str, limit: int,
+                       manifest: Dict[str, str]) -> Tuple[List[int], Optional[float]]:
+    """Rank by cosine similarity against the PRECOMPUTED index.
+
+    Only the query is encoded here. Returns ``([], None)`` when the pack has no
+    embedding index or no local encoder is installed -- the deterministic
+    channels then carry the query on their own.
+    """
+    dim = int(manifest.get("embedding_dim") or 0)
+    if dim <= 0:
+        return [], None
+
+    from ..context.embedding import get_backend
+    from .compile import unpack_vector
+
+    backend = get_backend()
+    if not backend.available():
+        return [], None
+    require_encoder_match(manifest,backend.identity())
+    qvec = backend.embed_query(query)
+    if qvec is None:
+        return [], None
+    if len(qvec)!=dim or any(type(x) not in (int,float) or not math.isfinite(x) for x in qvec):
+        raise PackError("query encoder returned an incompatible vector")
+
+    rows = con.execute(
+        "SELECT e.block_id,e.vector FROM embeddings e JOIN blocks b ON b.id=e.block_id "
+        "JOIN files f ON f.id=b.file_id WHERE e.dim=? ORDER BY f.path COLLATE BINARY,b.ordinal",
+        (len(qvec),)).fetchall()
+    if not rows:
+        return [], None
+
+    # Columnar scan. The row-at-a-time version (struct.unpack + a scalar dot
+    # product per block) measured 81.7 ms on 1,587 blocks -- 60x the lexical
+    # channel, and O(N) in Python, which would be seconds on a real repository.
+    # Concatenating the raw buffers and doing ONE matmul moves the whole scan
+    # into BLAS.
+    try:
+        import numpy as np
+
+        ids = np.fromiter((r["block_id"] for r in rows), dtype=np.int64, count=len(rows))
+        matrix = np.frombuffer(b"".join(r["vector"] for r in rows), dtype=np.float32)
+        matrix = matrix.reshape(len(rows), len(qvec))
+        sims = matrix @ np.asarray(qvec, dtype=np.float32)
+        # Stable ties inherit canonical source order, not mutable row IDs.
+        top_k = np.argsort(-sims,kind="stable")[:limit]
+        return [int(ids[i]) for i in top_k], float(sims[top_k[0]])
+    except ImportError:
+        # numpy is optional; correctness must not depend on it.
+        scored: List[Tuple[float, int]] = []
+        for row in rows:
+            vec = unpack_vector(row["vector"], len(qvec))
+            scored.append((sum(a * b for a, b in zip(vec, qvec)), row["block_id"]))
+        scored.sort(key=lambda pair:-pair[0])
+        return [bid for _s, bid in scored[:limit]], scored[0][0]
+
+
+def _expand_dependencies(con: sqlite3.Connection, seeds: Sequence[int], depth: int,
+                         limit: int) -> List[int]:
+    """Experimental bounded graph reachability; the caller rechecks its budget."""
+    if not seeds:
+        return []
+    reached: Set[int] = set(seeds)
+    frontier: Set[int] = set(seeds)
+    for _ in range(max(0, depth)):
+        if not frontier or len(reached) >= limit:
+            break
+        marks = ",".join("?" * len(frontier))
+        rows = con.execute(
+            f"SELECT DISTINCT dst_block_id FROM deps WHERE src_block_id IN ({marks})",
+            tuple(frontier),
+        ).fetchall()
+        nxt = {r["dst_block_id"] for r in rows} - reached
+        reached |= nxt
+        frontier = nxt
+    return sorted(reached - set(seeds))
+
+
+# ---------------------------------------------------------------------------
+# Selector
+# ---------------------------------------------------------------------------
+
+class PackSelector:
+    """Query-time selection over a compiled artifact.
+
+    Provider-independent: ``target_model`` is accepted as advisory metadata;
+    exact token accounting requires an explicit local tokenizer asset. The
+    model name alone does not infer or download one.
+    """
+
+    def __init__(
+        self,
+        pack_path: str,
+        *,
+        default_budget: int = 2000,
+        candidate_limit: int = 60,
+        retrieval: str = "lexical",
+        enable_dependency_expansion: bool = False,
+        resolve_conflicts: bool = False,
+        dense_floor: float = 0.35,
+        tokenizer: Optional[LocalTokenizer] = None,
+        enable_relations: bool = True,
+        enable_cache: bool = True,
+        max_cache_entries: int = 128,
+    ):
+        for name, value in (("default_budget", default_budget), ("candidate_limit", candidate_limit)):
+            if type(value) is not int or value <= 0:
+                raise ValueError(f"{name} must be a positive integer")
+        if retrieval not in {"lexical", "hybrid"}:
+            raise ValueError("retrieval must be 'lexical' or 'hybrid'")
+        self.retrieval = retrieval
+        self.pack_path = str(pack_path)
+        self.default_budget = default_budget
+        self.candidate_limit = candidate_limit
+        self.enable_dependency_expansion = enable_dependency_expansion
+        self.resolve_conflicts = resolve_conflicts
+        self.dense_floor = dense_floor
+        if tokenizer is not None and not isinstance(tokenizer, LocalTokenizer):
+            raise TypeError("tokenizer must be an explicit LocalTokenizer")
+        self.tokenizer = tokenizer
+        if type(enable_relations) is not bool:
+            raise ValueError("enable_relations must be a boolean")
+        self.enable_relations = enable_relations
+        self._con: Optional[sqlite3.Connection] = None
+        self._manifest: Optional[Dict[str, str]] = None
+        self._data_version: Optional[int] = None
+        if type(enable_cache) is not bool:
+            raise ValueError("enable_cache must be a boolean")
+        if type(max_cache_entries) is not int or max_cache_entries <= 0:
+            raise ValueError("max_cache_entries must be a positive integer")
+        self.enable_cache = enable_cache
+        self.max_cache_entries = max_cache_entries
+        self._cache: collections.OrderedDict = collections.OrderedDict()
+
+    def __enter__(self) -> PackSelector:
+        if self._con is None:
+            con = connect(self.pack_path, readonly=True)
+            try:
+                con.execute("BEGIN")
+                data_version = con.execute("PRAGMA data_version").fetchone()[0]
+                manifest = read_manifest(con)
+                require_supported(manifest)
+                con.execute("ROLLBACK")
+            except BaseException:
+                con.close()
+                raise
+            self._con = con
+            self._manifest = manifest
+            self._data_version = data_version
+        return self
+
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+        self.close()
+
+    def close(self) -> None:
+        if self._con is not None:
+            try:
+                self._con.close()
+            finally:
+                self._con = None
+                self._manifest = None
+                self._data_version = None
+        self.clear_cache()
+
+    def clear_cache(self) -> None:
+        self._cache.clear()
+
+    def _count(self, evidence: Sequence[Evidence]) -> int:
+        if self.tokenizer is None:
+            return _context_tokens(evidence)
+        return self.tokenizer.count("\n\n".join(e.text for e in evidence))
+
+    def _fits(self, evidence: Sequence[Evidence], text: str, budget: int,
+              *, used_chars: Optional[int] = None) -> bool:
+        if self.tokenizer is None:
+            if used_chars is None:
+                used_chars = sum(len(e.text) for e in evidence) + max(0,len(evidence)-1)*2
+            chars = used_chars + len(text) + (2 if evidence else 0)
+            return max(1, chars // 4) <= budget
+        return self.tokenizer.count("\n\n".join([e.text for e in evidence] + [text])) <= budget
+
+    def _enforce_final_budget(self, selection: Selection, budget: int) -> None:
+        # Token counts need not be additive or decrease after context edits.
+        # Recheck the final bytes after optional conflict deletion/expansion.
+        removed = 0
+        while selection.evidence and self._count(selection.evidence) > budget:
+            selection.evidence.pop()
+            removed += 1
+        selection.total_tokens = self._count(selection.evidence)
+        if removed:
+            selection.notes.append(f"final token reconciliation removed {removed} passage(s)")
+
+    # ------------------------------------------------------------------
+    def select(
+        self,
+        query: str,
+        *,
+        budget_tokens: Optional[int] = None,
+        target_model: Optional[str] = None,
+        allow_escalation: bool = True,
+    ) -> Selection:
+        started = time.perf_counter()
+        # target_model is accepted for provider-independent integrations. No
+        # pricing lookup or automatic model-to-tokenizer inference happens here.
+        budget = self.default_budget if budget_tokens is None else budget_tokens
+        if type(budget) is not int or budget <= 0:
+            raise ValueError("budget_tokens must be a positive integer")
+
+        if self._con is not None:
+            self._con.execute("BEGIN")
+            try:
+                # Metadata, candidates and cache identity must belong to this
+                # query's snapshot, including after a committed update.
+                data_version = self._con.execute("PRAGMA data_version").fetchone()[0]
+                if self._manifest is None or data_version != self._data_version:
+                    manifest = read_manifest(self._con)
+                    require_supported(manifest)
+                    self.clear_cache()
+                    self._manifest = manifest
+                    self._data_version = data_version
+                else:
+                    manifest = self._manifest
+                return self._select_with_con(
+                    self._con, manifest, query, budget, target_model, allow_escalation, started
+                )
+            finally:
+                self._con.execute("ROLLBACK")
+
+        with open_pack(self.pack_path) as con:
+            manifest = read_manifest(con)
+            require_supported(manifest)
+
+            return self._select_with_con(
+                con, manifest, query, budget, target_model, allow_escalation, started
+            )
+
+    def _select_with_con(
+        self,
+        con: sqlite3.Connection,
+        manifest: Dict[str, str],
+        query: str,
+        budget: int,
+        target_model: Optional[str],
+        allow_escalation: bool,
+        started: float,
+    ) -> Selection:
+            cache_key = None
+            # Hybrid selection observes the current local encoder. An artifact
+            # root alone cannot key its availability or identity checks.
+            if self.enable_cache and self.retrieval == "lexical":
+                cache_key = (
+                    manifest.get("root_sha256", ""),
+                    query,
+                    budget,
+                    target_model,
+                    allow_escalation,
+                    self.retrieval,
+                    self.enable_dependency_expansion,
+                    self.resolve_conflicts,
+                    self.candidate_limit,
+                    self.enable_relations,
+                    self.tokenizer.sha256 if self.tokenizer is not None else None,
+                )
+                if cache_key in self._cache:
+                    cached = self._cache[cache_key]
+                    self._cache.move_to_end(cache_key)
+                    res = _copy_selection(cached)
+                    res.latency_ms = (time.perf_counter() - started) * 1000.0
+                    return res
+
+            try:
+                available = int(manifest["available_tokens"])
+                if available < 0:
+                    raise ValueError
+            except (KeyError, ValueError) as exc:
+                raise PackError("artifact has invalid available-token metadata; recompile") from exc
+
+            sel = self._select_once(con, manifest, query, budget, self.candidate_limit)
+            escalations: List[str] = []
+
+            # Escalation ladder -- deterministic and local at every rung.
+            if allow_escalation and (sel.seed_failed or not sel.evidence):
+                escalations.append("widen_retrieval")
+                sel = self._select_once(con, manifest, query, budget,
+                                        self.candidate_limit * 4)
+
+            if allow_escalation and self.enable_dependency_expansion and sel.evidence:
+                extra = _expand_dependencies(
+                    con, [e.block_id for e in sel.evidence], depth=2,
+                    limit=self.candidate_limit)
+                if extra:
+                    escalations.append("expand_dependencies")
+                    sel = self._assemble(con, query, sel, extra, budget)
+
+            if self.resolve_conflicts and len(sel.evidence) > 1:
+                sel = self._drop_contradictions(con, sel, query)
+
+            self._enforce_final_budget(sel, budget)
+            sel.risk_band = self._risk({ch: [] for ch in sel.channels_used}, sel.evidence, query)
+
+            if not sel.evidence:
+                # Nothing survived. Report an explicit failure rather than an
+                # empty context that looks like a successful optimization.
+                escalations.append("raw_fallback")
+                sel.seed_failed = True
+                sel.risk_band = "uncalibrated:maximum"
+                sel.notes.append(
+                    "no evidence selected; caller MUST fall back to full context")
+
+            sel.escalations = escalations
+            sel.available_tokens_estimate = available
+            # Do not divide exact selected tokens by an estimated corpus size.
+            sel.available_tokens = available if self.tokenizer is None else None
+            sel.tokenizer = self.tokenizer.as_dict() if self.tokenizer else None
+            if self.tokenizer:
+                for evidence in sel.evidence:
+                    evidence.tokens = self.tokenizer.count(evidence.text)
+            elif target_model is not None:
+                sel.notes.append("target model is advisory; configure a matching local tokenizer for exact context counts")
+            sel.latency_ms = (time.perf_counter() - started) * 1000.0
+            sel.used_generative_llm = False
+            if self.enable_cache and cache_key is not None:
+                self._cache[cache_key] = _copy_selection(sel)
+                if len(self._cache) > self.max_cache_entries:
+                    self._cache.popitem(last=False)
+            return sel
+
+    # ------------------------------------------------------------------
+    def _drop_contradictions(self, con, sel: "Selection", query: str) -> "Selection":
+        """Experimental path-based deletion, with conservative abstention."""
+        from .conflict import resolve_value_conflicts
+
+        ids = [e.block_id for e in sel.evidence]
+        paths = {e.block_id: e.path for e in sel.evidence}
+        rank_of = {e.block_id: i for i, e in enumerate(sel.evidence)}
+
+        drop, decisions = resolve_value_conflicts(con, ids, paths, query, rank_of)
+        if not drop:
+            return sel
+
+        sel.evidence = [e for e in sel.evidence if e.block_id not in drop]
+        sel.total_tokens = self._count(sel.evidence)
+        sel.conflicts_resolved = [d.as_dict() for d in decisions]
+        sel.notes.append(
+            f"dropped {len(drop)} contradicting block(s) across "
+            f"{len(decisions)} symbol conflict(s)")
+        return sel
+
+    # ------------------------------------------------------------------
+    def _select_once(self, con, manifest, query: str, budget: int, limit: int) -> Selection:
+        ranks: Dict[str, List[int]] = {}
+        notes: List[str] = []
+
+        if self.retrieval == "hybrid":
+            sym = _symbol_channel(con, query, limit)
+            if sym:
+                ranks["symbol"] = sym
+        lex = _lexical_channel(con, query, limit)
+        if lex:
+            ranks["lexical"] = lex
+        if self.enable_relations:
+            relation = _relation_channel(con, query, limit)
+            if relation:
+                ranks["relation"] = relation
+
+        if self.retrieval == "hybrid":
+            emb, top_sim = _embedding_channel(con, query, limit, manifest)
+            if emb and (top_sim is None or top_sim >= self.dense_floor):
+                ranks["embedding"] = emb
+            elif int(manifest.get("embedding_dim") or 0)>0 and not emb:
+                notes.append("local embedding channel unavailable; selection uses remaining channels")
+
+        if not ranks:
+            return Selection(query=query, evidence=[], total_tokens=0,
+                             budget_tokens=budget, available_tokens=0,
+                             channels_used=[], escalations=[],
+                             risk_band="uncalibrated:maximum", seed_failed=True,
+                             latency_ms=0.0,
+                             notes=notes+["no channel produced a candidate"])
+
+        fused: Dict[int, float] = {}
+        channels_of: Dict[int, List[str]] = {}
+        for channel, ordered in ranks.items():
+            for rank, block_id in enumerate(ordered):
+                fused[block_id] = fused.get(block_id, 0.0) + 1.0 / (RRF_K + rank)
+                channels_of.setdefault(block_id, []).append(channel)
+
+        ordered_ids = sorted(fused, key=lambda b: -fused[b])
+        blocks = {b.id: b for b in load_blocks(con, ordered_ids)}
+
+        evidence: List[Evidence] = []
+        used_chars = 0
+        for block_id in ordered_ids:
+            blk = blocks.get(block_id)
+            if blk is None:
+                continue
+            if not self._fits(evidence, blk.text, budget, used_chars=used_chars):
+                continue
+            used_chars += len(blk.text) + (2 if evidence else 0)
+            evidence.append(Evidence(
+                block_id=blk.id, path=blk.path, span=blk.span, kind=blk.kind,
+                name=blk.name, tokens=blk.tokens, text=blk.text,
+                score=fused[block_id], channels=channels_of.get(block_id, []),
+            ))
+
+        risk = self._risk(ranks, evidence, query)
+        return Selection(
+            query=query, evidence=evidence, total_tokens=self._count(evidence),
+            budget_tokens=budget, available_tokens=0,
+            channels_used=sorted(ranks), escalations=[],
+            risk_band=risk, seed_failed=not evidence, latency_ms=0.0, notes=notes,
+        )
+
+    def _assemble(self, con, query, base: Selection, extra_ids: List[int], budget: int) -> Selection:
+        have = {e.block_id for e in base.evidence}
+        used_chars = sum(len(e.text) for e in base.evidence) + max(0,len(base.evidence)-1)*2
+        for blk in load_blocks(con, [i for i in extra_ids if i not in have]):
+            if not self._fits(base.evidence, blk.text, budget, used_chars=used_chars):
+                continue
+            used_chars += len(blk.text) + (2 if base.evidence else 0)
+            base.evidence.append(Evidence(
+                block_id=blk.id, path=blk.path, span=blk.span, kind=blk.kind,
+                name=blk.name, tokens=blk.tokens, text=blk.text,
+                score=0.0, channels=["dependency_expansion"],
+            ))
+        base.total_tokens = self._count(base.evidence)
+        return base
+
+    def _risk(self, ranks: Dict[str, List[int]], evidence: List[Evidence], query: str) -> str:
+        """Ordinal, uncalibrated. Never presented as a probability."""
+        if not evidence:
+            return "uncalibrated:maximum"
+        terms = _content_terms(query)
+        if terms:
+            joined = " ".join(e.text for e in evidence).lower()
+            present = [t for t in terms if t in joined]
+            coverage = len(present) / len(terms)
+        else:
+            coverage = 1.0
+        # Having two channels is not agreement: they may retrieve disjoint sets.
+        overlap = any(len(set(e.channels) - {"dependency_expansion"}) >= 2 for e in evidence)
+        if coverage >= 0.8 and overlap:
+            return "uncalibrated:low"
+        if coverage >= 0.5 or overlap:
+            return "uncalibrated:moderate"
+        return "uncalibrated:high"

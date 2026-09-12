@@ -1,0 +1,6 @@
+{
+  "provider": "mock",
+  "model": "default",
+  "tasks": 50,
+  "run_id": "2026-09-06-holdout-msc-003"
+}

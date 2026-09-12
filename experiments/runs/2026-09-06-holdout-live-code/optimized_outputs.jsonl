@@ -1,0 +1,10 @@
+{"id": "code_h1_db_max_conn", "content": "The default max_connections limit in DatabasePool is 50. This is specified in the `__init__` method of the DatabasePool class in the `db/pool.py` file:\n\n```python\nclass DatabasePool:\n    def __init__(self, max_connections: int = 50):\n        self.max_connections = max_connections\n        self.timeout = DEFAULT_TIMEOUT_SECONDS\n        self.active_count = 0\n```\n\nSo, if no value is provided for `max_connections` when creating"}
+{"id": "code_h2_jwt_expiration", "content": "The default token expiration time in seconds in `generate_access_token` is 3600 seconds."}
+{"id": "code_h3_rbac_delete_org", "content": "Based on the code in `auth/rbac.py`, the role that possesses the 'delete_organization' permission is the \"owner\" role. This is because the \"owner\" role is listed in the `PERMISSIONS` dictionary with the permission \"delete_organization\"."}
+{"id": "code_h4_stripe_pro_price", "content": "According to the `billing/stripe_client.py` file, the amount_cents charged for the 'pro' tier is 19900 cents."}
+{"id": "code_h5_tax_rate_invoice", "content": "The tax rate applied to monthly invoices in `billing/invoices.py` is 8.25% (0.0825). This is a local municipal sales tax."}
+{"id": "code_h6_worker_concurrency", "content": "The default max_concurrency of TaskQueue in workers/task_queue.py is 16."}
+{"id": "code_h7_rate_limit_setting", "content": "The RATE_LIMIT_PER_MINUTE is defined as 120 in settings/base.py. This means that the application is configured to allow 120 requests per minute."}
+{"id": "code_h8_redis_cache_host", "content": "The Redis cache URL host specified in `settings/production.py` is `cache-cluster.prod.internal`."}
+{"id": "code_h9_not_found_status", "content": "The HTTP status code that ResourceNotFound raises in core/exceptions.py is 404. \n\nThis is specified in the line `self.status_code = 404` in the `ResourceNotFound` class's `__init__` method."}
+{"id": "code_h10_theme_primary_color", "content": "The hex color code assigned to --brand-primary in ui/theme.css is #1e40af."}

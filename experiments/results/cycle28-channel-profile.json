@@ -1,0 +1,830 @@
+{
+  "evidence_mode": "LOCAL",
+  "generative_calls": 0,
+  "rows": [
+    {
+      "corpus": "manuals",
+      "task": "no_autoflush_explicit_flush-original",
+      "channel": "lexical",
+      "trial": 0,
+      "wall_ms": 193.4759,
+      "result_sha256": "79858b7bb375057b4246db590711d72ee80567b9871a1ef291dfd5a20d1380af"
+    },
+    {
+      "corpus": "manuals",
+      "task": "no_autoflush_explicit_flush-original",
+      "channel": "symbol",
+      "trial": 0,
+      "wall_ms": 164.3234,
+      "result_sha256": "94e3114be7757c58e2da9ac7eba87fe88f269b698b6b4c72802c3f2b406eb3dd"
+    },
+    {
+      "corpus": "manuals",
+      "task": "no_autoflush_explicit_flush-original",
+      "channel": "embedding",
+      "trial": 0,
+      "wall_ms": 432.7232,
+      "result_sha256": "862e39dec8f2e183f849014a8e3b54d641ca51869938e8d9bb94c67bfa9c9443"
+    },
+    {
+      "corpus": "expanded",
+      "task": "commit_without_autoflush-original",
+      "channel": "lexical",
+      "trial": 0,
+      "wall_ms": 920.4003,
+      "result_sha256": "f0e4ed9d8352d84078bc0f4c7bf93f9b9a575c26d4ba2b4c9ac44946ef155aac"
+    },
+    {
+      "corpus": "expanded",
+      "task": "commit_without_autoflush-original",
+      "channel": "symbol",
+      "trial": 0,
+      "wall_ms": 696.0649,
+      "result_sha256": "52488f7d9cbc2455aad2de4ecf5b426bcb8ac49ae6fa8b0c0381d7dd6ed1044a"
+    },
+    {
+      "corpus": "expanded",
+      "task": "commit_without_autoflush-original",
+      "channel": "embedding",
+      "trial": 0,
+      "wall_ms": 405.6399,
+      "result_sha256": "4c8b45b7859489db00f54c366a1e3e716935c402755a473b6b4fd42e07dc00e0"
+    },
+    {
+      "corpus": "expanded",
+      "task": "detached_clean_merge-original",
+      "channel": "lexical",
+      "trial": 0,
+      "wall_ms": 53.9636,
+      "result_sha256": "0ba403f61f4703b0949eaaf5812df3c3bd03e92eed88d9fa6b6e58247744873c"
+    },
+    {
+      "corpus": "expanded",
+      "task": "detached_clean_merge-original",
+      "channel": "symbol",
+      "trial": 0,
+      "wall_ms": 311.5792,
+      "result_sha256": "3dc43ebb5e105f99df2af93c88afe4660b08a55defb03692309951cc175ced31"
+    },
+    {
+      "corpus": "expanded",
+      "task": "detached_clean_merge-original",
+      "channel": "embedding",
+      "trial": 0,
+      "wall_ms": 85.2584,
+      "result_sha256": "c108a05a07a1f1f0d133ab92a3612085c3991b8d86b972c92966c33fae6c9ea1"
+    },
+    {
+      "corpus": "manuals",
+      "task": "detached_clean_merge-original",
+      "channel": "lexical",
+      "trial": 0,
+      "wall_ms": 17.4932,
+      "result_sha256": "f936f0e2a101d662457f1f9544731eb3666d27458c4664d18ecb0b5c8469714a"
+    },
+    {
+      "corpus": "manuals",
+      "task": "detached_clean_merge-original",
+      "channel": "symbol",
+      "trial": 0,
+      "wall_ms": 80.2942,
+      "result_sha256": "29de39656c85dc3a0151c1feb47ee797d914f35bef46e129b336892a49759c55"
+    },
+    {
+      "corpus": "manuals",
+      "task": "detached_clean_merge-original",
+      "channel": "embedding",
+      "trial": 0,
+      "wall_ms": 7.2368,
+      "result_sha256": "07ada509dd57966446cb82e3923db17a8bc7ae76080e3efac23d3b980c0b440f"
+    },
+    {
+      "corpus": "manuals",
+      "task": "commit_without_autoflush-original",
+      "channel": "lexical",
+      "trial": 0,
+      "wall_ms": 16.9995,
+      "result_sha256": "3852051c9a357bf9d8c3f683e4f40a645847ff6b672d2a24cd28c85fe89f04ae"
+    },
+    {
+      "corpus": "manuals",
+      "task": "commit_without_autoflush-original",
+      "channel": "symbol",
+      "trial": 0,
+      "wall_ms": 65.4138,
+      "result_sha256": "36452bb93cc3b9dae04680bd246a73654f5258cf4aef0f7090408d1558fb102c"
+    },
+    {
+      "corpus": "manuals",
+      "task": "commit_without_autoflush-original",
+      "channel": "embedding",
+      "trial": 0,
+      "wall_ms": 6.8631,
+      "result_sha256": "888f207ad1dc413a7670b32517db6c24ccbf4f4388c757542c2f618c5dadc15b"
+    },
+    {
+      "corpus": "expanded",
+      "task": "no_autoflush_explicit_flush-original",
+      "channel": "lexical",
+      "trial": 0,
+      "wall_ms": 48.6509,
+      "result_sha256": "3483b8cf0714f27c4e2e472d3e34c5285b2bf34e06cb2a9d710aea3aae82774d"
+    },
+    {
+      "corpus": "expanded",
+      "task": "no_autoflush_explicit_flush-original",
+      "channel": "symbol",
+      "trial": 0,
+      "wall_ms": 237.2022,
+      "result_sha256": "356b8831df2ad41b73e0d93e6d527cdbad25c4c534945e1e3020f7d4ed8a4a5f"
+    },
+    {
+      "corpus": "expanded",
+      "task": "no_autoflush_explicit_flush-original",
+      "channel": "embedding",
+      "trial": 0,
+      "wall_ms": 42.2233,
+      "result_sha256": "fd6732c5d096ef58273f00c5e344c23dab3f6c8f23bc3a656bd7051eca3c806b"
+    },
+    {
+      "corpus": "manuals",
+      "task": "no_autoflush_explicit_flush-original",
+      "channel": "lexical",
+      "trial": 1,
+      "wall_ms": 11.973,
+      "result_sha256": "79858b7bb375057b4246db590711d72ee80567b9871a1ef291dfd5a20d1380af"
+    },
+    {
+      "corpus": "manuals",
+      "task": "no_autoflush_explicit_flush-original",
+      "channel": "symbol",
+      "trial": 1,
+      "wall_ms": 54.3108,
+      "result_sha256": "94e3114be7757c58e2da9ac7eba87fe88f269b698b6b4c72802c3f2b406eb3dd"
+    },
+    {
+      "corpus": "manuals",
+      "task": "no_autoflush_explicit_flush-original",
+      "channel": "embedding",
+      "trial": 1,
+      "wall_ms": 9.1299,
+      "result_sha256": "862e39dec8f2e183f849014a8e3b54d641ca51869938e8d9bb94c67bfa9c9443"
+    },
+    {
+      "corpus": "expanded",
+      "task": "no_autoflush_explicit_flush-original",
+      "channel": "lexical",
+      "trial": 1,
+      "wall_ms": 45.5089,
+      "result_sha256": "3483b8cf0714f27c4e2e472d3e34c5285b2bf34e06cb2a9d710aea3aae82774d"
+    },
+    {
+      "corpus": "expanded",
+      "task": "no_autoflush_explicit_flush-original",
+      "channel": "symbol",
+      "trial": 1,
+      "wall_ms": 239.8663,
+      "result_sha256": "356b8831df2ad41b73e0d93e6d527cdbad25c4c534945e1e3020f7d4ed8a4a5f"
+    },
+    {
+      "corpus": "expanded",
+      "task": "no_autoflush_explicit_flush-original",
+      "channel": "embedding",
+      "trial": 1,
+      "wall_ms": 42.3887,
+      "result_sha256": "fd6732c5d096ef58273f00c5e344c23dab3f6c8f23bc3a656bd7051eca3c806b"
+    },
+    {
+      "corpus": "manuals",
+      "task": "detached_clean_merge-original",
+      "channel": "lexical",
+      "trial": 1,
+      "wall_ms": 14.1863,
+      "result_sha256": "f936f0e2a101d662457f1f9544731eb3666d27458c4664d18ecb0b5c8469714a"
+    },
+    {
+      "corpus": "manuals",
+      "task": "detached_clean_merge-original",
+      "channel": "symbol",
+      "trial": 1,
+      "wall_ms": 65.4114,
+      "result_sha256": "29de39656c85dc3a0151c1feb47ee797d914f35bef46e129b336892a49759c55"
+    },
+    {
+      "corpus": "manuals",
+      "task": "detached_clean_merge-original",
+      "channel": "embedding",
+      "trial": 1,
+      "wall_ms": 6.6354,
+      "result_sha256": "07ada509dd57966446cb82e3923db17a8bc7ae76080e3efac23d3b980c0b440f"
+    },
+    {
+      "corpus": "expanded",
+      "task": "commit_without_autoflush-original",
+      "channel": "lexical",
+      "trial": 1,
+      "wall_ms": 49.6043,
+      "result_sha256": "f0e4ed9d8352d84078bc0f4c7bf93f9b9a575c26d4ba2b4c9ac44946ef155aac"
+    },
+    {
+      "corpus": "expanded",
+      "task": "commit_without_autoflush-original",
+      "channel": "symbol",
+      "trial": 1,
+      "wall_ms": 259.197,
+      "result_sha256": "52488f7d9cbc2455aad2de4ecf5b426bcb8ac49ae6fa8b0c0381d7dd6ed1044a"
+    },
+    {
+      "corpus": "expanded",
+      "task": "commit_without_autoflush-original",
+      "channel": "embedding",
+      "trial": 1,
+      "wall_ms": 40.3216,
+      "result_sha256": "4c8b45b7859489db00f54c366a1e3e716935c402755a473b6b4fd42e07dc00e0"
+    },
+    {
+      "corpus": "manuals",
+      "task": "commit_without_autoflush-original",
+      "channel": "lexical",
+      "trial": 1,
+      "wall_ms": 12.6224,
+      "result_sha256": "3852051c9a357bf9d8c3f683e4f40a645847ff6b672d2a24cd28c85fe89f04ae"
+    },
+    {
+      "corpus": "manuals",
+      "task": "commit_without_autoflush-original",
+      "channel": "symbol",
+      "trial": 1,
+      "wall_ms": 57.4384,
+      "result_sha256": "36452bb93cc3b9dae04680bd246a73654f5258cf4aef0f7090408d1558fb102c"
+    },
+    {
+      "corpus": "manuals",
+      "task": "commit_without_autoflush-original",
+      "channel": "embedding",
+      "trial": 1,
+      "wall_ms": 6.6149,
+      "result_sha256": "888f207ad1dc413a7670b32517db6c24ccbf4f4388c757542c2f618c5dadc15b"
+    },
+    {
+      "corpus": "expanded",
+      "task": "detached_clean_merge-original",
+      "channel": "lexical",
+      "trial": 1,
+      "wall_ms": 48.7175,
+      "result_sha256": "0ba403f61f4703b0949eaaf5812df3c3bd03e92eed88d9fa6b6e58247744873c"
+    },
+    {
+      "corpus": "expanded",
+      "task": "detached_clean_merge-original",
+      "channel": "symbol",
+      "trial": 1,
+      "wall_ms": 269.0897,
+      "result_sha256": "3dc43ebb5e105f99df2af93c88afe4660b08a55defb03692309951cc175ced31"
+    },
+    {
+      "corpus": "expanded",
+      "task": "detached_clean_merge-original",
+      "channel": "embedding",
+      "trial": 1,
+      "wall_ms": 40.3737,
+      "result_sha256": "c108a05a07a1f1f0d133ab92a3612085c3991b8d86b972c92966c33fae6c9ea1"
+    },
+    {
+      "corpus": "expanded",
+      "task": "detached_clean_merge-original",
+      "channel": "lexical",
+      "trial": 2,
+      "wall_ms": 49.1199,
+      "result_sha256": "0ba403f61f4703b0949eaaf5812df3c3bd03e92eed88d9fa6b6e58247744873c"
+    },
+    {
+      "corpus": "expanded",
+      "task": "detached_clean_merge-original",
+      "channel": "symbol",
+      "trial": 2,
+      "wall_ms": 285.792,
+      "result_sha256": "3dc43ebb5e105f99df2af93c88afe4660b08a55defb03692309951cc175ced31"
+    },
+    {
+      "corpus": "expanded",
+      "task": "detached_clean_merge-original",
+      "channel": "embedding",
+      "trial": 2,
+      "wall_ms": 40.9754,
+      "result_sha256": "c108a05a07a1f1f0d133ab92a3612085c3991b8d86b972c92966c33fae6c9ea1"
+    },
+    {
+      "corpus": "expanded",
+      "task": "no_autoflush_explicit_flush-original",
+      "channel": "lexical",
+      "trial": 2,
+      "wall_ms": 44.3762,
+      "result_sha256": "3483b8cf0714f27c4e2e472d3e34c5285b2bf34e06cb2a9d710aea3aae82774d"
+    },
+    {
+      "corpus": "expanded",
+      "task": "no_autoflush_explicit_flush-original",
+      "channel": "symbol",
+      "trial": 2,
+      "wall_ms": 225.1515,
+      "result_sha256": "356b8831df2ad41b73e0d93e6d527cdbad25c4c534945e1e3020f7d4ed8a4a5f"
+    },
+    {
+      "corpus": "expanded",
+      "task": "no_autoflush_explicit_flush-original",
+      "channel": "embedding",
+      "trial": 2,
+      "wall_ms": 43.0374,
+      "result_sha256": "fd6732c5d096ef58273f00c5e344c23dab3f6c8f23bc3a656bd7051eca3c806b"
+    },
+    {
+      "corpus": "manuals",
+      "task": "no_autoflush_explicit_flush-original",
+      "channel": "lexical",
+      "trial": 2,
+      "wall_ms": 13.3288,
+      "result_sha256": "79858b7bb375057b4246db590711d72ee80567b9871a1ef291dfd5a20d1380af"
+    },
+    {
+      "corpus": "manuals",
+      "task": "no_autoflush_explicit_flush-original",
+      "channel": "symbol",
+      "trial": 2,
+      "wall_ms": 52.278,
+      "result_sha256": "94e3114be7757c58e2da9ac7eba87fe88f269b698b6b4c72802c3f2b406eb3dd"
+    },
+    {
+      "corpus": "manuals",
+      "task": "no_autoflush_explicit_flush-original",
+      "channel": "embedding",
+      "trial": 2,
+      "wall_ms": 6.8741,
+      "result_sha256": "862e39dec8f2e183f849014a8e3b54d641ca51869938e8d9bb94c67bfa9c9443"
+    },
+    {
+      "corpus": "manuals",
+      "task": "commit_without_autoflush-original",
+      "channel": "lexical",
+      "trial": 2,
+      "wall_ms": 12.5625,
+      "result_sha256": "3852051c9a357bf9d8c3f683e4f40a645847ff6b672d2a24cd28c85fe89f04ae"
+    },
+    {
+      "corpus": "manuals",
+      "task": "commit_without_autoflush-original",
+      "channel": "symbol",
+      "trial": 2,
+      "wall_ms": 59.2104,
+      "result_sha256": "36452bb93cc3b9dae04680bd246a73654f5258cf4aef0f7090408d1558fb102c"
+    },
+    {
+      "corpus": "manuals",
+      "task": "commit_without_autoflush-original",
+      "channel": "embedding",
+      "trial": 2,
+      "wall_ms": 6.5902,
+      "result_sha256": "888f207ad1dc413a7670b32517db6c24ccbf4f4388c757542c2f618c5dadc15b"
+    },
+    {
+      "corpus": "expanded",
+      "task": "commit_without_autoflush-original",
+      "channel": "lexical",
+      "trial": 2,
+      "wall_ms": 46.7987,
+      "result_sha256": "f0e4ed9d8352d84078bc0f4c7bf93f9b9a575c26d4ba2b4c9ac44946ef155aac"
+    },
+    {
+      "corpus": "expanded",
+      "task": "commit_without_autoflush-original",
+      "channel": "symbol",
+      "trial": 2,
+      "wall_ms": 254.731,
+      "result_sha256": "52488f7d9cbc2455aad2de4ecf5b426bcb8ac49ae6fa8b0c0381d7dd6ed1044a"
+    },
+    {
+      "corpus": "expanded",
+      "task": "commit_without_autoflush-original",
+      "channel": "embedding",
+      "trial": 2,
+      "wall_ms": 40.0835,
+      "result_sha256": "4c8b45b7859489db00f54c366a1e3e716935c402755a473b6b4fd42e07dc00e0"
+    },
+    {
+      "corpus": "manuals",
+      "task": "detached_clean_merge-original",
+      "channel": "lexical",
+      "trial": 2,
+      "wall_ms": 13.213,
+      "result_sha256": "f936f0e2a101d662457f1f9544731eb3666d27458c4664d18ecb0b5c8469714a"
+    },
+    {
+      "corpus": "manuals",
+      "task": "detached_clean_merge-original",
+      "channel": "symbol",
+      "trial": 2,
+      "wall_ms": 62.7752,
+      "result_sha256": "29de39656c85dc3a0151c1feb47ee797d914f35bef46e129b336892a49759c55"
+    },
+    {
+      "corpus": "manuals",
+      "task": "detached_clean_merge-original",
+      "channel": "embedding",
+      "trial": 2,
+      "wall_ms": 6.8911,
+      "result_sha256": "07ada509dd57966446cb82e3923db17a8bc7ae76080e3efac23d3b980c0b440f"
+    }
+  ],
+  "summary": [
+    {
+      "corpus": "manuals",
+      "channel": "lexical",
+      "median_of_task_medians_ms": 13.3288
+    },
+    {
+      "corpus": "manuals",
+      "channel": "symbol",
+      "median_of_task_medians_ms": 59.2104
+    },
+    {
+      "corpus": "manuals",
+      "channel": "embedding",
+      "median_of_task_medians_ms": 6.8911
+    },
+    {
+      "corpus": "expanded",
+      "channel": "lexical",
+      "median_of_task_medians_ms": 49.1199
+    },
+    {
+      "corpus": "expanded",
+      "channel": "symbol",
+      "median_of_task_medians_ms": 259.197
+    },
+    {
+      "corpus": "expanded",
+      "channel": "embedding",
+      "median_of_task_medians_ms": 40.9754
+    }
+  ],
+  "profiler_diagnostics": [
+    {
+      "channel": "symbol",
+      "functions": [
+        {
+          "file": "C:\\Users\\vardh\\Documents\\ChatGPT\\NeuralPack\\benchmarks\\api_channel_profile.py",
+          "line": 39,
+          "function": "<lambda>",
+          "calls": 1,
+          "self_seconds": 7.5e-06,
+          "cumulative_seconds": 0.2748426
+        },
+        {
+          "file": "C:\\Users\\vardh\\Documents\\ChatGPT\\NeuralPack\\npk\\pack\\select.py",
+          "line": 124,
+          "function": "_symbol_channel",
+          "calls": 1,
+          "self_seconds": 2.75e-05,
+          "cumulative_seconds": 0.2748351
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'execute' of 'sqlite3.Connection' objects>",
+          "calls": 1,
+          "self_seconds": 0.2738737,
+          "cumulative_seconds": 0.2738737
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'fetchall' of 'sqlite3.Cursor' objects>",
+          "calls": 1,
+          "self_seconds": 0.0005635,
+          "cumulative_seconds": 0.0005635
+        },
+        {
+          "file": "C:\\Users\\vardh\\Documents\\ChatGPT\\NeuralPack\\npk\\pack\\select.py",
+          "line": 39,
+          "function": "_identifier_candidates",
+          "calls": 1,
+          "self_seconds": 5.4000000000000005e-05,
+          "cumulative_seconds": 0.0003664
+        },
+        {
+          "file": "C:\\Users\\vardh\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\re\\__init__.py",
+          "line": 209,
+          "function": "findall",
+          "calls": 1,
+          "self_seconds": 7.8e-06,
+          "cumulative_seconds": 0.0002325
+        },
+        {
+          "file": "C:\\Users\\vardh\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\re\\__init__.py",
+          "line": 280,
+          "function": "_compile",
+          "calls": 1,
+          "self_seconds": 7.000000000000001e-06,
+          "cumulative_seconds": 0.00019840000000000002
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.isinstance>",
+          "calls": 1,
+          "self_seconds": 0.00019140000000000002,
+          "cumulative_seconds": 0.00019140000000000002
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'extend' of 'list' objects>",
+          "calls": 16,
+          "self_seconds": 2.0600000000000003e-05,
+          "cumulative_seconds": 3.99e-05
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'findall' of 're.Pattern' objects>",
+          "calls": 1,
+          "self_seconds": 2.6300000000000002e-05,
+          "cumulative_seconds": 2.6300000000000002e-05
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'disable' of '_lsprof.Profiler' objects>",
+          "calls": 1,
+          "self_seconds": 2.37e-05,
+          "cumulative_seconds": 2.37e-05
+        },
+        {
+          "file": "C:\\Users\\vardh\\Documents\\ChatGPT\\NeuralPack\\npk\\pack\\select.py",
+          "line": 45,
+          "function": "<genexpr>",
+          "calls": 39,
+          "self_seconds": 1.1900000000000001e-05,
+          "cumulative_seconds": 1.93e-05
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'append' of 'list' objects>",
+          "calls": 127,
+          "self_seconds": 1.87e-05,
+          "cumulative_seconds": 1.87e-05
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method fromkeys>",
+          "calls": 1,
+          "self_seconds": 1.5100000000000001e-05,
+          "cumulative_seconds": 1.5100000000000001e-05
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.len>",
+          "calls": 33,
+          "self_seconds": 7.6e-06,
+          "cumulative_seconds": 7.6e-06
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'split' of 'str' objects>",
+          "calls": 16,
+          "self_seconds": 6.200000000000001e-06,
+          "cumulative_seconds": 6.200000000000001e-06
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'join' of 'str' objects>",
+          "calls": 1,
+          "self_seconds": 3.8e-06,
+          "cumulative_seconds": 3.8e-06
+        }
+      ]
+    },
+    {
+      "channel": "embedding",
+      "functions": [
+        {
+          "file": "C:\\Users\\vardh\\Documents\\ChatGPT\\NeuralPack\\benchmarks\\api_channel_profile.py",
+          "line": 39,
+          "function": "<lambda>",
+          "calls": 1,
+          "self_seconds": 0.0005104,
+          "cumulative_seconds": 0.0435277
+        },
+        {
+          "file": "C:\\Users\\vardh\\Documents\\ChatGPT\\NeuralPack\\npk\\pack\\select.py",
+          "line": 187,
+          "function": "_embedding_channel",
+          "calls": 1,
+          "self_seconds": 0.0007396000000000001,
+          "cumulative_seconds": 0.0430173
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'execute' of 'sqlite3.Connection' objects>",
+          "calls": 1,
+          "self_seconds": 0.028639800000000003,
+          "cumulative_seconds": 0.028639800000000003
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'fetchall' of 'sqlite3.Cursor' objects>",
+          "calls": 1,
+          "self_seconds": 0.009540400000000001,
+          "cumulative_seconds": 0.009540400000000001
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'join' of 'bytes' objects>",
+          "calls": 1,
+          "self_seconds": 0.0018708000000000002,
+          "cumulative_seconds": 0.0022807
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method numpy.fromiter>",
+          "calls": 1,
+          "self_seconds": 0.0003891,
+          "cumulative_seconds": 0.0007297
+        },
+        {
+          "file": "C:\\Users\\vardh\\Documents\\ChatGPT\\NeuralPack\\npk\\context\\embedding.py",
+          "line": 190,
+          "function": "embed_query",
+          "calls": 1,
+          "self_seconds": 2.0000000000000003e-06,
+          "cumulative_seconds": 0.0005842
+        },
+        {
+          "file": "C:\\Users\\vardh\\Documents\\ChatGPT\\NeuralPack\\npk\\context\\embedding.py",
+          "line": 176,
+          "function": "embed_matrix",
+          "calls": 1,
+          "self_seconds": 0.00022160000000000002,
+          "cumulative_seconds": 0.0005822000000000001
+        },
+        {
+          "file": "C:\\Users\\vardh\\Documents\\ChatGPT\\NeuralPack\\npk\\pack\\select.py",
+          "line": 228,
+          "function": "<genexpr>",
+          "calls": 5229,
+          "self_seconds": 0.00040990000000000004,
+          "cumulative_seconds": 0.00040990000000000004
+        },
+        {
+          "file": "C:\\Users\\vardh\\Documents\\ChatGPT\\NeuralPack\\npk\\pack\\select.py",
+          "line": 227,
+          "function": "<genexpr>",
+          "calls": 5229,
+          "self_seconds": 0.00034260000000000003,
+          "cumulative_seconds": 0.00034260000000000003
+        },
+        {
+          "file": "C:\\Users\\vardh\\Documents\\ChatGPT\\NeuralPack\\.venv\\Lib\\site-packages\\torch\\_tensor.py",
+          "line": 1176,
+          "function": "__iter__",
+          "calls": 2,
+          "self_seconds": 8.400000000000001e-06,
+          "cumulative_seconds": 0.00030900000000000003
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'unbind' of 'torch._C.TensorBase' objects>",
+          "calls": 2,
+          "self_seconds": 0.00028890000000000003,
+          "cumulative_seconds": 0.00028890000000000003
+        },
+        {
+          "file": "C:\\Users\\vardh\\Documents\\ChatGPT\\NeuralPack\\.venv\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py",
+          "line": 1130,
+          "function": "argsort",
+          "calls": 1,
+          "self_seconds": 3.2000000000000003e-06,
+          "cumulative_seconds": 0.000279
+        },
+        {
+          "file": "C:\\Users\\vardh\\Documents\\ChatGPT\\NeuralPack\\.venv\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py",
+          "line": 51,
+          "function": "_wrapfunc",
+          "calls": 1,
+          "self_seconds": 4.9000000000000005e-06,
+          "cumulative_seconds": 0.00027580000000000004
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'argsort' of 'numpy.ndarray' objects>",
+          "calls": 1,
+          "self_seconds": 0.0002702,
+          "cumulative_seconds": 0.0002702
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.any>",
+          "calls": 1,
+          "self_seconds": 3.03e-05,
+          "cumulative_seconds": 0.0001285
+        },
+        {
+          "file": "C:\\Users\\vardh\\Documents\\ChatGPT\\NeuralPack\\npk\\pack\\select.py",
+          "line": 209,
+          "function": "<genexpr>",
+          "calls": 385,
+          "self_seconds": 7.48e-05,
+          "cumulative_seconds": 9.82e-05
+        },
+        {
+          "file": "C:\\Users\\vardh\\Documents\\ChatGPT\\NeuralPack\\npk\\context\\embedding.py",
+          "line": 119,
+          "function": "_embed",
+          "calls": 1,
+          "self_seconds": 3.8e-06,
+          "cumulative_seconds": 4.77e-05
+        },
+        {
+          "file": "C:\\Users\\vardh\\Documents\\ChatGPT\\NeuralPack\\npk\\context\\embedding.py",
+          "line": 130,
+          "function": "_embed_locked",
+          "calls": 1,
+          "self_seconds": 4.1000000000000006e-06,
+          "cumulative_seconds": 4.38e-05
+        },
+        {
+          "file": "C:\\Users\\vardh\\Documents\\ChatGPT\\NeuralPack\\npk\\context\\embedding.py",
+          "line": 123,
+          "function": "_cache_key",
+          "calls": 1,
+          "self_seconds": 6.300000000000001e-06,
+          "cumulative_seconds": 3.8700000000000006e-05
+        },
+        {
+          "file": "C:\\Users\\vardh\\Documents\\ChatGPT\\NeuralPack\\npk\\pack\\format.py",
+          "line": 139,
+          "function": "require_encoder_match",
+          "calls": 1,
+          "self_seconds": 6.300000000000001e-06,
+          "cumulative_seconds": 3.04e-05
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method math.isfinite>",
+          "calls": 384,
+          "self_seconds": 2.3400000000000003e-05,
+          "cumulative_seconds": 2.3400000000000003e-05
+        },
+        {
+          "file": "C:\\Users\\vardh\\Documents\\ChatGPT\\NeuralPack\\npk\\context\\embedding.py",
+          "line": 83,
+          "function": "available",
+          "calls": 3,
+          "self_seconds": 4.1000000000000006e-06,
+          "cumulative_seconds": 2.32e-05
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'disable' of '_lsprof.Profiler' objects>",
+          "calls": 1,
+          "self_seconds": 2.0300000000000002e-05,
+          "cumulative_seconds": 2.0300000000000002e-05
+        },
+        {
+          "file": "C:\\Users\\vardh\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\json\\__init__.py",
+          "line": 183,
+          "function": "dumps",
+          "calls": 1,
+          "self_seconds": 4.800000000000001e-06,
+          "cumulative_seconds": 1.9600000000000002e-05
+        }
+      ]
+    }
+  ],
+  "tasks": [
+    "commit_without_autoflush-original",
+    "no_autoflush_explicit_flush-original",
+    "detached_clean_merge-original"
+  ],
+  "torch_threads": 2,
+  "local_results_sha256": "e3e3f3d0950f39d5931e69615f444195672afb2bef3938f18bd1c9a04e3e6de2",
+  "limitations": [
+    "Three fixed diagnostic scenarios, not the full query benchmark",
+    "Uncontrolled host load; no overlapping agent tests, benchmarks or LIVE requests",
+    "Profiler timings include instrumentation overhead and are not substituted for unprofiled channel medians"
+  ]
+}

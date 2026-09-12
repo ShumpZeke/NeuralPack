@@ -1,0 +1,779 @@
+{
+  "evidence_mode": "LOCAL",
+  "source_hashes": {
+    "npk/auditor.py": "43f7703b913479ca5b8177a1c945822aec1b4cc8542e510c8a77095593ccd721",
+    "npk/cli.py": "a6f1cc33fc636070b7350b0d3120ae9933590932ac27d4f93ca1c71487f3500e",
+    "npk/compatibility.py": "b1f6f81ca06adb4b59d301f7b8b346915683adc10985443ca695a2477ed5edd6",
+    "npk/compiler.py": "ea9f7710e64288e5c63b2731d103d0e26823853168e390554446b9996dc81e53",
+    "npk/cost.py": "26022133c710ffea64fbee933388cffb0f9d11fdcf816dcce5c8ffc1930ca85e",
+    "npk/format.py": "867a70a37537b6354db0c1995c5b712b3c2d6d07dbe228631319dcb6113393a2",
+    "npk/gateway.py": "c31b3b9a7282eddd6d461025c4fee13fe1c4d2bfaac45d28f32feeea33f6880f",
+    "npk/optimizer.py": "168982f233fb69578427fa578eedc13a0e69627cb77fae46acc6cd3c2ea93594",
+    "npk/plan.py": "8c26009be0446f99e974a6a0cf35ef9c25d80e8f614db9727d003a74c48eff79",
+    "npk/planner.py": "dcf372ba46d164e406caefc44c4220834d3bd370eb4b7ff17b3d95df801c7f65",
+    "npk/runtime.py": "526cbe636b3763647db5856cafa3f3031ba8c3e5bfc5dcba193c6a4ebf68ca73",
+    "npk/telemetry.py": "682be58829bcfb03a364ef6adaf26b9f39a6be66dd4ecfdcc89fbd4c637e0bff",
+    "npk/__init__.py": "b8e55431663d9d6acfbd49aad4e065118662834e16f82f8fd520bc71d7f9a6e3",
+    "npk/context/analyzer.py": "39a5cad577da877a5a7c70ebe03e84e00b06e31637b8a6b39a50c37261cd5f9f",
+    "npk/context/bm25.py": "968f37d826ee773d58f220a444428f2c194134e866440a0a375d0b172573c813",
+    "npk/context/compressor.py": "a6accc16fcef05ac80b9ca134c75837a34184370598da34bd629d97ff77ba225",
+    "npk/context/convo_compiler.py": "83b9c438652f7347c875a3c7d9018f7a99e7f880513ef1e9276f632d5de8bb30",
+    "npk/context/embedding.py": "0ca7c81a2ce01258dce935583dbe13d91054ed2c998e4dee9c2612359a2ee7d4",
+    "npk/context/graph_slicer.py": "b65768ef611497be3cbdcdef7833a69beb8d3f0a5441f2726e58f59740426cc0",
+    "npk/context/info_gain.py": "b44f51248c3a4f329dfe31e6c745025452ce6350e04739c115e8196d86d3b6fd",
+    "npk/context/retrieval.py": "5832f974b553799dbe3d513841e1175f455567b92d7b7d36130d68843590a3ae",
+    "npk/context/safety.py": "e7d71bd7f369fce845a0910de3c07988f5142795dc266e876b906d0a4402c525",
+    "npk/context/trace_compiler.py": "3db00f989b4837812f076bac29ad2033318a9bb144453a9f549947ae3cd5091a",
+    "npk/pack/compile.py": "d32f690ce2de1e4202bf56519a77b8aa88b8f94c3b6eccd3e39b3630e99f46c8",
+    "npk/pack/conflict.py": "88b7bd42d0f39cb0961bb7c4d0324bc7a00f25758d4de2e0e4eaf998f22a8e22",
+    "npk/pack/contracts.py": "ca2451b186c425c2ff69e1cdcbc5af0f254d54a02c9f40c871ca29c5b670cd9f",
+    "npk/pack/format.py": "a26889ff10af230833c1995daf0767e9861560b394e45deeb8cc07b44526180e",
+    "npk/pack/integrity.py": "bf82a5c8b762a5b3b1ac5a753ffe571fec4beceab97d90f4b90835857de20e18",
+    "npk/pack/select.py": "476d951e8364c03802bc1522334b1f2210cfcc2f71b0835b68cd6251dfb91e97",
+    "npk/pack/source_policy.py": "173c4e6e2c2e370333f1eefb8c96e8cad554544d214d77d31bd17d6dd66525af",
+    "npk/pack/__init__.py": "deb0f48b85da9a391e920dcd42065405caa59d1a592cb722a455b24211bb01e8",
+    "npk/providers/anthropic.py": "3d10966da8bfeae87dc5b0abb1a996477f56f72aac3f7bf3552c0e7adab3aab8",
+    "npk/providers/base.py": "9b0404b779981f13ebf505fbfabc3df9d08d1367d2d456088e7022aeb73c9ef7",
+    "npk/providers/gemini.py": "e7f22e43f05e8ad78e012b940ea57f5497a710f39efbb7a8497661d28f10a2b1",
+    "npk/providers/mock.py": "601a40510f540b2e6686e9632f81bc360c921487df9b9505d2f0d76231b88457",
+    "npk/providers/nvidia.py": "c368f8767d7ad0a69b66d069bc46ca44d1b6db53e42cf0219ab2cc01263a25c5",
+    "npk/providers/openai.py": "fcb24351276b8aa17cbc4f61a1c8b2bc6202bd537307e21ff6c51648dd69027b",
+    "npk/providers/openai_compatible.py": "162b3fb99de8f8400552c05e290517a972cac822a509eb26cd6997822502fe66",
+    "npk/providers/registry.py": "7a7caa23267324ed0d04bf3cabb04bc32077ac30af21c583ab88e48b3d99b64b",
+    "npk/providers/__init__.py": "8e99b9e42aa2be8100d7aa7368e5252bea581ffd29143f43b60bdc92f7945fd7"
+  },
+  "rows": [
+    {
+      "mutant": "rival_exact_cost_bypass",
+      "status": "KILLED",
+      "test": "tests/test_rival_reproduction.py::test_exact_pack_counts_full_assembly_and_skips_oversized",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "rival_broadening_erases_query",
+      "status": "KILLED",
+      "test": "tests/test_rival_reproduction.py::test_empty_primary_pool_widens_with_the_original_query",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "rival_source_attribution_bypass",
+      "status": "KILLED",
+      "test": "tests/test_rival_reproduction.py::test_foreign_or_disjoint_span_does_not_get_source_credit",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "isolated_rate_limit_pause_bypass",
+      "status": "KILLED",
+      "test": "tests/test_prospective_eval.py::test_one_rate_limit_pauses_even_when_its_batch_also_succeeds",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "ast_unicode_separator_as_newline",
+      "status": "KILLED",
+      "test": "tests/test_operation_seeds.py::test_unicode_line_separator_inside_a_string_is_not_a_python_newline",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "focused_seed_broadening_bypass",
+      "status": "KILLED",
+      "test": "tests/test_operation_seeds.py::test_empty_focused_seeds_retry_the_original_query",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "ast_byte_offset_as_character_offset",
+      "status": "KILLED",
+      "test": "tests/test_operation_seeds.py::test_static_names_use_byte_correct_literal_query_spans",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "side_index_ownership_read_before_lock",
+      "status": "KILLED",
+      "test": "tests/test_spelling_index.py::test_update_ownership_snapshot_is_taken_under_the_write_lock",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "side_index_parent_guard_bypassed",
+      "status": "KILLED",
+      "test": "tests/test_spelling_index.py::test_stale_index_is_rejected_until_updated",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "side_index_update_skipped",
+      "status": "KILLED",
+      "test": "tests/test_spelling_index.py::test_stale_index_is_rejected_until_updated",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "normalized_control_discarded_search",
+      "status": "KILLED",
+      "test": "tests/test_spelling_index.py::test_normalized_control_does_not_execute_a_discarded_baseline",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "camel_spelling_expansion_erased",
+      "status": "KILLED",
+      "test": "tests/test_identifier_spelling.py::test_compiled_runtime_recovers_an_absent_camel_alias_without_a_model",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "known_compound_vocabulary_guard_bypassed",
+      "status": "KILLED",
+      "test": "tests/test_identifier_spelling.py::test_compiled_runtime_does_not_dilute_a_known_compound",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "unit_evidence_reconstruction_bypass",
+      "status": "KILLED",
+      "test": "tests/test_unit_answer_evidence.py::test_live_gate_rejects_changed_evidence[source]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "build_source_erasure",
+      "status": "KILLED",
+      "test": "tests/test_build_source_directory.py::test_build_named_source_is_indexed_updated_and_retrievable[doc/build/orm/session_basics.rst]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "compiled_corpus_substitution",
+      "status": "KILLED",
+      "test": "tests/test_build_source_directory.py::test_valid_artifact_cannot_substitute_for_expected_corpus[True]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "passage_neighbor_disabled",
+      "status": "KILLED",
+      "test": "tests/test_unit_passages.py::test_neighbor_expansion_recovers_the_adjacent_exception",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "boundary_empty_payload",
+      "status": "KILLED",
+      "test": "tests/test_line_anchor_experiment.py::test_one_long_line_cannot_be_claimed_to_meet_a_small_block_cap",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "reuse_duplicate_old_payload",
+      "status": "KILLED",
+      "test": "tests/test_block_reuse_experiment.py::test_reused_rows_match_fresh_spans_indexes_and_queries[prepend]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "source_archive_omission",
+      "status": "KILLED",
+      "test": "tests/test_source_archive.py::test_manifest_files_cannot_be_dropped_by_extension",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "target_comparison_context_bypass",
+      "status": "KILLED",
+      "test": "tests/test_target_control_comparisons.py::test_changed_inputs_cannot_be_counted_as_target_configuration_gains[context_sha256-changed-source]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "target_transport_missing_reward",
+      "status": "KILLED",
+      "test": "tests/test_target_control_comparisons.py::test_missing_answers_cannot_be_reported_as_losses_or_gains",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "replay_counted_as_new_api",
+      "status": "KILLED",
+      "test": "tests/test_answer_record_provenance.py::test_exact_parent_attempts_are_reused_without_new_api_calls[True]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "replay_origin_bypass",
+      "status": "KILLED",
+      "test": "tests/test_answer_record_provenance.py::test_replay_tampering_is_detected[answer]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "raw_usage_authority_bypass",
+      "status": "KILLED",
+      "test": "tests/test_answer_record_provenance.py::test_raw_provider_usage_is_the_token_count_authority[changed_summary]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "whitespace_semantics_erasure",
+      "status": "KILLED",
+      "test": "tests/test_message_transform_preservation.py::test_default_preserves_semantically_significant_repetition_and_spacing[distinct_string_literals]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "message_history_reordering",
+      "status": "KILLED",
+      "test": "tests/test_message_transform_preservation.py::test_default_preserves_semantically_significant_repetition_and_spacing[message_order_and_tool_metadata]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "message_envelope_gate_bypass",
+      "status": "KILLED",
+      "test": "tests/test_message_transform_preservation.py::test_message_envelope_and_history_changes_are_rejected[tool_link]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "unmeasured_transform_claims_preservation",
+      "status": "KILLED",
+      "test": "tests/test_message_transform_preservation.py::test_missing_selection_measurements_do_not_imply_losslessness",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "dependency_identity",
+      "status": "KILLED",
+      "test": "tests/test_safety_invariants.py::test_dependency_expansion_reaches_transitively_connected_block",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "query_erasure",
+      "status": "KILLED",
+      "test": "tests/test_safety_invariants.py::test_planner_routes_the_current_question_to_retrieval",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "fallback_bypass",
+      "status": "KILLED",
+      "test": "tests/test_safety_invariants.py::test_planner_falls_back_when_a_stage_destroys_context",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "budget_override",
+      "status": "KILLED",
+      "test": "tests/test_compiled_contracts.py::test_escalation_does_not_override_explicit_budget",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "missing_query_tripwire",
+      "status": "KILLED",
+      "test": "tests/test_compiled_contracts.py::test_default_query_never_loads_optional_channels",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "integrity_bypass",
+      "status": "KILLED",
+      "test": "tests/test_pack_integrity.py::test_modified_contents_or_indexes_fail_verification[UPDATE manifest SET value='different-source' WHERE key='source_root']",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "class_member_erasure",
+      "status": "KILLED",
+      "test": "tests/test_python_members.py::test_nested_classes_decorators_and_context_keep_exact_source_spans",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "encoder_identity_bypass",
+      "status": "KILLED",
+      "test": "tests/test_pack_encoder_contract.py::test_same_dimensions_do_not_make_different_encoders_compatible",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "embedding_cache_alias",
+      "status": "KILLED",
+      "test": "tests/test_embedding_identity.py::test_text_separator_cannot_alias_a_different_batch",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "unchanged_vector_reuse_bypass",
+      "status": "KILLED",
+      "test": "tests/test_embedding_reuse.py::test_one_changed_method_only_submits_its_new_text",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "insertion_order_lexical_ties",
+      "status": "KILLED",
+      "test": "tests/test_retrieval_order.py::test_equal_scores_use_source_order_after_an_update[lexical]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "incomplete_directory_scan",
+      "status": "KILLED",
+      "test": "tests/test_source_scan_failures.py::test_incomplete_scan_preserves_prior_artifact[directory-update]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "dirty_journal_bypass",
+      "status": "KILLED",
+      "test": "tests/test_pack_encoder_contract.py::test_weights_available_after_unembedded_compile_indexes_all_files",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "cached_verification",
+      "status": "KILLED",
+      "test": "tests/test_incremental_integrity.py::test_full_verifier_does_not_trust_a_cleared_dirty_journal",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "reader_snapshot_bypass",
+      "status": "KILLED",
+      "test": "tests/test_pack_snapshots.py::test_query_cannot_mix_old_candidate_ids_with_a_concurrently_committed_update",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "schema_transaction_bypass",
+      "status": "KILLED",
+      "test": "tests/test_compile_transactions.py::test_all_schema_and_tracking_creation_share_the_build_transaction",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "credential_screen_bypass",
+      "status": "KILLED",
+      "test": "tests/test_source_boundary.py::test_credential_shaped_source_aborts_without_publication",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "literal_artifact_uri_bypass",
+      "status": "KILLED",
+      "test": "tests/test_pack_paths.py::test_artifact_path_is_literal_across_compile_query_update_and_verify",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "missing_pack_creation",
+      "status": "KILLED",
+      "test": "tests/test_source_boundary.py::test_missing_pack_update_must_not_create_an_empty_artifact",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "unicode_source_rewrite",
+      "status": "KILLED",
+      "test": "tests/test_source_lines.py::test_compile_update_and_query_preserve_unicode_source_content",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "source_span_verifier_bypass",
+      "status": "KILLED",
+      "test": "tests/test_source_lines.py::test_self_consistent_hashes_do_not_validate_an_impossible_source_span",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "during_read_metadata_bypass",
+      "status": "KILLED",
+      "test": "tests/test_source_boundary.py::test_same_size_change_during_read_cannot_publish_stale_text",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "stored_type_verifier_bypass",
+      "status": "KILLED",
+      "test": "tests/test_pack_storage_types.py::test_blob_block_text_returns_invalid_instead_of_crashing_verification",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "manifest_type_bypass",
+      "status": "KILLED",
+      "test": "tests/test_pack_storage_types.py::test_blob_manifest_is_rejected_before_query_or_verification",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "update_manifest_bypass",
+      "status": "KILLED",
+      "test": "tests/test_pack_storage_types.py::test_blob_manifest_is_rejected_before_query_or_verification",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "connection_setup_leak",
+      "status": "KILLED",
+      "test": "tests/test_pack_storage_types.py::test_writable_setup_error_closes_connection_and_returns_product_error",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "ambiguous_answer_acceptance",
+      "status": "KILLED",
+      "test": "tests/test_repository_eval.py::test_ambiguous_keys_and_non_json_constants_cannot_pass_strict_grading",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "manifest_policy_bypass",
+      "status": "KILLED",
+      "test": "tests/test_pack_manifest_values.py::test_unknown_mode_cannot_silently_enter_a_product_operation",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "manifest_content_bypass",
+      "status": "KILLED",
+      "test": "tests/test_pack_manifest_values.py::test_resealed_invalid_metadata_is_rejected[file_count-99]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "secret_scan_read_failure_bypass",
+      "status": "KILLED",
+      "test": "tests/test_secret_scan_errors.py::test_scan_read_failures_are_visible_without_echoing_values",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "audit_undefined_retention",
+      "status": "KILLED",
+      "test": "tests/test_auditor_contract.py::test_zero_baseline_cannot_report_full_retention[wrong]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "audit_duplicate_identity",
+      "status": "KILLED",
+      "test": "tests/test_auditor_contract.py::test_incomplete_or_ambiguous_evidence_is_rejected[duplicate_usage]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "audit_usage_validation_bypass",
+      "status": "KILLED",
+      "test": "tests/test_auditor_contract.py::test_incomplete_or_ambiguous_evidence_is_rejected[negative_tokens]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "report_observation_bypass",
+      "status": "KILLED",
+      "test": "tests/test_seed_report_contract.py::test_report_rejects_observation_or_answer_forgery",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "unknown_price_fallback",
+      "status": "KILLED",
+      "test": "tests/test_pricing_provenance.py::test_unknown_or_mock_prices_are_absent",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "price_provider_identity",
+      "status": "KILLED",
+      "test": "tests/test_pricing_provenance.py::test_provider_identity_precision_and_signed_savings",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "price_count_validation",
+      "status": "KILLED",
+      "test": "tests/test_pricing_provenance.py::test_invalid_usage_is_rejected_even_without_a_price",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "price_provenance_validation",
+      "status": "KILLED",
+      "test": "tests/test_pricing_provenance.py::test_placeholder_provenance_cannot_be_verified",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "legacy_trace_cost_acceptance",
+      "status": "KILLED",
+      "test": "tests/test_pricing_provenance.py::test_legacy_trace_cost_claims_are_not_accepted_as_evidence",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "runtime_risk_threshold_inversion",
+      "status": "KILLED",
+      "test": "tests/test_pricing_provenance.py::test_runtime_risk_limit_is_not_inverted",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "legacy_default_encoder_probe",
+      "status": "KILLED",
+      "test": "tests/test_optional_client_encoders.py::test_default_client_does_not_probe_an_encoder[selector]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "client_encoder_optin_ignored",
+      "status": "KILLED",
+      "test": "tests/test_optional_client_encoders.py::test_explicit_client_encoder_is_wired_and_isolated[client]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "legacy_seed_budget_override",
+      "status": "KILLED",
+      "test": "tests/test_legacy_budget_contract.py::test_oversized_seed_requires_fallback_instead_of_budget_override",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "legacy_fallback_misclassified",
+      "status": "KILLED",
+      "test": "tests/test_legacy_budget_contract.py::test_dependency_join_overflow_requires_explicit_fallback",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "legacy_selection_report_bypass",
+      "status": "KILLED",
+      "test": "tests/test_legacy_seed_evidence.py::test_local_selection_report_rejects_tampering",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "current_query_counted_as_evidence",
+      "status": "KILLED",
+      "test": "tests/test_message_boundary_invariants.py::test_long_separate_query_does_not_hide_deleted_context",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "long_query_prefix_erasure",
+      "status": "KILLED",
+      "test": "tests/test_message_boundary_invariants.py::test_mult_paragraph_query_keeps_earlier_constraints",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    }
+  ]
+}

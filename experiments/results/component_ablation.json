@@ -1,0 +1,75 @@
+{
+  "full_neuralpack": {
+    "total_tokens": 1804,
+    "tokens_avoided": 2373,
+    "reduction_pct": 56.81,
+    "fact_retention_accuracy": 100.0,
+    "config": {
+      "depth": 1,
+      "dedup": true,
+      "prefix": true,
+      "compress": true
+    }
+  },
+  "no_dependency_expansion": {
+    "total_tokens": 1804,
+    "tokens_avoided": 2373,
+    "reduction_pct": 56.81,
+    "fact_retention_accuracy": 100.0,
+    "config": {
+      "depth": 0,
+      "dedup": true,
+      "prefix": true,
+      "compress": true
+    }
+  },
+  "no_retrieval": {
+    "total_tokens": 3399,
+    "tokens_avoided": 778,
+    "reduction_pct": 18.63,
+    "fact_retention_accuracy": 100.0,
+    "config": {
+      "retrieval": false,
+      "depth": 0,
+      "dedup": true,
+      "prefix": true,
+      "compress": true
+    }
+  },
+  "no_deduplication": {
+    "total_tokens": 1804,
+    "tokens_avoided": 2373,
+    "reduction_pct": 56.81,
+    "fact_retention_accuracy": 100.0,
+    "config": {
+      "depth": 1,
+      "dedup": false,
+      "prefix": true,
+      "compress": true
+    }
+  },
+  "no_prefix_alignment": {
+    "total_tokens": 1804,
+    "tokens_avoided": 2373,
+    "reduction_pct": 56.81,
+    "fact_retention_accuracy": 100.0,
+    "config": {
+      "depth": 1,
+      "dedup": true,
+      "prefix": false,
+      "compress": true
+    }
+  },
+  "no_compression": {
+    "total_tokens": 1804,
+    "tokens_avoided": 2373,
+    "reduction_pct": 56.81,
+    "fact_retention_accuracy": 100.0,
+    "config": {
+      "depth": 1,
+      "dedup": true,
+      "prefix": true,
+      "compress": false
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{"id": "code_h1_db_max_conn", "baseline_latency_ms": 6026.4, "optimized_latency_ms": 4929.3}
+{"id": "code_h2_jwt_expiration", "baseline_latency_ms": 2200.1, "optimized_latency_ms": 740.5}
+{"id": "code_h3_rbac_delete_org", "baseline_latency_ms": 1699.5, "optimized_latency_ms": 1730.1}
+{"id": "code_h4_stripe_pro_price", "baseline_latency_ms": 4473.3, "optimized_latency_ms": 1065.3}
+{"id": "code_h5_tax_rate_invoice", "baseline_latency_ms": 1545.5, "optimized_latency_ms": 1611.5}
+{"id": "code_h6_worker_concurrency", "baseline_latency_ms": 1419.2, "optimized_latency_ms": 10469.7}
+{"id": "code_h7_rate_limit_setting", "baseline_latency_ms": 2679.6, "optimized_latency_ms": 3015.5}
+{"id": "code_h8_redis_cache_host", "baseline_latency_ms": 3348.6, "optimized_latency_ms": 850.2}
+{"id": "code_h9_not_found_status", "baseline_latency_ms": 5164.7, "optimized_latency_ms": 3224.5}
+{"id": "code_h10_theme_primary_color", "baseline_latency_ms": 1174.9, "optimized_latency_ms": 1095.7}

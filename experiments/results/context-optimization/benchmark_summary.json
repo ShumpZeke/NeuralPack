@@ -1,0 +1,149 @@
+{
+  "provider": "nvidia",
+  "model": "meta/llama-3.2-11b-vision-instruct",
+  "total_tasks": 5,
+  "total_baseline_tokens": 14058,
+  "total_optimized_tokens": 10228,
+  "total_tokens_avoided": 3830,
+  "overall_token_reduction_percentage": 27.24,
+  "baseline_accuracy": 1.0,
+  "optimized_accuracy": 1.0,
+  "quality_retention_percentage": 100.0,
+  "task_results": [
+    {
+      "task_id": "q1_auth_refresh",
+      "query": "How does AuthService.refresh_user_session validate session freshness before refreshing? Explain the exact check.",
+      "expected_fact": "is_session_expired",
+      "baseline": {
+        "prompt_tokens": 2815,
+        "latency_ms": 9599.31,
+        "quality_passed": true,
+        "response_preview": "The `AuthService.refresh_user_session` method validates session freshness before refreshing user tok"
+      },
+      "optimized": {
+        "prompt_tokens": 2049,
+        "latency_ms": 10701.02,
+        "quality_passed": true,
+        "tokens_avoided": 766,
+        "reduction_percentage": 27.21,
+        "strategies": [
+          "deduplicate",
+          "provider_prefix_cache"
+        ],
+        "explanation": [
+          "Removed 1584 redundant duplicate/boilerplate tokens",
+          "Aligned 20 static tokens at prefix for provider prompt-cache hit"
+        ],
+        "response_preview": "The `AuthService.refresh_user_session` method validates session freshness before refreshing the user"
+      }
+    },
+    {
+      "task_id": "q2_db_timeout",
+      "query": "What is the database connection timeout and maximum pool size configured in DatabaseConnection?",
+      "expected_fact": "30",
+      "baseline": {
+        "prompt_tokens": 2813,
+        "latency_ms": 4462.38,
+        "quality_passed": true,
+        "response_preview": "The database connection timeout and maximum pool size are configured in the `config.py` file as foll"
+      },
+      "optimized": {
+        "prompt_tokens": 2047,
+        "latency_ms": 2394.8,
+        "quality_passed": true,
+        "tokens_avoided": 766,
+        "reduction_percentage": 27.23,
+        "strategies": [
+          "deduplicate",
+          "provider_prefix_cache"
+        ],
+        "explanation": [
+          "Removed 1584 redundant duplicate/boilerplate tokens",
+          "Aligned 20 static tokens at prefix for provider prompt-cache hit"
+        ],
+        "response_preview": "The database connection timeout and maximum pool size are configured in the `config.py` file as foll"
+      }
+    },
+    {
+      "task_id": "q3_password_hashing",
+      "query": "Which algorithm and iteration count does hash_password use in security.py?",
+      "expected_fact": "pbkdf2_hmac",
+      "baseline": {
+        "prompt_tokens": 2811,
+        "latency_ms": 9452.27,
+        "quality_passed": true,
+        "response_preview": "The `hash_password` function in `security.py` uses the PBKDF2 (Password-Based Key Derivation Functio"
+      },
+      "optimized": {
+        "prompt_tokens": 2045,
+        "latency_ms": 4778.11,
+        "quality_passed": true,
+        "tokens_avoided": 766,
+        "reduction_percentage": 27.25,
+        "strategies": [
+          "deduplicate",
+          "provider_prefix_cache"
+        ],
+        "explanation": [
+          "Removed 1584 redundant duplicate/boilerplate tokens",
+          "Aligned 20 static tokens at prefix for provider prompt-cache hit"
+        ],
+        "response_preview": "The `hash_password` function in `security.py` uses the PBKDF2 (Password-Based Key Derivation Functio"
+      }
+    },
+    {
+      "task_id": "q4_cors_origins",
+      "query": "What are the allowed origins listed in CORS_ALLOWED_ORIGINS?",
+      "expected_fact": "app.example.com",
+      "baseline": {
+        "prompt_tokens": 2811,
+        "latency_ms": 1280.54,
+        "quality_passed": true,
+        "response_preview": "The allowed origins listed in CORS_ALLOWED_ORIGINS are:\n\n1. `https://app.example.com`\n2. `https://ad"
+      },
+      "optimized": {
+        "prompt_tokens": 2045,
+        "latency_ms": 6839.14,
+        "quality_passed": true,
+        "tokens_avoided": 766,
+        "reduction_percentage": 27.25,
+        "strategies": [
+          "deduplicate",
+          "provider_prefix_cache"
+        ],
+        "explanation": [
+          "Removed 1584 redundant duplicate/boilerplate tokens",
+          "Aligned 20 static tokens at prefix for provider prompt-cache hit"
+        ],
+        "response_preview": "The allowed origins listed in CORS_ALLOWED_ORIGINS are:\n\n1. https://app.example.com\n2. https://admin"
+      }
+    },
+    {
+      "task_id": "q5_middleware_errors",
+      "query": "What JSON structure does ErrorMiddleware.handle_exception return?",
+      "expected_fact": "Internal Server Error",
+      "baseline": {
+        "prompt_tokens": 2808,
+        "latency_ms": 5920.71,
+        "quality_passed": true,
+        "response_preview": "The `ErrorMiddleware.handle_exception` method returns a JSON structure with the following keys:\n\n- `"
+      },
+      "optimized": {
+        "prompt_tokens": 2042,
+        "latency_ms": 2668.59,
+        "quality_passed": true,
+        "tokens_avoided": 766,
+        "reduction_percentage": 27.28,
+        "strategies": [
+          "deduplicate",
+          "provider_prefix_cache"
+        ],
+        "explanation": [
+          "Removed 1584 redundant duplicate/boilerplate tokens",
+          "Aligned 20 static tokens at prefix for provider prompt-cache hit"
+        ],
+        "response_preview": "The `ErrorMiddleware.handle_exception` method returns a JSON structure with the following keys:\n\n- `"
+      }
+    }
+  ]
+}

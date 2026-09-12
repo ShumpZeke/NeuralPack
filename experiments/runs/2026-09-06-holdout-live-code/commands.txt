@@ -1,0 +1,1 @@
+benchmarks/msc_ablation.py --provider nvidia --model meta/llama-3.2-11b-vision-instruct --run-id 2026-09-06-holdout-live-code --max-tasks 10

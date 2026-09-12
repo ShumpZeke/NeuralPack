@@ -1,0 +1,50 @@
+{"id": "code_h1_db_max_conn", "domain": "code", "query": "What is the default max_connections limit in DatabasePool?", "expected_fact": "50", "required_blocks": ["db/pool.py"]}
+{"id": "code_h2_jwt_expiration", "domain": "code", "query": "What is the default token expiration time in seconds in generate_access_token?", "expected_fact": "3600", "required_blocks": ["auth/jwt_handler.py"]}
+{"id": "code_h3_rbac_delete_org", "domain": "code", "query": "Which role in auth/rbac.py possesses the 'delete_organization' permission?", "expected_fact": "owner", "required_blocks": ["auth/rbac.py"]}
+{"id": "code_h4_stripe_pro_price", "domain": "code", "query": "What is the amount_cents charged for the 'pro' tier in StripeGateway?", "expected_fact": "19900", "required_blocks": ["billing/stripe_client.py"]}
+{"id": "code_h5_tax_rate_invoice", "domain": "code", "query": "What tax rate is applied to monthly invoices in billing/invoices.py?", "expected_fact": "0.0825", "required_blocks": ["billing/invoices.py", "billing/stripe_client.py"]}
+{"id": "code_h6_worker_concurrency", "domain": "code", "query": "What is the default max_concurrency of TaskQueue in workers/task_queue.py?", "expected_fact": "16", "required_blocks": ["workers/task_queue.py"]}
+{"id": "code_h7_rate_limit_setting", "domain": "code", "query": "What is the RATE_LIMIT_PER_MINUTE defined in settings/base.py?", "expected_fact": "120", "required_blocks": ["settings/base.py"]}
+{"id": "code_h8_redis_cache_host", "domain": "code", "query": "What is the Redis cache URL host specified in settings/production.py?", "expected_fact": "cache-cluster.prod.internal", "required_blocks": ["settings/production.py"]}
+{"id": "code_h9_not_found_status", "domain": "code", "query": "What HTTP status code does ResourceNotFound raise in core/exceptions.py?", "expected_fact": "404", "required_blocks": ["core/exceptions.py"]}
+{"id": "code_h10_theme_primary_color", "domain": "code", "query": "What hex color code is assigned to --brand-primary in ui/theme.css?", "expected_fact": "#1e40af", "required_blocks": ["ui/theme.css"]}
+{"id": "doc_h1_kms_rotation", "domain": "doc", "query": "How frequently are master keys automatically rotated in Section 1?", "expected_fact": "365", "required_blocks": ["Section 1"]}
+{"id": "doc_h2_rpo_target", "domain": "doc", "query": "What is the exact Recovery Point Objective (RPO) for transactional PostgreSQL in Section 2?", "expected_fact": "15 minutes", "required_blocks": ["Section 2"]}
+{"id": "doc_h3_snapshot_retention", "domain": "doc", "query": "For how many days are point-in-time recovery snapshots retained in Section 2?", "expected_fact": "35", "required_blocks": ["Section 2"]}
+{"id": "doc_h4_enterprise_sla", "domain": "doc", "query": "What is the uptime availability commitment for the Enterprise Plan in Section 3?", "expected_fact": "99.99%", "required_blocks": ["Section 3"]}
+{"id": "doc_h5_downtime_minutes", "domain": "doc", "query": "What is the maximum allowed monthly downtime in minutes under the Standard Plan SLA?", "expected_fact": "43.8", "required_blocks": ["Section 3"]}
+{"id": "doc_h6_api_shutdown_date", "domain": "doc", "query": "On what date will the REST API v1.2 endpoints shut down according to Section 4?", "expected_fact": "2026-11-30", "required_blocks": ["Section 4"]}
+{"id": "doc_h7_sdk_min_version", "domain": "doc", "query": "What minimum SDK version must mobile clients upgrade to before API sunset in Section 4?", "expected_fact": "v3.4.0", "required_blocks": ["Section 4"]}
+{"id": "doc_h8_dlq_queue_name", "domain": "doc", "query": "What is the exact dead-letter queue name for failed webhook events in Section 5?", "expected_fact": "dlq-webhook-events-failed", "required_blocks": ["Section 5"]}
+{"id": "doc_h9_webhook_retry_count", "domain": "doc", "query": "How many retry attempts are made before moving a webhook to the DLQ in Section 5?", "expected_fact": "5", "required_blocks": ["Section 5"]}
+{"id": "doc_h10_encryption_algorithm", "domain": "doc", "query": "Which exact algorithm is used for customer data encryption at rest in Section 1?", "expected_fact": "AES-256-GCM", "required_blocks": ["Section 1"]}
+{"id": "convo_h1_port_shift", "domain": "convo", "query": "What is the final confirmed port for alpha_00?", "expected_fact": "9000", "required_blocks": ["9000"]}
+{"id": "convo_h2_port_shift", "domain": "convo", "query": "What is the final confirmed port for alpha_01?", "expected_fact": "9001", "required_blocks": ["9001"]}
+{"id": "convo_h3_port_shift", "domain": "convo", "query": "What is the final confirmed port for alpha_02?", "expected_fact": "9002", "required_blocks": ["9002"]}
+{"id": "convo_h4_port_shift", "domain": "convo", "query": "What is the final confirmed port for alpha_03?", "expected_fact": "9003", "required_blocks": ["9003"]}
+{"id": "convo_h5_port_shift", "domain": "convo", "query": "What is the final confirmed port for alpha_04?", "expected_fact": "9004", "required_blocks": ["9004"]}
+{"id": "convo_h6_port_shift", "domain": "convo", "query": "What is the final confirmed port for alpha_05?", "expected_fact": "9005", "required_blocks": ["9005"]}
+{"id": "convo_h7_port_shift", "domain": "convo", "query": "What is the final confirmed port for alpha_06?", "expected_fact": "9006", "required_blocks": ["9006"]}
+{"id": "convo_h8_port_shift", "domain": "convo", "query": "What is the final confirmed port for alpha_07?", "expected_fact": "9007", "required_blocks": ["9007"]}
+{"id": "convo_h9_port_shift", "domain": "convo", "query": "What is the final confirmed port for alpha_08?", "expected_fact": "9008", "required_blocks": ["9008"]}
+{"id": "convo_h10_port_shift", "domain": "convo", "query": "What is the final confirmed port for alpha_09?", "expected_fact": "9009", "required_blocks": ["9009"]}
+{"id": "trace_h1_bastion_ip", "domain": "trace", "query": "What is the IP address of the internal bastion host discovered in cluster-0?", "expected_fact": "192.168.10.20", "required_blocks": ["Step 4"]}
+{"id": "trace_h2_bastion_ip", "domain": "trace", "query": "What is the IP address of the internal bastion host discovered in cluster-1?", "expected_fact": "192.168.10.21", "required_blocks": ["Step 4"]}
+{"id": "trace_h3_bastion_ip", "domain": "trace", "query": "What is the IP address of the internal bastion host discovered in cluster-2?", "expected_fact": "192.168.10.22", "required_blocks": ["Step 4"]}
+{"id": "trace_h4_bastion_ip", "domain": "trace", "query": "What is the IP address of the internal bastion host discovered in cluster-3?", "expected_fact": "192.168.10.23", "required_blocks": ["Step 4"]}
+{"id": "trace_h5_bastion_ip", "domain": "trace", "query": "What is the IP address of the internal bastion host discovered in cluster-4?", "expected_fact": "192.168.10.24", "required_blocks": ["Step 4"]}
+{"id": "trace_h6_bastion_ip", "domain": "trace", "query": "What is the IP address of the internal bastion host discovered in cluster-5?", "expected_fact": "192.168.10.25", "required_blocks": ["Step 4"]}
+{"id": "trace_h7_bastion_ip", "domain": "trace", "query": "What is the IP address of the internal bastion host discovered in cluster-6?", "expected_fact": "192.168.10.26", "required_blocks": ["Step 4"]}
+{"id": "trace_h8_bastion_ip", "domain": "trace", "query": "What is the IP address of the internal bastion host discovered in cluster-7?", "expected_fact": "192.168.10.27", "required_blocks": ["Step 4"]}
+{"id": "trace_h9_bastion_ip", "domain": "trace", "query": "What is the IP address of the internal bastion host discovered in cluster-8?", "expected_fact": "192.168.10.28", "required_blocks": ["Step 4"]}
+{"id": "trace_h10_bastion_ip", "domain": "trace", "query": "What is the IP address of the internal bastion host discovered in cluster-9?", "expected_fact": "192.168.10.29", "required_blocks": ["Step 4"]}
+{"id": "adv_h1_tax_rate", "domain": "adversarial", "query": "What is the TAX_RATE specifically defined in tax_region_beta_0.py?", "expected_fact": "0.11", "required_blocks": ["tax_region_beta_0.py"]}
+{"id": "adv_h2_tax_rate", "domain": "adversarial", "query": "What is the TAX_RATE specifically defined in tax_region_beta_1.py?", "expected_fact": "0.12", "required_blocks": ["tax_region_beta_1.py"]}
+{"id": "adv_h3_tax_rate", "domain": "adversarial", "query": "What is the TAX_RATE specifically defined in tax_region_beta_2.py?", "expected_fact": "0.13", "required_blocks": ["tax_region_beta_2.py"]}
+{"id": "adv_h4_tax_rate", "domain": "adversarial", "query": "What is the TAX_RATE specifically defined in tax_region_beta_3.py?", "expected_fact": "0.14", "required_blocks": ["tax_region_beta_3.py"]}
+{"id": "adv_h5_tax_rate", "domain": "adversarial", "query": "What is the TAX_RATE specifically defined in tax_region_beta_4.py?", "expected_fact": "0.15", "required_blocks": ["tax_region_beta_4.py"]}
+{"id": "adv_h6_tax_rate", "domain": "adversarial", "query": "What is the TAX_RATE specifically defined in tax_region_beta_5.py?", "expected_fact": "0.16", "required_blocks": ["tax_region_beta_5.py"]}
+{"id": "adv_h7_tax_rate", "domain": "adversarial", "query": "What is the TAX_RATE specifically defined in tax_region_beta_6.py?", "expected_fact": "0.17", "required_blocks": ["tax_region_beta_6.py"]}
+{"id": "adv_h8_tax_rate", "domain": "adversarial", "query": "What is the TAX_RATE specifically defined in tax_region_beta_7.py?", "expected_fact": "0.18", "required_blocks": ["tax_region_beta_7.py"]}
+{"id": "adv_h9_tax_rate", "domain": "adversarial", "query": "What is the TAX_RATE specifically defined in tax_region_beta_8.py?", "expected_fact": "0.19", "required_blocks": ["tax_region_beta_8.py"]}
+{"id": "adv_h10_tax_rate", "domain": "adversarial", "query": "What is the TAX_RATE specifically defined in tax_region_beta_9.py?", "expected_fact": "0.110", "required_blocks": ["tax_region_beta_9.py"]}

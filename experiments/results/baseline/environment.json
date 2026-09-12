@@ -1,0 +1,29 @@
+{
+  "os": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+  "torch": "2.8.0+cu126",
+  "transformers": "4.57.6",
+  "cuda": "12.6",
+  "gpu": "NVIDIA GeForce RTX 3050, 8192 MiB, 616.64, 00000000:01:00.0",
+  "cpu": "Intel64 Family 6 Model 151 Stepping 2, GenuineIntel",
+  "logical_cpus": 12,
+  "ram_bytes": 17026183168,
+  "git": {
+    "commit": null,
+    "status": "A  .gitignore\nA  LICENSE\nA  \"Neural Pack/.obsidian/app.json\"\nA  \"Neural Pack/Engineering/Baseline.md\"\nA  \"Neural Pack/Engineering/Corpus.md\"\nA  \"Neural Pack/Home.md\"\nA  \"Neural Pack/Journal/2026-09-05.md\"\nA  \"Neural Pack/Mission.md\"\nA  \"Neural Pack/Research/Systems.md\"\nA  \"Neural Pack/Research/Transfer.md\"\nA  README.md\nA  RESEARCH_LOG.md\nA  benchmarks/CORPUS.md\nA  benchmarks/__init__.py\nA  benchmarks/corpus.py\nA  benchmarks/model_baseline.py\nA  benchmarks/quality.py\nA  docs/decisions/0001-evidence-before-format.md\nA  experiments/baseline.json\nA  experiments/disk-initial.json\nA  experiments/hardware-initial.json\nA  experiments/model-provenance.json\nA  experiments/requirements-lock.txt\nA  experiments/smoke-fixed.json\nA  experiments/smoke.json\nA  npk/compatibility.py\nA  npk/optimizer.py\nA  pyproject.toml\nA  research/failures/0001-windows-fsync.md\nA  research/landscape.md\nA  research/papers.md\nA  research/systems.md\nA  research/unsolved-problems.md\nA  scripts/download_model.py\nA  tests/test_corpus.py\nA  tests/test_planner.py\n?? experiments/results/\n?? npk/__init__.py\n?? npk/format.py"
+  },
+  "timestamp_utc": "2026-09-05T23:41:08Z",
+  "source_hash": "380c1cf90bb838c9e9ba2c09da31924c0f70fdb911d8d2e033d08f4c2a2cbfc6",
+  "command": "C:\\Users\\vardh\\Documents\\ChatGPT\\NeuralPack\\.venv\\Scripts\\python.exe -m benchmarks.model_baseline --config experiments\\baseline.json",
+  "limitations": [
+    "Single-process batch-1 Transformers; not vLLM/LMCache throughput",
+    "Weights and kernels warm; raw prefill means no reusable prefix state",
+    "Persistent files are OS-page-cache warm/uncontrolled; physical cold-disk not measured",
+    "Tokenized synthetic repeated text, not a quality corpus or natural prompt distribution",
+    "No network transfer benchmark; cost curves outside this host are modeled"
+  ],
+  "model_load_and_verify_ms": 1506.3985,
+  "fingerprint": "29be661ef4315a8d8ff35a25ce733d7721bf60ec8ebb51051c79686089738812",
+  "effective_dtype": "torch.float16",
+  "device": "cuda"
+}

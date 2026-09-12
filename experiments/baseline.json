@@ -1,0 +1,15 @@
+{
+  "seed": 1729,
+  "model_path": "experiments/models/Qwen2.5-0.5B-Instruct",
+  "context_lengths": [1024, 4096, 16384, 32704],
+  "query_tokens": 32,
+  "output_tokens": 16,
+  "trials": 7,
+  "warmup_trials": 2,
+  "dtype": "float16",
+  "attention": "sdpa",
+  "batch_size": 1,
+  "threads": 4,
+  "modes": ["cold_prefill", "hot_prefix", "cpu_kv", "persistent_kv", "int8_kv"],
+  "output_dir": "experiments/results/baseline"
+}

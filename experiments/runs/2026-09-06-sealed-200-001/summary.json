@@ -1,0 +1,6021 @@
+{
+  "run_id": "2026-09-06-sealed-200-001",
+  "provider": "mock",
+  "model": "default",
+  "total_tasks": 200,
+  "total_baseline_tokens": 45060,
+  "total_bm25_tokens": 27560,
+  "total_dense_tokens": 27140,
+  "total_hybrid_rrf_tokens": 27140,
+  "total_neuralpack_tokens": 23270,
+  "total_tokens_avoided": 21790,
+  "overall_token_reduction_pct": 48.36,
+  "baseline_accuracy": 5.0,
+  "bm25_accuracy": 5.0,
+  "dense_accuracy": 5.0,
+  "hybrid_rrf_accuracy": 5.0,
+  "neuralpack_accuracy": 5.0,
+  "critical_context_recall_pct": 100.0,
+  "task_records": [
+    {
+      "id": "sealed_code_000",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 1.4,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_001",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_002",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_003",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.6,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_004",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_005",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_006",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_007",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_008",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_009",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_010",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_011",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_012",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_013",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_014",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_015",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_016",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_017",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_018",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_019",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_020",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_021",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_022",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_023",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_024",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_025",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_026",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_027",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_028",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_029",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_030",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": true,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": true
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": true
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": true
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": true,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_031",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_032",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_033",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_034",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_035",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": true,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": true
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": true
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": true
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": true,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_036",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_037",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_038",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_039",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_040",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_041",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": true,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": true
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": true
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": true
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": true,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_042",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_043",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_044",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_045",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_046",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": true,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": true
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": true
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": true
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": true,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_047",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.6,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_048",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_049",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_050",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_051",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_052",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": true,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": true
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": true
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": true
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": true,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_053",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_054",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_055",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_056",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.8,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_057",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": true,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": true
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": true
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": true
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": true,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_058",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_059",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_060",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_061",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_062",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_063",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": true,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": true
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": true
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": true
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": true,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_064",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_065",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_066",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_067",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_068",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": true,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": true
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": true
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": true
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": true,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_069",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.7,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_070",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.6,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_071",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.6,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_072",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_073",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_074",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": true,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": true
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": true
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": true
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": true,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_075",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_076",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_077",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_078",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_code_079",
+      "category": "coding",
+      "baseline": {
+        "tokens": 252,
+        "passed": true,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 160,
+        "passed": true
+      },
+      "dense": {
+        "tokens": 160,
+        "passed": true
+      },
+      "hybrid_rrf": {
+        "tokens": 160,
+        "passed": true
+      },
+      "neuralpack": {
+        "tokens": 106,
+        "passed": true,
+        "latency_ms": 0.5,
+        "tokens_avoided": 146,
+        "reduction_pct": 57.94,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_doc_000",
+      "category": "doc",
+      "baseline": {
+        "tokens": 416,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 132,
+        "passed": false,
+        "latency_ms": 0.8,
+        "tokens_avoided": 284,
+        "reduction_pct": 68.27,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_doc_001",
+      "category": "doc",
+      "baseline": {
+        "tokens": 416,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 132,
+        "passed": false,
+        "latency_ms": 0.6,
+        "tokens_avoided": 284,
+        "reduction_pct": 68.27,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_doc_002",
+      "category": "doc",
+      "baseline": {
+        "tokens": 416,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 132,
+        "passed": false,
+        "latency_ms": 0.6,
+        "tokens_avoided": 284,
+        "reduction_pct": 68.27,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_doc_003",
+      "category": "doc",
+      "baseline": {
+        "tokens": 416,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 162,
+        "passed": false,
+        "latency_ms": 0.7,
+        "tokens_avoided": 254,
+        "reduction_pct": 61.06,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_doc_004",
+      "category": "doc",
+      "baseline": {
+        "tokens": 416,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 132,
+        "passed": false,
+        "latency_ms": 0.6,
+        "tokens_avoided": 284,
+        "reduction_pct": 68.27,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_doc_005",
+      "category": "doc",
+      "baseline": {
+        "tokens": 416,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 132,
+        "passed": false,
+        "latency_ms": 0.6,
+        "tokens_avoided": 284,
+        "reduction_pct": 68.27,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_doc_006",
+      "category": "doc",
+      "baseline": {
+        "tokens": 416,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 132,
+        "passed": false,
+        "latency_ms": 0.6,
+        "tokens_avoided": 284,
+        "reduction_pct": 68.27,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_doc_007",
+      "category": "doc",
+      "baseline": {
+        "tokens": 416,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 132,
+        "passed": false,
+        "latency_ms": 0.6,
+        "tokens_avoided": 284,
+        "reduction_pct": 68.27,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_doc_008",
+      "category": "doc",
+      "baseline": {
+        "tokens": 416,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 132,
+        "passed": false,
+        "latency_ms": 0.6,
+        "tokens_avoided": 284,
+        "reduction_pct": 68.27,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_doc_009",
+      "category": "doc",
+      "baseline": {
+        "tokens": 416,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 132,
+        "passed": false,
+        "latency_ms": 0.6,
+        "tokens_avoided": 284,
+        "reduction_pct": 68.27,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_doc_010",
+      "category": "doc",
+      "baseline": {
+        "tokens": 416,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 132,
+        "passed": false,
+        "latency_ms": 0.7,
+        "tokens_avoided": 284,
+        "reduction_pct": 68.27,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_doc_011",
+      "category": "doc",
+      "baseline": {
+        "tokens": 416,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 132,
+        "passed": false,
+        "latency_ms": 0.6,
+        "tokens_avoided": 284,
+        "reduction_pct": 68.27,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_doc_012",
+      "category": "doc",
+      "baseline": {
+        "tokens": 416,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 132,
+        "passed": false,
+        "latency_ms": 0.6,
+        "tokens_avoided": 284,
+        "reduction_pct": 68.27,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_doc_013",
+      "category": "doc",
+      "baseline": {
+        "tokens": 416,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 132,
+        "passed": false,
+        "latency_ms": 0.6,
+        "tokens_avoided": 284,
+        "reduction_pct": 68.27,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_doc_014",
+      "category": "doc",
+      "baseline": {
+        "tokens": 416,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 132,
+        "passed": false,
+        "latency_ms": 0.6,
+        "tokens_avoided": 284,
+        "reduction_pct": 68.27,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_doc_015",
+      "category": "doc",
+      "baseline": {
+        "tokens": 416,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 132,
+        "passed": false,
+        "latency_ms": 0.6,
+        "tokens_avoided": 284,
+        "reduction_pct": 68.27,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_doc_016",
+      "category": "doc",
+      "baseline": {
+        "tokens": 416,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 132,
+        "passed": false,
+        "latency_ms": 0.6,
+        "tokens_avoided": 284,
+        "reduction_pct": 68.27,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_doc_017",
+      "category": "doc",
+      "baseline": {
+        "tokens": 416,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 132,
+        "passed": false,
+        "latency_ms": 0.6,
+        "tokens_avoided": 284,
+        "reduction_pct": 68.27,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_doc_018",
+      "category": "doc",
+      "baseline": {
+        "tokens": 416,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 132,
+        "passed": false,
+        "latency_ms": 0.6,
+        "tokens_avoided": 284,
+        "reduction_pct": 68.27,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_doc_019",
+      "category": "doc",
+      "baseline": {
+        "tokens": 416,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 132,
+        "passed": false,
+        "latency_ms": 0.6,
+        "tokens_avoided": 284,
+        "reduction_pct": 68.27,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_doc_020",
+      "category": "doc",
+      "baseline": {
+        "tokens": 416,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 132,
+        "passed": false,
+        "latency_ms": 0.6,
+        "tokens_avoided": 284,
+        "reduction_pct": 68.27,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_doc_021",
+      "category": "doc",
+      "baseline": {
+        "tokens": 416,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 132,
+        "passed": false,
+        "latency_ms": 0.6,
+        "tokens_avoided": 284,
+        "reduction_pct": 68.27,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_doc_022",
+      "category": "doc",
+      "baseline": {
+        "tokens": 416,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 132,
+        "passed": false,
+        "latency_ms": 0.6,
+        "tokens_avoided": 284,
+        "reduction_pct": 68.27,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_doc_023",
+      "category": "doc",
+      "baseline": {
+        "tokens": 416,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 132,
+        "passed": false,
+        "latency_ms": 1.0,
+        "tokens_avoided": 284,
+        "reduction_pct": 68.27,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_doc_024",
+      "category": "doc",
+      "baseline": {
+        "tokens": 416,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 132,
+        "passed": false,
+        "latency_ms": 0.6,
+        "tokens_avoided": 284,
+        "reduction_pct": 68.27,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_doc_025",
+      "category": "doc",
+      "baseline": {
+        "tokens": 416,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 132,
+        "passed": false,
+        "latency_ms": 0.6,
+        "tokens_avoided": 284,
+        "reduction_pct": 68.27,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_doc_026",
+      "category": "doc",
+      "baseline": {
+        "tokens": 416,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 132,
+        "passed": false,
+        "latency_ms": 0.6,
+        "tokens_avoided": 284,
+        "reduction_pct": 68.27,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_doc_027",
+      "category": "doc",
+      "baseline": {
+        "tokens": 416,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 132,
+        "passed": false,
+        "latency_ms": 0.6,
+        "tokens_avoided": 284,
+        "reduction_pct": 68.27,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_doc_028",
+      "category": "doc",
+      "baseline": {
+        "tokens": 416,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 132,
+        "passed": false,
+        "latency_ms": 0.8,
+        "tokens_avoided": 284,
+        "reduction_pct": 68.27,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_doc_029",
+      "category": "doc",
+      "baseline": {
+        "tokens": 416,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 132,
+        "passed": false,
+        "latency_ms": 0.6,
+        "tokens_avoided": 284,
+        "reduction_pct": 68.27,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_convo_000",
+      "category": "convo",
+      "baseline": {
+        "tokens": 174,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 158,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 158,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 158,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 54,
+        "reduction_pct": 31.03,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_convo_001",
+      "category": "convo",
+      "baseline": {
+        "tokens": 174,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 158,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 158,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 158,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.2,
+        "tokens_avoided": 54,
+        "reduction_pct": 31.03,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_convo_002",
+      "category": "convo",
+      "baseline": {
+        "tokens": 174,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 158,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 158,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 158,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 54,
+        "reduction_pct": 31.03,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_convo_003",
+      "category": "convo",
+      "baseline": {
+        "tokens": 174,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 158,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 158,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 158,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 54,
+        "reduction_pct": 31.03,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_convo_004",
+      "category": "convo",
+      "baseline": {
+        "tokens": 174,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 158,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 158,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 158,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 54,
+        "reduction_pct": 31.03,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_convo_005",
+      "category": "convo",
+      "baseline": {
+        "tokens": 174,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 158,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 158,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 158,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 54,
+        "reduction_pct": 31.03,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_convo_006",
+      "category": "convo",
+      "baseline": {
+        "tokens": 174,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 158,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 158,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 158,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.2,
+        "tokens_avoided": 54,
+        "reduction_pct": 31.03,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_convo_007",
+      "category": "convo",
+      "baseline": {
+        "tokens": 174,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 158,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 158,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 158,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 54,
+        "reduction_pct": 31.03,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_convo_008",
+      "category": "convo",
+      "baseline": {
+        "tokens": 174,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 158,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 158,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 158,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 54,
+        "reduction_pct": 31.03,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_convo_009",
+      "category": "convo",
+      "baseline": {
+        "tokens": 174,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 158,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 158,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 158,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 54,
+        "reduction_pct": 31.03,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_convo_010",
+      "category": "convo",
+      "baseline": {
+        "tokens": 174,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 158,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 158,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 158,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 54,
+        "reduction_pct": 31.03,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_convo_011",
+      "category": "convo",
+      "baseline": {
+        "tokens": 174,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 158,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 158,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 158,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 54,
+        "reduction_pct": 31.03,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_convo_012",
+      "category": "convo",
+      "baseline": {
+        "tokens": 174,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 158,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 158,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 158,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 54,
+        "reduction_pct": 31.03,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_convo_013",
+      "category": "convo",
+      "baseline": {
+        "tokens": 174,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 158,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 158,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 158,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 54,
+        "reduction_pct": 31.03,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_convo_014",
+      "category": "convo",
+      "baseline": {
+        "tokens": 174,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 158,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 158,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 158,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 54,
+        "reduction_pct": 31.03,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_convo_015",
+      "category": "convo",
+      "baseline": {
+        "tokens": 174,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 158,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 158,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 158,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 54,
+        "reduction_pct": 31.03,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_convo_016",
+      "category": "convo",
+      "baseline": {
+        "tokens": 174,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 158,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 158,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 158,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 54,
+        "reduction_pct": 31.03,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_convo_017",
+      "category": "convo",
+      "baseline": {
+        "tokens": 174,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 158,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 158,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 158,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 54,
+        "reduction_pct": 31.03,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_convo_018",
+      "category": "convo",
+      "baseline": {
+        "tokens": 174,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 158,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 158,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 158,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 54,
+        "reduction_pct": 31.03,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_convo_019",
+      "category": "convo",
+      "baseline": {
+        "tokens": 174,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 158,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 158,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 158,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 54,
+        "reduction_pct": 31.03,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_convo_020",
+      "category": "convo",
+      "baseline": {
+        "tokens": 174,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 158,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 158,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 158,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 54,
+        "reduction_pct": 31.03,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_convo_021",
+      "category": "convo",
+      "baseline": {
+        "tokens": 174,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 158,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 158,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 158,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 54,
+        "reduction_pct": 31.03,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_convo_022",
+      "category": "convo",
+      "baseline": {
+        "tokens": 174,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 158,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 158,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 158,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 54,
+        "reduction_pct": 31.03,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_convo_023",
+      "category": "convo",
+      "baseline": {
+        "tokens": 174,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 158,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 158,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 158,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 54,
+        "reduction_pct": 31.03,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_convo_024",
+      "category": "convo",
+      "baseline": {
+        "tokens": 174,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 158,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 158,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 158,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 54,
+        "reduction_pct": 31.03,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_convo_025",
+      "category": "convo",
+      "baseline": {
+        "tokens": 174,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 158,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 158,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 158,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 54,
+        "reduction_pct": 31.03,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_convo_026",
+      "category": "convo",
+      "baseline": {
+        "tokens": 174,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 158,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 158,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 158,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 54,
+        "reduction_pct": 31.03,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_convo_027",
+      "category": "convo",
+      "baseline": {
+        "tokens": 174,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 158,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 158,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 158,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 54,
+        "reduction_pct": 31.03,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_convo_028",
+      "category": "convo",
+      "baseline": {
+        "tokens": 174,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 158,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 158,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 158,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 54,
+        "reduction_pct": 31.03,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_convo_029",
+      "category": "convo",
+      "baseline": {
+        "tokens": 174,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 158,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 158,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 158,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 120,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 54,
+        "reduction_pct": 31.03,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_trace_000",
+      "category": "trace",
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_trace_001",
+      "category": "trace",
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_trace_002",
+      "category": "trace",
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_trace_003",
+      "category": "trace",
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_trace_004",
+      "category": "trace",
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_trace_005",
+      "category": "trace",
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.2,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_trace_006",
+      "category": "trace",
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_trace_007",
+      "category": "trace",
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_trace_008",
+      "category": "trace",
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_trace_009",
+      "category": "trace",
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_trace_010",
+      "category": "trace",
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_trace_011",
+      "category": "trace",
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_trace_012",
+      "category": "trace",
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_trace_013",
+      "category": "trace",
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_trace_014",
+      "category": "trace",
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_trace_015",
+      "category": "trace",
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_trace_016",
+      "category": "trace",
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_trace_017",
+      "category": "trace",
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_trace_018",
+      "category": "trace",
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_trace_019",
+      "category": "trace",
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_trace_020",
+      "category": "trace",
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_trace_021",
+      "category": "trace",
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_trace_022",
+      "category": "trace",
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_trace_023",
+      "category": "trace",
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_trace_024",
+      "category": "trace",
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_trace_025",
+      "category": "trace",
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_trace_026",
+      "category": "trace",
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_trace_027",
+      "category": "trace",
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_trace_028",
+      "category": "trace",
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_trace_029",
+      "category": "trace",
+      "baseline": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 138,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 138,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 138,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 154,
+        "passed": false,
+        "latency_ms": 0.1,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_adv_000",
+      "category": "adversarial",
+      "baseline": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 58,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 44,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 44,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_adv_001",
+      "category": "adversarial",
+      "baseline": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 58,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 44,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 44,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_adv_002",
+      "category": "adversarial",
+      "baseline": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 58,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 44,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 44,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_adv_003",
+      "category": "adversarial",
+      "baseline": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 58,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 44,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 44,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_adv_004",
+      "category": "adversarial",
+      "baseline": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 58,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 44,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 44,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_adv_005",
+      "category": "adversarial",
+      "baseline": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 58,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 44,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 44,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_adv_006",
+      "category": "adversarial",
+      "baseline": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 58,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 44,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 44,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_adv_007",
+      "category": "adversarial",
+      "baseline": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 58,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 44,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 44,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_adv_008",
+      "category": "adversarial",
+      "baseline": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 58,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 44,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 44,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_adv_009",
+      "category": "adversarial",
+      "baseline": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 58,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 44,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 44,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_adv_010",
+      "category": "adversarial",
+      "baseline": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 58,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 44,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 44,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_adv_011",
+      "category": "adversarial",
+      "baseline": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 58,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 44,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 44,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_adv_012",
+      "category": "adversarial",
+      "baseline": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 58,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 44,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 44,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_adv_013",
+      "category": "adversarial",
+      "baseline": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 58,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 44,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 44,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_adv_014",
+      "category": "adversarial",
+      "baseline": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 58,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 44,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 44,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_adv_015",
+      "category": "adversarial",
+      "baseline": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 58,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 44,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 44,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_adv_016",
+      "category": "adversarial",
+      "baseline": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 58,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 44,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 44,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_adv_017",
+      "category": "adversarial",
+      "baseline": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 58,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 44,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 44,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_adv_018",
+      "category": "adversarial",
+      "baseline": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 58,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 44,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 44,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.5,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_adv_019",
+      "category": "adversarial",
+      "baseline": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 58,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 44,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 44,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_adv_020",
+      "category": "adversarial",
+      "baseline": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 58,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 44,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 44,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_adv_021",
+      "category": "adversarial",
+      "baseline": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 58,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 44,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 44,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_adv_022",
+      "category": "adversarial",
+      "baseline": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 58,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 44,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 44,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_adv_023",
+      "category": "adversarial",
+      "baseline": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 58,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 44,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 44,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_adv_024",
+      "category": "adversarial",
+      "baseline": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 58,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 44,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 44,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_adv_025",
+      "category": "adversarial",
+      "baseline": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 58,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 44,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 44,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_adv_026",
+      "category": "adversarial",
+      "baseline": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 58,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 44,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 44,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 1.0,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_adv_027",
+      "category": "adversarial",
+      "baseline": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 58,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 44,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 44,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_adv_028",
+      "category": "adversarial",
+      "baseline": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 58,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 44,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 44,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    },
+    {
+      "id": "sealed_adv_029",
+      "category": "adversarial",
+      "baseline": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.0
+      },
+      "bm25": {
+        "tokens": 58,
+        "passed": false
+      },
+      "dense": {
+        "tokens": 44,
+        "passed": false
+      },
+      "hybrid_rrf": {
+        "tokens": 44,
+        "passed": false
+      },
+      "neuralpack": {
+        "tokens": 86,
+        "passed": false,
+        "latency_ms": 0.3,
+        "tokens_avoided": 0,
+        "reduction_pct": 0.0,
+        "critical_context_recall": 100.0,
+        "plan": "aggressive_hybrid_compress"
+      }
+    }
+  ]
+}

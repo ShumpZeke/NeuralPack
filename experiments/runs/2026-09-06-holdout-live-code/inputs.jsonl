@@ -1,0 +1,10 @@
+{"id": "code_h1_db_max_conn", "domain": "code", "query": "What is the default max_connections limit in DatabasePool?", "expected_fact": "50", "required_blocks": ["db/pool.py"]}
+{"id": "code_h2_jwt_expiration", "domain": "code", "query": "What is the default token expiration time in seconds in generate_access_token?", "expected_fact": "3600", "required_blocks": ["auth/jwt_handler.py"]}
+{"id": "code_h3_rbac_delete_org", "domain": "code", "query": "Which role in auth/rbac.py possesses the 'delete_organization' permission?", "expected_fact": "owner", "required_blocks": ["auth/rbac.py"]}
+{"id": "code_h4_stripe_pro_price", "domain": "code", "query": "What is the amount_cents charged for the 'pro' tier in StripeGateway?", "expected_fact": "19900", "required_blocks": ["billing/stripe_client.py"]}
+{"id": "code_h5_tax_rate_invoice", "domain": "code", "query": "What tax rate is applied to monthly invoices in billing/invoices.py?", "expected_fact": "0.0825", "required_blocks": ["billing/invoices.py", "billing/stripe_client.py"]}
+{"id": "code_h6_worker_concurrency", "domain": "code", "query": "What is the default max_concurrency of TaskQueue in workers/task_queue.py?", "expected_fact": "16", "required_blocks": ["workers/task_queue.py"]}
+{"id": "code_h7_rate_limit_setting", "domain": "code", "query": "What is the RATE_LIMIT_PER_MINUTE defined in settings/base.py?", "expected_fact": "120", "required_blocks": ["settings/base.py"]}
+{"id": "code_h8_redis_cache_host", "domain": "code", "query": "What is the Redis cache URL host specified in settings/production.py?", "expected_fact": "cache-cluster.prod.internal", "required_blocks": ["settings/production.py"]}
+{"id": "code_h9_not_found_status", "domain": "code", "query": "What HTTP status code does ResourceNotFound raise in core/exceptions.py?", "expected_fact": "404", "required_blocks": ["core/exceptions.py"]}
+{"id": "code_h10_theme_primary_color", "domain": "code", "query": "What hex color code is assigned to --brand-primary in ui/theme.css?", "expected_fact": "#1e40af", "required_blocks": ["ui/theme.css"]}

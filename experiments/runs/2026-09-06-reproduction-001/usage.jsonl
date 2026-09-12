@@ -1,0 +1,18 @@
+{"id": "code_auth_superadmin", "mode": "baseline", "prompt_tokens": 679, "completion_tokens": 50}
+{"id": "code_auth_superadmin", "mode": "optimized", "prompt_tokens": 173, "completion_tokens": 50, "tokens_avoided": 506}
+{"id": "code_db_max_retries", "mode": "baseline", "prompt_tokens": 674, "completion_tokens": 50}
+{"id": "code_db_max_retries", "mode": "optimized", "prompt_tokens": 214, "completion_tokens": 50, "tokens_avoided": 460}
+{"id": "doc_rate_limit_pro", "mode": "baseline", "prompt_tokens": 652, "completion_tokens": 50}
+{"id": "doc_rate_limit_pro", "mode": "optimized", "prompt_tokens": 315, "completion_tokens": 50, "tokens_avoided": 337}
+{"id": "doc_deprecated_endpoint", "mode": "baseline", "prompt_tokens": 656, "completion_tokens": 50}
+{"id": "doc_deprecated_endpoint", "mode": "optimized", "prompt_tokens": 152, "completion_tokens": 50, "tokens_avoided": 504}
+{"id": "convo_final_port", "mode": "baseline", "prompt_tokens": 272, "completion_tokens": 50}
+{"id": "convo_final_port", "mode": "optimized", "prompt_tokens": 188, "completion_tokens": 50, "tokens_avoided": 84}
+{"id": "convo_format_constraint", "mode": "baseline", "prompt_tokens": 261, "completion_tokens": 50}
+{"id": "convo_format_constraint", "mode": "optimized", "prompt_tokens": 177, "completion_tokens": 50, "tokens_avoided": 84}
+{"id": "trace_firewall_finding", "mode": "baseline", "prompt_tokens": 610, "completion_tokens": 50}
+{"id": "trace_firewall_finding", "mode": "optimized", "prompt_tokens": 459, "completion_tokens": 50, "tokens_avoided": 151}
+{"id": "adversarial_eu_tax", "mode": "baseline", "prompt_tokens": 237, "completion_tokens": 50}
+{"id": "adversarial_eu_tax", "mode": "optimized", "prompt_tokens": 237, "completion_tokens": 50, "tokens_avoided": 0}
+{"id": "adversarial_security_bypass", "mode": "baseline", "prompt_tokens": 242, "completion_tokens": 50}
+{"id": "adversarial_security_bypass", "mode": "optimized", "prompt_tokens": 205, "completion_tokens": 50, "tokens_avoided": 37}

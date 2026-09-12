@@ -1,0 +1,247 @@
+{
+  "cycle": 38,
+  "evidence_mode": "LOCAL_AND_LIVE",
+  "live_answer_run": {
+    "path": "experiments\\runs\\cycle38-repository-live-v1\\results.json",
+    "model": "meta/llama-3.2-11b-vision-instruct",
+    "tasks": 12,
+    "live_api_attempts": 48,
+    "generative_optimization_calls": 0,
+    "selection_budget": 2000,
+    "arms": {
+      "none": {
+        "tasks": 12,
+        "transport_success": 12,
+        "parseable_json": 1,
+        "exact_success": 0,
+        "exact_rate": 0.0,
+        "median_total_tokens": 192.5,
+        "total_tokens": 3110
+      },
+      "full": {
+        "tasks": 12,
+        "transport_success": 12,
+        "parseable_json": 0,
+        "exact_success": 0,
+        "exact_rate": 0.0,
+        "median_total_tokens": 82185.5,
+        "total_tokens": 985569
+      },
+      "bm25_windows": {
+        "tasks": 12,
+        "transport_success": 12,
+        "parseable_json": 11,
+        "exact_success": 0,
+        "exact_rate": 0.0,
+        "median_total_tokens": 1599.5,
+        "total_tokens": 17124
+      },
+      "bm25_members": {
+        "tasks": 12,
+        "transport_success": 12,
+        "parseable_json": 11,
+        "exact_success": 3,
+        "exact_rate": 0.25,
+        "median_total_tokens": 1741.0,
+        "total_tokens": 20315
+      }
+    },
+    "selection_summary_at_2000": {
+      "bm25_windows": {
+        "required_span_coverage": 0.3472222222222222,
+        "all_spans_tasks": 2,
+        "tasks": 12,
+        "median_ms": 2.7906499890377745
+      },
+      "bm25_members": {
+        "required_span_coverage": 0.5833333333333334,
+        "all_spans_tasks": 5,
+        "tasks": 12,
+        "median_ms": 3.7904499913565814
+      }
+    },
+    "verdict": "No retrieval answer-quality winner is established; the member arm has higher source coverage and 3/12 exact answers, but the controls and window arm have 0/12 exact answers."
+  },
+  "hybrid_offline_run": {
+    "path": "experiments\\runs\\cycle38-repository-semantic-v1\\results.json",
+    "encoder": "sentence-transformers/all-MiniLM-L6-v2",
+    "embedded_rows": 657,
+    "compile_seconds": 15.2556,
+    "pack_bytes": {
+      "bm25_windows": 954368,
+      "bm25_members": 1138688,
+      "hybrid_members": 2486272
+    },
+    "summaries": {
+      "bm25_windows": {
+        "500": {
+          "required_span_coverage": 0.0,
+          "all_spans_tasks": 0,
+          "tasks": 12,
+          "median_ms": 2.823749993694946
+        },
+        "1000": {
+          "required_span_coverage": 0.0,
+          "all_spans_tasks": 0,
+          "tasks": 12,
+          "median_ms": 2.9167499887989834
+        },
+        "2000": {
+          "required_span_coverage": 0.3472222222222222,
+          "all_spans_tasks": 2,
+          "tasks": 12,
+          "median_ms": 2.83730000955984
+        },
+        "4000": {
+          "required_span_coverage": 0.6805555555555556,
+          "all_spans_tasks": 7,
+          "tasks": 12,
+          "median_ms": 2.836100000422448
+        }
+      },
+      "bm25_members": {
+        "500": {
+          "required_span_coverage": 0.25,
+          "all_spans_tasks": 1,
+          "tasks": 12,
+          "median_ms": 3.0401999974856153
+        },
+        "1000": {
+          "required_span_coverage": 0.4027777777777778,
+          "all_spans_tasks": 2,
+          "tasks": 12,
+          "median_ms": 3.116099993349053
+        },
+        "2000": {
+          "required_span_coverage": 0.5833333333333334,
+          "all_spans_tasks": 5,
+          "tasks": 12,
+          "median_ms": 3.3170499955303967
+        },
+        "4000": {
+          "required_span_coverage": 0.7638888888888888,
+          "all_spans_tasks": 7,
+          "tasks": 12,
+          "median_ms": 3.2190999918384477
+        }
+      },
+      "hybrid_members": {
+        "500": {
+          "required_span_coverage": 0.3888888888888889,
+          "all_spans_tasks": 2,
+          "tasks": 12,
+          "median_ms": 14.074200007598847
+        },
+        "1000": {
+          "required_span_coverage": 0.3402777777777778,
+          "all_spans_tasks": 1,
+          "tasks": 12,
+          "median_ms": 6.133349990705028
+        },
+        "2000": {
+          "required_span_coverage": 0.5347222222222222,
+          "all_spans_tasks": 2,
+          "tasks": 12,
+          "median_ms": 5.797449994133785
+        },
+        "4000": {
+          "required_span_coverage": 0.7777777777777778,
+          "all_spans_tasks": 8,
+          "tasks": 12,
+          "median_ms": 5.66340000659693
+        }
+      }
+    },
+    "verdict": "Keep hybrid as explicit optional functionality; at 2,000 tokens it trails member BM25 on retained source coverage and costs materially more query/compile time and storage."
+  },
+  "challengers": {
+    "candidate_limit": {
+      "measurements_at_2000": [
+        {
+          "required_span_coverage": 0.5833333333333334,
+          "all_spans_tasks": 5,
+          "tasks": 12,
+          "median_ms": 2.7176500007044524,
+          "candidate_limit": 30
+        },
+        {
+          "required_span_coverage": 0.5833333333333334,
+          "all_spans_tasks": 5,
+          "tasks": 12,
+          "median_ms": 2.8887500084238127,
+          "candidate_limit": 60
+        },
+        {
+          "required_span_coverage": 0.5833333333333334,
+          "all_spans_tasks": 5,
+          "tasks": 12,
+          "median_ms": 3.5278999857837334,
+          "candidate_limit": 120
+        },
+        {
+          "required_span_coverage": 0.5833333333333334,
+          "all_spans_tasks": 5,
+          "tasks": 12,
+          "median_ms": 4.254300001775846,
+          "candidate_limit": 240
+        },
+        {
+          "required_span_coverage": 0.5833333333333334,
+          "all_spans_tasks": 5,
+          "tasks": 12,
+          "median_ms": 5.630200001178309,
+          "candidate_limit": 480
+        }
+      ],
+      "verdict": "discard; increasing the candidate limit did not change coverage and increased latency at higher limits"
+    },
+    "relations": {
+      "measurements_at_2000": [
+        {
+          "required_span_coverage": 0.625,
+          "all_spans_tasks": 5,
+          "tasks": 12,
+          "median_ms": 2.809600002365187,
+          "enable_relations": false
+        },
+        {
+          "required_span_coverage": 0.5833333333333334,
+          "all_spans_tasks": 5,
+          "tasks": 12,
+          "median_ms": 2.874450001399964,
+          "enable_relations": true
+        }
+      ],
+      "verdict": "discard for this repository behavior oracle; enabling the relation channel did not improve the fielded control and adds work",
+      "live_no_relations": {
+        "path": "experiments\\runs\\cycle38-repository-live-no-relations-v1\\results.json",
+        "model": "meta/llama-3.2-11b-vision-instruct",
+        "tasks": 12,
+        "transport_success": 12,
+        "parseable_json": 11,
+        "exact_success": 4,
+        "exact_rate": 0.3333333333333333,
+        "required_span_coverage": 0.625,
+        "all_spans_tasks": 5,
+        "median_selection_ms": 4.222299990942702
+      }
+    }
+  },
+  "model_canaries": {
+    "nvidia/nemotron-3-super-120b-a12b": {
+      "path": "experiments\\runs\\cycle38-repository-nemotron-canary\\results.json",
+      "calls": 4,
+      "transport_success": 4,
+      "exact_success": 0,
+      "verdict": "discard for this harness configuration; all four outputs exhausted the 384-token cap without grader-acceptable JSON"
+    },
+    "deepseek-ai/deepseek-v4-flash-0731": {
+      "path": "experiments\\runs\\cycle38-repository-deepseek-canary\\results.json",
+      "calls": 4,
+      "transport_success": 1,
+      "exact_success": 1,
+      "timeouts": 3,
+      "verdict": "do not compare as a retrieval arm; three of four calls timed out and the single valid result was the full-context control"
+    }
+  }
+}

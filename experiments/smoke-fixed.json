@@ -1,0 +1,24 @@
+{
+  "seed": 1729,
+  "model_path": "experiments/models/Qwen2.5-0.5B-Instruct",
+  "context_lengths": [
+    256,
+    1024
+  ],
+  "query_tokens": 16,
+  "output_tokens": 8,
+  "trials": 2,
+  "warmup_trials": 1,
+  "dtype": "float16",
+  "attention": "sdpa",
+  "batch_size": 1,
+  "threads": 4,
+  "modes": [
+    "cold_prefill",
+    "hot_prefix",
+    "cpu_kv",
+    "persistent_kv",
+    "int8_kv"
+  ],
+  "output_dir": "experiments/results/smoke-fixed"
+}

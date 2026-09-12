@@ -1,0 +1,20 @@
+{"id": "code_h1_db_max_conn", "mode": "baseline", "prompt_tokens": 3510, "completion_tokens": 50}
+{"id": "code_h1_db_max_conn", "mode": "optimized", "prompt_tokens": 681, "completion_tokens": 50, "tokens_avoided": 2829}
+{"id": "code_h2_jwt_expiration", "mode": "baseline", "prompt_tokens": 3513, "completion_tokens": 50}
+{"id": "code_h2_jwt_expiration", "mode": "optimized", "prompt_tokens": 587, "completion_tokens": 50, "tokens_avoided": 2926}
+{"id": "code_h3_rbac_delete_org", "mode": "baseline", "prompt_tokens": 3514, "completion_tokens": 50}
+{"id": "code_h3_rbac_delete_org", "mode": "optimized", "prompt_tokens": 530, "completion_tokens": 50, "tokens_avoided": 2984}
+{"id": "code_h4_stripe_pro_price", "mode": "baseline", "prompt_tokens": 3516, "completion_tokens": 50}
+{"id": "code_h4_stripe_pro_price", "mode": "optimized", "prompt_tokens": 820, "completion_tokens": 50, "tokens_avoided": 2696}
+{"id": "code_h5_tax_rate_invoice", "mode": "baseline", "prompt_tokens": 3513, "completion_tokens": 50}
+{"id": "code_h5_tax_rate_invoice", "mode": "optimized", "prompt_tokens": 817, "completion_tokens": 50, "tokens_avoided": 2696}
+{"id": "code_h6_worker_concurrency", "mode": "baseline", "prompt_tokens": 3515, "completion_tokens": 50}
+{"id": "code_h6_worker_concurrency", "mode": "optimized", "prompt_tokens": 665, "completion_tokens": 50, "tokens_avoided": 2850}
+{"id": "code_h7_rate_limit_setting", "mode": "baseline", "prompt_tokens": 3513, "completion_tokens": 50}
+{"id": "code_h7_rate_limit_setting", "mode": "optimized", "prompt_tokens": 800, "completion_tokens": 50, "tokens_avoided": 2713}
+{"id": "code_h8_redis_cache_host", "mode": "baseline", "prompt_tokens": 3513, "completion_tokens": 50}
+{"id": "code_h8_redis_cache_host", "mode": "optimized", "prompt_tokens": 645, "completion_tokens": 50, "tokens_avoided": 2868}
+{"id": "code_h9_not_found_status", "mode": "baseline", "prompt_tokens": 3513, "completion_tokens": 50}
+{"id": "code_h9_not_found_status", "mode": "optimized", "prompt_tokens": 760, "completion_tokens": 50, "tokens_avoided": 2753}
+{"id": "code_h10_theme_primary_color", "mode": "baseline", "prompt_tokens": 3514, "completion_tokens": 50}
+{"id": "code_h10_theme_primary_color", "mode": "optimized", "prompt_tokens": 1521, "completion_tokens": 50, "tokens_avoided": 1993}
