@@ -13,6 +13,7 @@ Do not edit by hand.
 | E005 | 2026-09-26 | Rank coarse blocks, emit only the best-matching K method-level children of large blocks | **rejected** | Helps only at 1K; loses 5-10 pts at 2K-16K on the fix target: trimming blocks that would have fit drops gold lines (non-top children, class-level lines, class-end insertions) more often than the freed budget recovers. Follow-up E005c trims only blocks that no longer fit. |
 | E006 | 2026-09-26 | Implementation-first role prior (demote tests/docs/examples by a BM25 factor) | **rejected** | Benchmark gaming, confirmed by attack: the fix-target gain is bought by nearly eliminating recall of where maintainers put regression tests (4K: 0.141 -> 0.034). Not a default. Could only return as an explicit caller-declared intent. |
 | E013 | 2026-09-26 | Sibling/near-duplicate collapse (measured before building) | **rejected** | At most 3.1% of selected tokens could be reclaimed on this workload; not worth a new representation now. Revisit for repetitive/vendored corpora or conversation logs. |
+| M000 | 2026-09-26 | Baseline: conversation memory (LongMemEval-S dev, 100 questions) | **kept** | Reference point for the second workload family. Weak spots: multi-session aggregation and implicit preferences. |
 
 ## E000 — Baseline: product as received on NPK-Bench dev-fast
 
@@ -315,3 +316,46 @@ Do not edit by hand.
 ```
 
 - **Decision:** At most 3.1% of selected tokens could be reclaimed on this workload; not worth a new representation now. Revisit for repetitive/vendored corpora or conversation logs.
+
+## M000 — Baseline: conversation memory (LongMemEval-S dev, 100 questions)
+
+- **Status:** kept
+- **Hypothesis:** Establish how well the unchanged product compiler/selector retrieves evidence turns from ~120K-token chat histories materialized as dated markdown sessions.
+- **Run:** experiments/npkbench/runs/M000-memory-baseline-dev
+- **Results:**
+
+```json
+{
+ "by_type_turn_recall_1K": {
+  "knowledge-update": 0.867,
+  "multi-session": 0.552,
+  "single-session-assistant": 0.833,
+  "single-session-preference": 0.361,
+  "single-session-user": 0.929,
+  "temporal-reasoning": 0.601
+ },
+ "compile_s_mean": 0.25,
+ "evidence_session_recall": {
+  "1K": 0.868,
+  "256": 0.756,
+  "2K": 0.904,
+  "4K": 0.925,
+  "512": 0.802,
+  "8K": 0.959
+ },
+ "evidence_turn_recall": {
+  "1K": 0.688,
+  "256": 0.529,
+  "2K": 0.749,
+  "4K": 0.795,
+  "512": 0.612,
+  "8K": 0.838
+ },
+ "oracle_tokens_mean": 188,
+ "pack_mb_mean": 1.61,
+ "query_ms_p50": 2.0
+}
+```
+
+- **Decision:** Reference point for the second workload family. Weak spots: multi-session aggregation and implicit preferences.
+- **Follow-ups:** session-diverse packing for multi-session questions; sub-turn granularity for long assistant turns
