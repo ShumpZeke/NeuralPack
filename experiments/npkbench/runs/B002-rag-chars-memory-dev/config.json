@@ -1,0 +1,37 @@
+{
+ "split": "memory-dev",
+ "arms": [
+  "npk_default",
+  "b002_bm25_chars1000_split"
+ ],
+ "budgets": [
+  256,
+  512,
+  1024,
+  2048,
+  4096,
+  8192
+ ],
+ "tasks": 100,
+ "targets": [
+  "fix"
+ ],
+ "ephemeral_packs": false,
+ "load": [
+  "benchmarks.npkbench.prototypes.baselines"
+ ],
+ "environment": {
+  "git_commit": "38f941afc03199e47b64ebcc25cf4dc8599a0907",
+  "git_dirty": false,
+  "python": "3.12.3",
+  "sqlite": "3.45.1",
+  "platform": "Linux-6.18.44-fc-v37-x86_64-with-glibc2.39",
+  "cpus": 4,
+  "bench_version": "npkbench-1.1"
+ },
+ "started_unix": 1790461184.551893,
+ "compiler_fingerprints": {
+  "npk_default": "5effbb3d57dcedd5",
+  "b002_bm25_chars1000_split": "5effbb3d57dcedd5"
+ }
+}
