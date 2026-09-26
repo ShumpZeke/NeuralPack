@@ -23,6 +23,8 @@ Do not edit by hand.
 | E014 | 2026-09-26 | Source scan without pathlib relative_to/is_relative_to (update latency) | **kept** | 1.5-2.5x faster updates on a large repository with identical artifacts. Remaining one-file update cost is the global digest over FTS storage (future: incremental global integrity). |
 | E015 | 2026-09-26 | Documentation target for NPK-Bench (docs-1) and first docs-cost measurement | **inconclusive** | Superseded by E015b. Inspection of the docs-1 gold found construction errors: the upstream-commit rule (first commit after base touching every fix file) picked a mass-reformat commit for pytest-5103 (19 doc example files) and a deprecation sweep for matplotlib-24265, and counted CONTRIBUTORS.txt and doc/users/prev_whats_new as topical docs. Directionally, documentation demotion collapsed docs recall (e006_role05: 0.000/0.000/0.000/0.011/0.063 at 1K-16K vs npk_default 0.000/0.092/0.236/0.276/0.425), and definitions+trim cost -9.2 points at 1K (CI [-19.5,-1.1], 0 wins/4 losses) and -6.9 at 8K. docs-3 (patch-overlap commit identification, widening only to the introducing PR merge, prose-only) is the corrected target; docs-2 was built but found to swallow branch-integration merges before any use. |
 | E015b | 2026-09-26 | Docs target docs-3: documentation cost of role priors and of the definition channel | **kept** | docs-3 is kept as NPK-Bench's third target. (a) Demotion is decisively harmful: e006_role05 vs product on dev docs -14.1/-30.1/-37.2/-40.4 points at 2K-16K (CIs exclude zero, 0 wins / 5-12 losses), confirming the E006/E008 rejections on evidence rather than suspicion. (b) The definition channel costs docs: dev -10.3 [-21.8,-1.3] at 1K; held-out (33 tasks, confirmation only) -12.1 [-24.2,-3.0] at 2K and -10.1 [-21.2,-1.0] at 4K. Under the declared utility E002 stays net positive (fix gains of 8-10 points dominate the 0.087-weighted docs loss). Top-block trimming is docs-neutral (held-out identical). |
+| E016 | 2026-09-26 | Test-mate prototype: insert the test block mirroring the top implementation file | **rejected** | Superseded by E016b. The prototype re-filled the budget itself without top-block trimming, so its -6.3 fix points at 1K were mostly the missing trim, not the insertion; its tests gains (+10.8 [+5.2,+17.0] at 2K for position 1) motivated the product-form E016b. |
+| E016b | 2026-09-26 | Test mate in the product selector (placed right after the top implementation block) | **running** | Passes the declared rule on dev-fast (103 tasks, paired vs the same selector with enable_test_mate=False): tests +3.7 [+1.0,+7.3] at 1K (6 wins/0 losses), +7.0 [+2.1,+12.3] at 2K (12/2), +4.9 [0.0,+10.2] at 4K, +2.9/+2.8 at 8K/16K; fix 0.0/-2.4/-1.9/-1.0/-0.5 (none significant); docs 0 except -7.7 at 4K (one task). Utility U = +3.7/+4.5/+2.3/+1.9/+2.2 points. Latency: about +10 ms uncontended on Django after caching parsed test paths and reusing the deep lexical ranking (selections identical on all 515). Held-out confirmation (H001) queued before promotion. |
 | E017 | 2026-09-26 | Context map: a budget share for ranked locations listed without text | **kept** | Kept as an opt-in output mode (select(map_share=...), --map-share), not a default: full-text recall falls as the map share grows. With 25% of the budget as a map (dev-fast, paired vs the product's full text): locatable fix recall +5.3/+4.4/+9.6/+11.3/+9.7 points at 1K-16K (all CIs exclude zero), tests +2.1/+8.8/+9.0/+7.4/+6.5, docs (13 tasks) 0.000->0.077 at 1K, 0.231->0.462 at 4K; full-text fix recall -4.6/-5.8/-2.9/-3.4/-3.6. A 25% map at 2K locates 0.484 of fix hunks, the product's full text at 4K 0.479. Map only (100%): 0.515 located at 1K vs 0.358 in text. |
 | M000 | 2026-09-26 | Baseline: conversation memory (LongMemEval-S dev, 100 questions) | **kept** | Reference point for the second workload family. Weak spots: multi-session aggregation and implicit preferences. |
 | M001 | 2026-09-26 | Source-diverse packing (per-file score decay) for multi-session memory questions | **rejected** | Turn recall falls 10-16 points: fused RRF scores are nearly flat (1/60..1/120), so any per-file decay reorders almost the whole ranking toward weakly matching fresh sessions. Session coverage rises but evidence turns are lost. |
@@ -1027,6 +1029,69 @@ Do not edit by hand.
 
 - **Decision:** docs-3 is kept as NPK-Bench's third target. (a) Demotion is decisively harmful: e006_role05 vs product on dev docs -14.1/-30.1/-37.2/-40.4 points at 2K-16K (CIs exclude zero, 0 wins / 5-12 losses), confirming the E006/E008 rejections on evidence rather than suspicion. (b) The definition channel costs docs: dev -10.3 [-21.8,-1.3] at 1K; held-out (33 tasks, confirmation only) -12.1 [-24.2,-3.0] at 2K and -10.1 [-21.2,-1.0] at 4K. Under the declared utility E002 stays net positive (fix gains of 8-10 points dominate the 0.087-weighted docs loss). Top-block trimming is docs-neutral (held-out identical).
 - **Follow-ups:** E019 (reST sections for .txt) and E018 (documentation channel) aim to recover the definition channel's docs cost
+
+## E016 — Test-mate prototype: insert the test block mirroring the top implementation file
+
+- **Status:** rejected
+- **Hypothesis:** The definition channel's tests-target cost (E002) can be recovered structurally: the test file that mirrors the top-ranked implementation file by path convention holds the regression test.
+- **Run:** experiments/npkbench/runs/E016-testmate-devfast
+- **Decision:** Superseded by E016b. The prototype re-filled the budget itself without top-block trimming, so its -6.3 fix points at 1K were mostly the missing trim, not the insertion; its tests gains (+10.8 [+5.2,+17.0] at 2K for position 1) motivated the product-form E016b.
+- **Follow-ups:** E016b: product-form test mate inside the selector
+
+## E016b — Test mate in the product selector (placed right after the top implementation block)
+
+- **Status:** running
+- **Hypothesis:** Placing the best query-matching block of the mirroring test file right after the top implementation block, inside the product's fill and trimming, recovers tests-target recall without a significant fix-target cost.
+- **Run:** experiments/npkbench/runs/E016b-test-mate-product-devfast
+- **Files changed:** `npk/pack/select.py`, `benchmarks/npkbench/arms.py`, `tests/test_test_mate.py`
+- **Results:**
+
+```json
+{
+ "fix_1K_16K": {
+  "mate": [
+   0.358,
+   0.416,
+   0.46,
+   0.513,
+   0.602
+  ],
+  "nomate": [
+   0.358,
+   0.44,
+   0.479,
+   0.523,
+   0.607
+  ]
+ },
+ "tests_1K_16K": {
+  "mate": [
+   0.077,
+   0.134,
+   0.19,
+   0.27,
+   0.337
+  ],
+  "nomate": [
+   0.04,
+   0.064,
+   0.141,
+   0.24,
+   0.309
+  ]
+ },
+ "utility_1K_16K": [
+  0.0368,
+  0.0446,
+  0.0228,
+  0.0191,
+  0.0223
+ ]
+}
+```
+
+- **Decision:** Passes the declared rule on dev-fast (103 tasks, paired vs the same selector with enable_test_mate=False): tests +3.7 [+1.0,+7.3] at 1K (6 wins/0 losses), +7.0 [+2.1,+12.3] at 2K (12/2), +4.9 [0.0,+10.2] at 4K, +2.9/+2.8 at 8K/16K; fix 0.0/-2.4/-1.9/-1.0/-0.5 (none significant); docs 0 except -7.7 at 4K (one task). Utility U = +3.7/+4.5/+2.3/+1.9/+2.2 points. Latency: about +10 ms uncontended on Django after caching parsed test paths and reusing the deep lexical ranking (selections identical on all 515). Held-out confirmation (H001) queued before promotion.
+- **Follow-ups:** H001: held-out confirmation (tests, docs, fix) together with E005c trimming
 
 ## E017 — Context map: a budget share for ranked locations listed without text
 
