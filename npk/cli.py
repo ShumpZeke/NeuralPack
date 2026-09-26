@@ -88,6 +88,8 @@ def main(argv: list[str] | None = None) -> int:
                        help="do not resolve identifiers named in the query to their definitions")
     query.add_argument("--no-trim", action="store_true",
                        help="skip an oversized top-ranked block instead of emitting its best members")
+    query.add_argument("--no-test-mate", action="store_true",
+                       help="do not place the mirroring test file's best block after the top implementation block")
     query.add_argument("--map-share", type=float, default=0.0,
                        help="fraction of the budget for a context map: further ranked places "
                             "(path:start-end kind name) listed without their text")
@@ -189,7 +191,8 @@ def main(argv: list[str] | None = None) -> int:
                                     enable_dependency_expansion=args.expand_deps,
                                     enable_relations=not args.no_relations,
                                     enable_definitions=not args.no_definitions,
-                                    enable_trim=not args.no_trim)
+                                    enable_trim=not args.no_trim,
+                                    enable_test_mate=not args.no_test_mate)
             selection = selector.select(args.query, budget_tokens=args.budget,
                                         target_model=args.target_model,
                                         allow_escalation=not args.no_escalation,
