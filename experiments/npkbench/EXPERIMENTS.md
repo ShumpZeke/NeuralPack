@@ -37,8 +37,9 @@ Do not edit by hand.
 | M001 | 2026-09-26 | Source-diverse packing (per-file score decay) for multi-session memory questions | **rejected** | Turn recall falls 10-16 points: fused RRF scores are nearly flat (1/60..1/120), so any per-file decay reorders almost the whole ranking toward weakly matching fresh sessions. Session coverage rises but evidence turns are lost. |
 | M002 | 2026-09-26 | Relevance-density ordering (fused score / tokens^alpha) before greedy fill | **rejected** | Aggregate gain is a disguised role prior: it comes from LongMemEval's composition (842/896 evidence turns are user turns) and collapses the question type whose evidence is in long assistant turns (1K: 0.833 -> 0.333). Not a default. Pursue finer units for long turns instead. |
 | M003 | 2026-09-26 | Paragraph-level units for long conversation turns (data-level layout test) | **rejected** | Mixed: +1.1/+3.6 at 2K/4K and better session coverage, but -8.9/-1.1/-2.1 at 256/512/1K. Turn-level units stay; no compiler change. |
-| M004 | 2026-09-26 | Dense similarity on conversation memory (pool fusion, bge-small / MiniLM) | **running** | Significant gains on memory-dev (100 questions): bge-small +4.1/+3.4/+4.3/+7.0/+7.7/+5.8 points at 256-8K (CI excludes zero at 2K, 4K, 8K); MiniLM +4.4/+1.4/+1.7/+4.7/+4.4/+4.1 (significant at 4K, 8K). By type (bge): multi-session +8 to +13, single-session-preference +17 to +22, temporal +5 to +13; knowledge-update -3 to -13 at 256-1K. The same fusion hurts code at small budgets (E012), so it cannot be a global default. Productization pending: M006 measures the shipped optional semantic/hybrid mode (MiniLM, whole-corpus channel) on the same questions; E012b tests the one-channel form on code. |
+| M004 | 2026-09-26 | Dense similarity on conversation memory (pool fusion, bge-small / MiniLM) | **kept** | Significant gains on memory-dev (100 questions): bge-small +4.1/+3.4/+4.3/+7.0/+7.7/+5.8 points at 256-8K (CI excludes zero at 2K, 4K, 8K); MiniLM +4.4/+1.4/+1.7/+4.7/+4.4/+4.1 (significant at 4K, 8K). By type (bge): multi-session +8 to +13, single-session-preference +17 to +22, temporal +5 to +13; knowledge-update -3 to -13 at 256-1K. The same fusion hurts code at small budgets (E012), so it cannot be a global default. Productized as the documented semantic/hybrid configuration for chat histories (M006: most of the gain with the shipped MiniLM path). |
 | M005 | 2026-09-26 | Time-window channel for dated conversation memory | **rejected** | No effect: identical to the product except one win at 4K (+0.5 points; temporal-reasoning 0.732 -> 0.751 at 4K). Pre-run analysis predicted a small ceiling: LongMemEval-S histories span 10-90 days, so period expressions cover every session (reporting lag makes the window run to the question date), and only 3 of 17 parsable memory-dev questions get a selective point window. |
+| M006 | 2026-09-26 | The shipped semantic/hybrid mode on conversation memory | **kept** | Kept as the documented configuration for conversation memory (no code change). vs lexical default on memory-dev: +4.5 [+0.4,+9.0] / +1.4 / +0.3 / +3.5 / +4.4 [+0.2,+9.2] / +7.1 [+2.8,+12.2] points at 256-8K; largest on preferences (0.67 -> 1.00 at 8K) and multi-session (0.74 -> 0.83 at 8K). Within about 3 points of M004's bge-small pool fusion (-3.3 at 4K, +1.3 at 8K) and indistinguishable from MiniLM pool fusion. Cost: 48.9 s compile per history (one CPU thread) vs 0.25 s; query p50 5.9 ms vs 1.9 ms. |
 
 ## E000 — Baseline: product as received on NPK-Bench dev-fast
 
@@ -1486,7 +1487,7 @@ Do not edit by hand.
 
 ## M004 — Dense similarity on conversation memory (pool fusion, bge-small / MiniLM)
 
-- **Status:** running
+- **Status:** kept
 - **Hypothesis:** Conversation-memory questions are natural-language and paraphrase their evidence (21 of 191 evidence turns at 2K are never retrieved lexically); dense similarity fused with the lexical pool order recovers evidence.
 - **Run:** experiments/npkbench/runs/M004-dense-memory-dev
 - **Results:**
@@ -1548,7 +1549,7 @@ Do not edit by hand.
 }
 ```
 
-- **Decision:** Significant gains on memory-dev (100 questions): bge-small +4.1/+3.4/+4.3/+7.0/+7.7/+5.8 points at 256-8K (CI excludes zero at 2K, 4K, 8K); MiniLM +4.4/+1.4/+1.7/+4.7/+4.4/+4.1 (significant at 4K, 8K). By type (bge): multi-session +8 to +13, single-session-preference +17 to +22, temporal +5 to +13; knowledge-update -3 to -13 at 256-1K. The same fusion hurts code at small budgets (E012), so it cannot be a global default. Productization pending: M006 measures the shipped optional semantic/hybrid mode (MiniLM, whole-corpus channel) on the same questions; E012b tests the one-channel form on code.
+- **Decision:** Significant gains on memory-dev (100 questions): bge-small +4.1/+3.4/+4.3/+7.0/+7.7/+5.8 points at 256-8K (CI excludes zero at 2K, 4K, 8K); MiniLM +4.4/+1.4/+1.7/+4.7/+4.4/+4.1 (significant at 4K, 8K). By type (bge): multi-session +8 to +13, single-session-preference +17 to +22, temporal +5 to +13; knowledge-update -3 to -13 at 256-1K. The same fusion hurts code at small budgets (E012), so it cannot be a global default. Productized as the documented semantic/hybrid configuration for chat histories (M006: most of the gain with the shipped MiniLM path).
 - **Follow-ups:** M006: shipped hybrid mode on memory-dev; If a dense form wins memory without hurting code, make it the recommended mode for conversation/prose packs
 
 ## M005 — Time-window channel for dated conversation memory
@@ -1557,3 +1558,37 @@ Do not edit by hand.
 - **Hypothesis:** Relative time expressions (two weeks ago, last Tuesday, in February) resolved against the question date select the sessions that hold the evidence; lexical candidates inside the window form an extra RRF channel.
 - **Run:** experiments/npkbench/runs/M005-time-window-memory-dev
 - **Decision:** No effect: identical to the product except one win at 4K (+0.5 points; temporal-reasoning 0.732 -> 0.751 at 4K). Pre-run analysis predicted a small ceiling: LongMemEval-S histories span 10-90 days, so period expressions cover every session (reporting lag makes the window run to the question date), and only 3 of 17 parsable memory-dev questions get a selective point window.
+
+## M006 — The shipped semantic/hybrid mode on conversation memory
+
+- **Status:** kept
+- **Hypothesis:** The product's existing opt-in semantic compile (local MiniLM embeddings for every block) plus hybrid retrieval (whole-index cosine channel and symbol channel in the RRF) delivers most of M004's prototype dense gain on chat histories.
+- **Run:** experiments/npkbench/runs/M006-shipped-hybrid-memory-dev
+- **Files changed:** `README.md`
+- **Results:**
+
+```json
+{
+ "hunk_recall_256_8K": {
+  "npk_default": [
+   0.529,
+   0.612,
+   0.688,
+   0.749,
+   0.795,
+   0.838
+  ],
+  "npk_hybrid": [
+   0.575,
+   0.626,
+   0.69,
+   0.784,
+   0.839,
+   0.909
+  ]
+ }
+}
+```
+
+- **Decision:** Kept as the documented configuration for conversation memory (no code change). vs lexical default on memory-dev: +4.5 [+0.4,+9.0] / +1.4 / +0.3 / +3.5 / +4.4 [+0.2,+9.2] / +7.1 [+2.8,+12.2] points at 256-8K; largest on preferences (0.67 -> 1.00 at 8K) and multi-session (0.74 -> 0.83 at 8K). Within about 3 points of M004's bge-small pool fusion (-3.3 at 4K, +1.3 at 8K) and indistinguishable from MiniLM pool fusion. Cost: 48.9 s compile per history (one CPU thread) vs 0.25 s; query p50 5.9 ms vs 1.9 ms.
+- **Follow-ups:** Swap the semantic encoder to bge-small if its pool-fusion edge (+3.3 at 4K) survives memory-heldout

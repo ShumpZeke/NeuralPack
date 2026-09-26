@@ -44,12 +44,25 @@ Lite and confirmed once on a **held-out** split (SWE-bench Verified minus Lite,
   an update, and `--strict` restores the old behavior.
 - **Speed:** compiles are 1.5× faster with logically identical artifacts. A one-file
   update of Django takes 0.8 s (was 1.2 s), and a no-op update takes 0.4 s (was 1.0 s).
+- **Context map** (opt-in, `select(map_share=0.25)` / `--map-share 0.25`): a quarter of
+  the budget lists further ranked places (`path:start-end kind name`) without their text.
+  For callers that can open files, a 25% map at 2K locates as many fix sites as full text
+  does at 4K (dev: +4 to +11 points of located recall at every budget). It is not the
+  default because full-text recall drops 3-6 points.
 - **Conversation memory** (LongMemEval-S, about 120K-token chat histories): 1K tokens of
-  selected context keep 69% of evidence turns and 87% of evidence sessions.
+  selected context keep 69% of evidence turns and 87% of evidence sessions. For chat
+  histories, compile with `--mode semantic` and query with `--retrieval hybrid` (local
+  MiniLM encoder): evidence recall rises from 0.795 to 0.839 at 4K tokens and from 0.838
+  to 0.909 at 8K (significant). The biggest gains are on preferences and multi-session
+  questions. Compiles become much slower (~50 s instead of 0.25 s per history on one CPU
+  thread). The same dense signal does not pay off for code at small budgets.
 - Rejected with recorded evidence: path/role priors (they win only by ignoring tests
-  or documentation), budget portfolios, learned re-ranking over the existing channels,
-  file aggregation, callee expansion, coarse-to-fine emission, and diversity/density
-  packing for conversations.
+  or documentation; demoting documentation costs 14-40 points of documentation recall),
+  budget portfolios, learned re-ranking over the existing channels, file aggregation,
+  callee expansion, coarse-to-fine emission, a documentation channel (trades code
+  recall for docs), reST sectioning of `.txt` docs, query segmentation, import-aware
+  entity extraction, time windows for chat memory, and diversity/density packing for
+  conversations.
 
 This measures localization evidence, not answer or patch correctness.
 
