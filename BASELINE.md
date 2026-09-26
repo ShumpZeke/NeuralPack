@@ -130,3 +130,26 @@ includes the pack rebuilds a compile-side change forces on the benchmark.
 | 13 | H11 | Dense code embeddings with content-addressed vector reuse across commits | ranking | semantic-gap cases; CPU-heavy | high | medium |
 | 14 | H12 | Pseudo-relevance feedback | ranking | small for long queries | low | low |
 | 15 | H16 | Remove the abandoned proxy product (Product B, 4.1K LOC) | complexity | no metric change | medium | low |
+
+### Outcomes of the initial ranking (see EXPERIMENTS.md for numbers)
+
+| Rank | ID | Outcome |
+|---:|---|---|
+| 1 | H1/E001 | **Kept**: compiles 1.49x faster, identical artifacts (the term-memo part, E001b, rejected: no real gain) |
+| 2 | H3/E002 | **Kept**: definition channel, held-out fix +5.7 to +10.3 points. Path/traceback resolution measured later: no headroom (the product already finds them) |
+| 3 | H2/E004 | **Kept**: 46/103 -> 0/103 blocked snapshots |
+| 4 | H7/E003 | Rejected: no gain |
+| 5 | H4/H5 | E005 (every large block) rejected; E005c (top block only) **kept**: +13.9/+7.3 points at 512/1K |
+| 6 | H6/E006 | Rejected as gaming: tests collapse, docs -14 to -40 points (docs-3) |
+| 7 | H10 | Folded into E005c (member spans instead of elision markers) |
+| 8 | H9/E017 | **Kept as opt-in** context map: a 25% map at 2K locates as much as full text at 4K |
+| 9 | H8/E010 | Inconclusive: speed gain small; ranking unchanged |
+| 10 | H14/E014, E024 | E014 **kept** (updates 1.5-2.5x faster); bulk integrity (E024) rejected: ~2% in real compiles |
+| 11 | H13/E013 | Rejected |
+| 12 | H17/M000-M006 | Workload built; lexical tweaks rejected (M001-M003, M005); dense via the shipped semantic/hybrid mode **kept** as the documented memory configuration (+4 to +7 points) |
+| 13 | H11/E012, E012b | Equal-weight fusion rejected for code (-9 to -11 fix at 1-2K); one-channel bge form passes the rule barely but needs dense vectors (inconclusive, cost) |
+| 14 | H12 | Not run; superseded by query-segmentation and entity experiments (E022, E023: no gain) |
+| 15 | H16 | Not done: removing Product B is a user-visible deletion outside the evidence loop |
+
+Added during the loop and kept: the docs-3 target and decision rule (E015/E015b), the test
+mate (E016b, pending held-out H001).
