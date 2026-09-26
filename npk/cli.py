@@ -88,9 +88,9 @@ def main(argv: list[str] | None = None) -> int:
                        help="do not resolve identifiers named in the query to their definitions")
     query.add_argument("--no-trim", action="store_true",
                        help="skip an oversized top-ranked block instead of emitting its best members")
-    query.add_argument("--test-mate", action="store_true",
+    query.add_argument("--test-mate", choices=["auto", "always", "never"], default="auto",
                        help="place the mirroring test file's best block right after the top implementation "
-                            "block (more regression-test context, slightly fewer fix sites)")
+                            "block: auto = from a 2048-token budget (default), always, or never")
     query.add_argument("--map-share", type=float, default=0.0,
                        help="fraction of the budget for a context map: further ranked places "
                             "(path:start-end kind name) listed without their text")
@@ -193,7 +193,7 @@ def main(argv: list[str] | None = None) -> int:
                                     enable_relations=not args.no_relations,
                                     enable_definitions=not args.no_definitions,
                                     enable_trim=not args.no_trim,
-                                    enable_test_mate=args.test_mate)
+                                    enable_test_mate={'auto': None, 'always': True, 'never': False}[args.test_mate])
             selection = selector.select(args.query, budget_tokens=args.budget,
                                         target_model=args.target_model,
                                         allow_escalation=not args.no_escalation,

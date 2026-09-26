@@ -156,8 +156,10 @@ query ──analyze──▶ terms ──FTS5 bm25 top-60───────�
   `(1 - share)` of the budget and `Selection.locations` lists further ranked places
   (`path:start-end kind name`, Python classes as members) until the reserved tokens are
   spent. Held-out: located fix recall +7 to +13 points over full text.
-- **Test mate (E016b, opt-in `enable_test_mate`, `--test-mate`):** after fusion, the best
+- **Test mate (E016b/E016c; default from 2048 tokens, `enable_test_mate` True/False and
+  `--test-mate always|never` override):** after fusion, the best
   lexical block of the test file whose path mirrors the top implementation file is placed
   right after that block. The lexical ranking is fetched once to depth 1000 and reused for
-  the mate lookup; parsed test paths are cached per artifact snapshot. Held-out:
-  regression-test recall +1.1 to +4.5 points, fix recall -0.3 to -1.4.
+  the mate lookup; parsed test paths are cached per artifact snapshot. Always-on on
+  held-out: tests +1.1 to +4.5 points, fix -0.3 to -1.4 (even trade at 1K). Gated at 2K
+  and above on the fresh heldout-b: tests +2.3 to +6.0, fix -0.4 to -1.1.

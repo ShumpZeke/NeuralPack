@@ -101,8 +101,9 @@ ARMS: Dict[str, Arm] = {
     # means current product defaults, so historical comparisons use this.
     "npk_nodefs": Arm("npk_nodefs", selector_options={"enable_definitions": False, "enable_trim": False}),
     "npk_notrim": Arm("npk_notrim", selector_options={"enable_trim": False}),
-    # E016b: opt-in test mate. (Runs made on exp/e016b-test-mate used npk_default for
-    # mate-on and npk_nomate for mate-off; on this branch the default is mate-off.)
+    # Test mate: npk_default is budget-gated (on from 2048 tokens, E016c). Runs made
+    # on exp/e016b-test-mate used npk_default for mate-on; runs between the opt-in
+    # merge and E016c's promotion used npk_default for mate-off.
     "npk_mate": Arm("npk_mate", selector_options={"enable_test_mate": True}),
     "npk_nomate": Arm("npk_nomate", selector_options={"enable_test_mate": False}),
     "npk_members": Arm("npk_members", compile_options={"python_members": True}),

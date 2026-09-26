@@ -26,14 +26,16 @@ Lite and confirmed once on a **held-out** split (SWE-bench Verified minus Lite,
 |---|---:|---:|---:|---:|---:|
 | Standard RAG baseline: BM25 over 60-line chunks (identifier-split) | 0.101 | 0.149 | 0.217 | 0.267 | 0.321 |
 | NeuralPack before this loop's retrieval changes | 0.136 | 0.206 | 0.302 | 0.393 | 0.490 |
-| **Current default** (definition channel + top-block trimming) | **0.230** | **0.309** | **0.399** | **0.475** | **0.575** |
+| **Current default** (definition channel, top-block trimming, test mate from 2K) | **0.230** | **0.303** | **0.385** | **0.472** | **0.569** |
+| Current default, regression-test sites found (tests target) | 0.058 | 0.143 | 0.194 | 0.256 | 0.303 |
 
 - **Against a standard RAG pipeline** (same files, budgets and gold; BM25 over fixed
   60-line chunks, filled in score order): NeuralPack finds 1.6-2.1x as many fix sites
-  on held-out, and every gap is significant. Regression-test recall is equal at 1-2K and
-  higher from 4K. The baseline finds more documentation (at 2K: 0.31 vs 0.17 on
-  held-out, where 33 of 407 issues edit docs): NeuralPack ranks code first, and
-  small prose chunks match issue text well. This is the main open weakness.
+  on held-out, and every gap is significant. Without the test mate, regression-test
+  recall is equal at 1-2K and higher from 4K. The baseline finds more documentation
+  (at 2K: 0.31 vs 0.17 on held-out, where 33 of 407 issues edit docs): NeuralPack
+  ranks code first, and small prose chunks match issue text well. This is the main
+  open weakness.
 - **Definition channel** (default): code identifiers named in the query
   (`Signal.send_robust()`, `django.core.exceptions.ValidationError`) resolve to their
   defining blocks. On the held-out split it adds +5.7 to +10.3 points at every
@@ -47,12 +49,13 @@ Lite and confirmed once on a **held-out** split (SWE-bench Verified minus Lite,
   instead of dropping it. On dev this adds +13.9 / +7.3 points at 512 / 1K tokens;
   held-out confirms +3.8 points at 1K, and selections are identical at 2K and above.
   Pass `enable_trim=False` to disable it.
-- **Test mate** (opt-in, `enable_test_mate=True` / `--test-mate`): places the best
-  query-matching block of the test file that mirrors the top implementation file
-  (`pkg/mod.py` -> `tests/.../test_mod.py`) right after it. On held-out, recall of where
-  maintainers put the regression test rises +1.1 / +3.8 / +4.5 / +3.6 / +1.7 points at
-  1K-16K (all significant). Fix-site recall falls 0.3-1.4 points, which is why it is
-  opt-in: at 1K the trade is exactly even.
+- **Test mate** (default from a 2K budget; `enable_test_mate=True/False` or
+  `--test-mate always|never` override it): places the best query-matching block of the
+  test file that mirrors the top implementation file (`pkg/mod.py` ->
+  `tests/.../test_mod.py`) right after it. On a fresh held-out split (heldout-b, 400
+  issues) it finds +5.7 / +6.0 / +3.7 / +2.3 points more regression-test sites at
+  2K-16K (all significant) for 0.4-1.1 points of fix sites. Below 2K the trade was even
+  on held-out, so it stays off there.
 - **Robust ingestion:** as received, 46 of 103 benchmark snapshots failed to compile
   because a single binary, non-UTF-8, or credential-like file aborted the build (for
   example, every Django snapshot). Files that were never indexed are now skipped and
@@ -248,9 +251,9 @@ Opt-in modes, each measured on NPK-Bench (see "Current evidence" above):
 # Callers that can open files: 25% of the budget lists further ranked places
 # (path:start-end kind name) in "locations", without their text.
 npk query project.npk "Why is retry behavior wrong?" --budget 2000 --map-share 0.25
-# More regression-test context: the mirroring test file's best block follows the
-# top implementation block (slightly fewer fix sites).
-npk query project.npk "Why is retry behavior wrong?" --budget 2000 --test-mate
+# Test mate: the mirroring test file's best block follows the top implementation
+# block. Default "auto" places it from a 2048-token budget; "always" or "never" override.
+npk query project.npk "Why is retry behavior wrong?" --budget 1500 --test-mate always
 # Chat histories and other prose: local embeddings plus hybrid retrieval.
 npk compile ./chats chats.npk --mode semantic
 npk query chats.npk "Which book did I finish a week ago?" --retrieval hybrid

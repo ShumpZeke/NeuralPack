@@ -351,6 +351,8 @@ MUTANTS = [
     ("test_mate_deep_ranking_misread", "npk/pack/select.py", "_test_mate",
      "deep = list(reversed(deep)) if deep else deep",
      "tests/test_test_mate.py::test_reused_ranking_matches_a_dedicated_query"),
+    ("test_mate_gate_ignored", "npk/pack/select.py", None, None,
+     "tests/test_test_mate.py::test_default_mate_is_budget_gated"),
     ("test_mate_paths_never_refreshed", "npk/pack/select.py", "_place_test_mate",
      "self._test_paths_key = manifest.get('root_sha256', '')",
      "tests/test_test_mate.py::test_mate_sees_test_files_added_by_an_update"),
@@ -466,6 +468,11 @@ def main():
                 assert isinstance(matches[0].values[0], ast.Constant) and matches[0].values[0].value is True
                 matches[0].values[0] = ast.Constant(value=False)
                 changed = ast.unparse(ast.fix_missing_locations(tree))+'\n'
+            elif name == "test_mate_gate_ignored":
+                target = "budget >= TEST_MATE_MIN_BUDGET if self.enable_test_mate is None"
+                if source.count(target) != 1:
+                    raise ValueError("test-mate budget gate is no longer unique")
+                changed = source.replace(target, "True if self.enable_test_mate is None")
             elif name == "known_compound_vocabulary_guard_bypassed":
                 target = "return whole or expanded"
                 if source.count(target) != 1:

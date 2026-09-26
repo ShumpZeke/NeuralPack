@@ -28,6 +28,7 @@ Do not edit by hand.
 | E015b | 2026-09-26 | Docs target docs-3: documentation cost of role priors and of the definition channel | **kept** | docs-3 is kept as NPK-Bench's third target. (a) Demotion is decisively harmful: e006_role05 vs product on dev docs -14.1/-30.1/-37.2/-40.4 points at 2K-16K (CIs exclude zero, 0 wins / 5-12 losses), confirming the E006/E008 rejections on evidence rather than suspicion. (b) The definition channel costs docs: dev -10.3 [-21.8,-1.3] at 1K; held-out (33 tasks, confirmation only) -12.1 [-24.2,-3.0] at 2K and -10.1 [-21.2,-1.0] at 4K. Under the declared utility E002 stays net positive (fix gains of 8-10 points dominate the 0.087-weighted docs loss). Top-block trimming is docs-neutral (held-out identical). |
 | E016 | 2026-09-26 | Test-mate prototype: insert the test block mirroring the top implementation file | **rejected** | Superseded by E016b. The prototype re-filled the budget itself without top-block trimming, so its -6.3 fix points at 1K were mostly the missing trim, not the insertion; its tests gains (+10.8 [+5.2,+17.0] at 2K for position 1) motivated the product-form E016b. |
 | E016b | 2026-09-26 | Test mate in the product selector (placed right after the top implementation block) | **kept** | Kept as an opt-in mode (enable_test_mate=True, --test-mate); the held-out confirmation did not support a default change. Dev-fast: tests +3.7/+7.0/+4.9/+2.9/+2.8 points, fix changes not significant. Held-out H001 (407 issues; criteria committed before the run): tests +1.15 [+0.2,+2.3] / +3.8 [+1.6,+6.0] / +4.5 [+2.2,+7.1] / +3.6 [+2.0,+5.4] / +1.7 [+0.7,+2.9] points at 1K-16K (34 wins/6 losses at 2K); fix -1.15 [-2.2,-0.3] / -0.6 / -1.4 [-2.7,-0.2] / -0.3 / -0.6 [-1.3,-0.1]; docs ~0. Utility -0.012/+3.2/+2.8/+3.3/+1.0 points: negative (by 0.012 points) at 1K with a significant fix loss, so the pre-declared rule blocks a default change. A budget-gated variant (mate only at >=2K) is suggested by these numbers but must not be confirmed on the same held-out split. |
+| E016c | 2026-09-26 | Budget-gated test mate as the default (on from 2048 tokens) | **kept** | Passes the criteria declared in NEXT_STEPS.md before HB01 (heldout-b, 400 fresh issues). Gated vs product: 1K identical by construction; tests +5.7 [+3.4,+8.1] / +6.0 [+3.7,+8.4] / +3.7 [+2.0,+5.5] / +2.3 [+1.0,+3.7] points at 2K-16K; fix -1.1 [-2.6,+0.3] / -0.9 [-2.0,+0.2] / -0.9 [-1.8,-0.1] / -0.4 [-1.0,-0.0]; utility 0.0/+4.5/+5.0/+2.8/+1.9. Significant fix losses occur only where utility is clearly positive. The new default equals the evaluated composition (mate off at 1K, evaluated mate from 2K) on all 515 dev-fast selections. enable_test_mate: None (default, gated) / True / False; CLI --test-mate auto/always/never; mutant test_mate_gate_ignored is killed. |
 | E017 | 2026-09-26 | Context map: a budget share for ranked locations listed without text | **kept** | Kept as an opt-in output mode (select(map_share=...), --map-share), not a default: full-text recall falls as the map share grows. With 25% of the budget as a map (dev-fast, paired vs the product's full text): locatable fix recall +5.3/+4.4/+9.6/+11.3/+9.7 points at 1K-16K (all CIs exclude zero), tests +2.1/+8.8/+9.0/+7.4/+6.5, docs (13 tasks) 0.000->0.077 at 1K, 0.231->0.462 at 4K; full-text fix recall -4.6/-5.8/-2.9/-3.4/-3.6. A 25% map at 2K locates 0.484 of fix hunks, the product's full text at 4K 0.479. Map only (100%): 0.515 located at 1K vs 0.358 in text. |
 | E018 | 2026-09-26 | Documentation channel on top of reST sectioning (E019) | **rejected** | Built on E019, which was rejected. On docs (dev, 26 tasks) the channel added +10.3/+5.1/+7.7/+3.8/-2.6 points over E019 alone, but the combination only matched the main compiler beyond 1K. The channel alone on the main compiler was tested as E018b. The code-target run of this combination was stopped as superseded. |
 | E018b | 2026-09-26 | Documentation channel (named entities -> reST object directives) on the main compiler | **rejected** | Trades code for documentation. Docs (dev, 26 tasks): +14.1 [+2.6,+26.9] points at 1K (5 wins/0 losses), +5.8 at 2K, -2.6/-1.3/0 beyond. Dev-fast code targets vs the same selector without the channel: fix -2.4/-1.0/-5.3 [-9.7,-1.5]/-1.0/0.0 (0 wins/6 losses at 4K), tests -0.2/-1.9/-3.9 [-7.8,-1.0]/-1.6/-0.6. Utility -1.9/-2.2/-9.9/-2.6/-0.6 points: negative at every budget. Django documents nearly every entity, so the channel lifts documentation for most queries at the expense of the code the issue is about; documentation matters for 8.7% of tasks. |
@@ -37,6 +38,7 @@ Do not edit by hand.
 | E024 | 2026-09-26 | Bulk integrity leaves (one ordered scan per table) and batched framing | **rejected** | Correct but not worth its complexity. Digests are byte-identical (4 Django packs; new equality test across all local tables; two mutants killed), but paired compile timing gives 1.018x (12.86 -> 12.64 s median) and verify ~3% (9.4-9.8 s -> 8.8-9.3 s). The cold-pack microbenchmark (1.4 s -> 0.5 s) overstated the in-compile gain because sealing reads hot pages; verify is dominated by the deliberate FTS source-parity rebuild. Not merged: +40 lines in integrity-critical code for ~2%. |
 | E025 | 2026-09-26 | Parameter sweep: BM25 field weights (E025), candidate depth (E026), RRF constant (E027) | **rejected** | Defaults sit near a local optimum; no setting passes the rule. Field weights: name x2 / path x2 / both x2 change fix by at most +3.2 points (both x2 at 16K, the only significant cell) while costing tests -1.7 at 4K (utility -1.4); halving name/path weights loses up to -2.4. Candidate depth: 30 hurts (fix -3.4 at 4K, significant); 120 and 240 give +0.5 to +1.9 points, never significant (utility +0.2 to +3.1). RRF k=20 costs 1 point at 1-2K; k=120 is identical. A reimplementation control reproduced the product exactly. Held-out was not consulted. |
 | H001 | 2026-09-26 | Held-out confirmation: test mate (E016b), top-block trimming (E005c), context map (E017) | **kept** | E005c confirmed: trimming vs no trimming, fix +3.8 points at 1K (significant), identical at >=2K; utility +2.9/0/0/0/0. E017 confirmed: located fix recall with a 25% map +9.6/+12.3/+13.0/+11.4/+7.2 points over the default's full text, tests +5.3/+5.2/+7.7/+8.0/+8.2 (all CIs exclude zero). E016b confirmed only as a tradeoff: tests up at every budget, fix down 0.3-1.4 points; the 1K utility is -0.012 points with a significant fix loss, so it ships opt-in. Full current default on held-out (definition channel + trimming): fix 0.230/0.309/0.399/0.475/0.575 at 1K-16K (before this loop 0.136/0.206/0.302/0.393/0.490). |
+| HB01 | 2026-09-26 | Confirmation on heldout-b: budget-gated test mate (E016c) and replication of E002+E005c | **kept** | E016c passes (see its record). The definition channel and trimming replicate on fresh data: fix +6.5/+5.8/+9.0/+8.0/+8.3 points at 1K-16K over no-definitions/no-trim (all CIs exclude zero); tests -1.9 to -3.3 (the known tradeoff). Product on heldout-b (mate off): fix 0.178/0.244/0.348/0.428/0.526. |
 | M000 | 2026-09-26 | Baseline: conversation memory (LongMemEval-S dev, 100 questions) | **kept** | Reference point for the second workload family. Weak spots: multi-session aggregation and implicit preferences. |
 | M001 | 2026-09-26 | Source-diverse packing (per-file score decay) for multi-session memory questions | **rejected** | Turn recall falls 10-16 points: fused RRF scores are nearly flat (1/60..1/120), so any per-file decay reorders almost the whole ranking toward weakly matching fresh sessions. Session coverage rises but evidence turns are lost. |
 | M002 | 2026-09-26 | Relevance-density ordering (fused score / tokens^alpha) before greedy fill | **rejected** | Aggregate gain is a disguised role prior: it comes from LongMemEval's composition (842/896 evidence turns are user turns) and collapses the question type whose evidence is in long assistant turns (1K: 0.833 -> 0.333). Not a default. Pursue finer units for long turns instead. |
@@ -1291,6 +1293,60 @@ Do not edit by hand.
 - **Decision:** Kept as an opt-in mode (enable_test_mate=True, --test-mate); the held-out confirmation did not support a default change. Dev-fast: tests +3.7/+7.0/+4.9/+2.9/+2.8 points, fix changes not significant. Held-out H001 (407 issues; criteria committed before the run): tests +1.15 [+0.2,+2.3] / +3.8 [+1.6,+6.0] / +4.5 [+2.2,+7.1] / +3.6 [+2.0,+5.4] / +1.7 [+0.7,+2.9] points at 1K-16K (34 wins/6 losses at 2K); fix -1.15 [-2.2,-0.3] / -0.6 / -1.4 [-2.7,-0.2] / -0.3 / -0.6 [-1.3,-0.1]; docs ~0. Utility -0.012/+3.2/+2.8/+3.3/+1.0 points: negative (by 0.012 points) at 1K with a significant fix loss, so the pre-declared rule blocks a default change. A budget-gated variant (mate only at >=2K) is suggested by these numbers but must not be confirmed on the same held-out split.
 - **Follow-ups:** H001: held-out confirmation (tests, docs, fix) together with E005c trimming
 
+## E016c — Budget-gated test mate as the default (on from 2048 tokens)
+
+- **Status:** kept
+- **Hypothesis:** H001 showed the always-on test mate trades evenly at 1K (utility -0.012 points, significant fix loss) and gains clearly at 2K and above; gating it at 2K keeps the gain without the 1K cost. Designed from held-out results, so confirmed only on the fresh heldout-b.
+- **Run:** experiments/npkbench/runs/HB01-heldout-b
+- **Files changed:** `npk/pack/select.py`, `npk/cli.py`, `benchmarks/npkbench/arms.py`, `tests/test_test_mate.py`, `benchmarks/contract_mutations.py`, `README.md`, `CURRENT_ARCHITECTURE.md`
+- **Results:**
+
+```json
+{
+ "heldout_b_fix_1K_16K": {
+  "mate_always": [
+   0.174,
+   0.232,
+   0.34,
+   0.42,
+   0.522
+  ],
+  "product_mate_off": [
+   0.178,
+   0.244,
+   0.348,
+   0.428,
+   0.526
+  ]
+ },
+ "heldout_b_tests_1K_16K": {
+  "mate_always": [
+   0.071,
+   0.13,
+   0.167,
+   0.219,
+   0.277
+  ],
+  "product_mate_off": [
+   0.048,
+   0.073,
+   0.108,
+   0.182,
+   0.255
+  ]
+ },
+ "utility_gated": [
+  0.0,
+  0.04511,
+  0.05023,
+  0.02786,
+  0.01875
+ ]
+}
+```
+
+- **Decision:** Passes the criteria declared in NEXT_STEPS.md before HB01 (heldout-b, 400 fresh issues). Gated vs product: 1K identical by construction; tests +5.7 [+3.4,+8.1] / +6.0 [+3.7,+8.4] / +3.7 [+2.0,+5.5] / +2.3 [+1.0,+3.7] points at 2K-16K; fix -1.1 [-2.6,+0.3] / -0.9 [-2.0,+0.2] / -0.9 [-1.8,-0.1] / -0.4 [-1.0,-0.0]; utility 0.0/+4.5/+5.0/+2.8/+1.9. Significant fix losses occur only where utility is clearly positive. The new default equals the evaluated composition (mate off at 1K, evaluated mate from 2K) on all 515 dev-fast selections. enable_test_mate: None (default, gated) / True / False; CLI --test-mate auto|always|never; mutant test_mate_gate_ignored is killed.
+
 ## E017 — Context map: a budget share for ranked locations listed without text
 
 - **Status:** kept
@@ -1438,6 +1494,13 @@ Do not edit by hand.
 - **Run:** experiments/npkbench/runs/H001-mate-trim-heldout
 - **Bench version:** npkbench-1.1 + docs-3
 - **Decision:** E005c confirmed: trimming vs no trimming, fix +3.8 points at 1K (significant), identical at >=2K; utility +2.9/0/0/0/0. E017 confirmed: located fix recall with a 25% map +9.6/+12.3/+13.0/+11.4/+7.2 points over the default's full text, tests +5.3/+5.2/+7.7/+8.0/+8.2 (all CIs exclude zero). E016b confirmed only as a tradeoff: tests up at every budget, fix down 0.3-1.4 points; the 1K utility is -0.012 points with a significant fix loss, so it ships opt-in. Full current default on held-out (definition channel + trimming): fix 0.230/0.309/0.399/0.475/0.575 at 1K-16K (before this loop 0.136/0.206/0.302/0.393/0.490).
+
+## HB01 — Confirmation on heldout-b: budget-gated test mate (E016c) and replication of E002+E005c
+
+- **Status:** kept
+- **Hypothesis:** Criteria declared in NEXT_STEPS.md (commit c5ebfe0) before the run.
+- **Run:** experiments/npkbench/runs/HB01-heldout-b
+- **Decision:** E016c passes (see its record). The definition channel and trimming replicate on fresh data: fix +6.5/+5.8/+9.0/+8.0/+8.3 points at 1K-16K over no-definitions/no-trim (all CIs exclude zero); tests -1.9 to -3.3 (the known tradeoff). Product on heldout-b (mate off): fix 0.178/0.244/0.348/0.428/0.526.
 
 ## M000 — Baseline: conversation memory (LongMemEval-S dev, 100 questions)
 

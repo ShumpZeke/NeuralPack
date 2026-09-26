@@ -405,6 +405,10 @@ def _query_entities(query: str) -> List[str]:
 
 #: Lexical ranking depth reused by the test-mate lookup.
 TEST_MATE_DEPTH = 1000
+#: Default (``enable_test_mate=None``): place the test mate from this budget up.
+#: Below it the mate displaced fix sites (held-out H001 at 1K); at and above it
+#: the fresh heldout-b confirmed a net gain (E016c/HB01).
+TEST_MATE_MIN_BUDGET = 2048
 TEST_PATH = re.compile(r"(^|/)(tests?|testing)(/|$)|(^|/)test_[^/]*$|_tests?\.py$|(^|/)conftest\.py$")
 DOC_PATH = re.compile(r"(^|/)(docs?|doc_src)(/|$)|\.(rst|md|txt)$")
 _GENERIC_PATH_PARTS = frozenset({"tests", "test", "testing", "src", "lib", "py", "__init__", "unit", "units", "t"})
@@ -692,7 +696,7 @@ class PackSelector:
         enable_relations: bool = True,
         enable_definitions: bool = True,
         enable_trim: bool = True,
-        enable_test_mate: bool = False,
+        enable_test_mate: Optional[bool] = None,
         enable_cache: bool = True,
         max_cache_entries: int = 128,
     ):
@@ -720,8 +724,8 @@ class PackSelector:
         if type(enable_trim) is not bool:
             raise ValueError("enable_trim must be a boolean")
         self.enable_trim = enable_trim
-        if type(enable_test_mate) is not bool:
-            raise ValueError("enable_test_mate must be a boolean")
+        if enable_test_mate is not None and type(enable_test_mate) is not bool:
+            raise ValueError("enable_test_mate must be None (budget-gated), True or False")
         self.enable_test_mate = enable_test_mate
         self._test_paths_cache: Optional[List[Tuple[str, frozenset]]] = None
         self._test_paths_key: Optional[str] = None
@@ -1017,7 +1021,9 @@ class PackSelector:
             if sym:
                 ranks["symbol"] = sym
         deep = None
-        if self.enable_test_mate and len(_whole_lexical_terms(query)) != 1:
+        use_mate = (budget >= TEST_MATE_MIN_BUDGET if self.enable_test_mate is None
+                    else self.enable_test_mate)
+        if use_mate and len(_whole_lexical_terms(query)) != 1:
             # One ranking serves the channel (its top-limit prefix) and the
             # test-mate lookup; ORDER BY is total, so prefixes are identical.
             deep = _lexical_channel(con, query, max(limit, TEST_MATE_DEPTH))
@@ -1058,7 +1064,7 @@ class PackSelector:
                 channels_of.setdefault(block_id, []).append(channel)
 
         ordered_ids = sorted(fused, key=lambda b: -fused[b])
-        if self.enable_test_mate and ordered_ids:
+        if use_mate and ordered_ids:
             ordered_ids = self._place_test_mate(con, manifest, query, ordered_ids, fused, channels_of, deep)
         blocks = {b.id: b for b in load_blocks(con, ordered_ids)}
 
@@ -1098,12 +1104,15 @@ class PackSelector:
                          deep: Optional[Sequence[int]] = None) -> List[int]:
         """Put the test block that mirrors the top implementation file right after it.
 
-        Opt-in (``enable_test_mate=True``). Tests that exercise the code under
+        On by default from ``TEST_MATE_MIN_BUDGET`` tokens (``enable_test_mate``
+        None); ``True``/``False`` force it on/off. Tests that exercise the code under
         change are where a regression test goes; lexical ranking alone places
         them far down once definitions rank first (E002). The mate is chosen
         structurally (path convention) and lexically within that file, never by
         demoting anything else. Held-out (E016b/H001): regression-test sites
-        found +1.1 to +4.5 points at 1K-16K, fix sites -0.3 to -1.4 points.
+        found +1.1 to +4.5 points at 1K-16K, fix sites -0.3 to -1.4 points; gated
+        at 2K and above on the fresh heldout-b (HB01): tests +2.3 to +6.0, fix -0.4
+        to -1.1, net utility +1.9 to +5.0 points.
         """
         paths = dict(con.execute(
             f"SELECT b.id, f.path FROM blocks b JOIN files f ON f.id=b.file_id "

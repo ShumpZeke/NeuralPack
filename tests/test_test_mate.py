@@ -51,9 +51,18 @@ def test_mate_follows_top_implementation_block(tmp_path):
         chosen = selector.select(QUERY, budget_tokens=10**6, allow_escalation=False).evidence
     assert chosen[0].path == "pkg/throttle.py"
     assert chosen[1].path == "tests/test_throttle.py" and "test_mate" in chosen[1].channels
-    with PackSelector(str(pack), enable_cache=False) as selector:  # opt-in: off by default
+    with PackSelector(str(pack), enable_cache=False, enable_test_mate=False) as selector:
         plain = selector.select(QUERY, budget_tokens=10**6, allow_escalation=False).evidence
     assert all("test_mate" not in e.channels for e in plain)
+
+
+def test_default_mate_is_budget_gated(tmp_path):
+    _src, pack = _pack(tmp_path)
+    with PackSelector(str(pack), enable_cache=False) as selector:  # enable_test_mate=None
+        small = selector.select(QUERY, budget_tokens=select_module.TEST_MATE_MIN_BUDGET - 1).evidence
+        large = selector.select(QUERY, budget_tokens=select_module.TEST_MATE_MIN_BUDGET).evidence
+    assert all("test_mate" not in e.channels for e in small)
+    assert any("test_mate" in e.channels for e in large)
 
 
 def test_reused_ranking_matches_a_dedicated_query(tmp_path):
