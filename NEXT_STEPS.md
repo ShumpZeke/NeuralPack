@@ -23,6 +23,11 @@ have ~20 GB free. Record every experiment with `benchmarks.npkbench.expdb.append
 
 ## Evidence discipline that must not be relaxed
 
+- Contract mutations: 168 mutants (159 at the base commit plus 9 added in this loop for
+  source-policy skips, the definition channel, top-block trimming and the test mate), all
+  killed at 3b5f9f5 (`experiments/npkbench/contract-mutations-3b5f9f5.json`; commit 8eb6b27
+  misstates the added count as 13). Add a mutant for every new guard or ranking rule.
+
 - Decide on `dev`/`dev-fast`; confirm once on `heldout`; never tune on `heldout`.
 - Apply the declared decision rule in `benchmarks/npkbench/__init__.py`: frequency-weighted
   utility `U = d_fix + 0.99 d_tests + 0.087 d_docs` must be >= 0 at every budget, with a
