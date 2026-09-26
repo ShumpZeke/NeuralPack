@@ -217,9 +217,26 @@ def _refine(tasks: List[Task], name: str) -> None:
 #: cannot win one by ignoring another.
 TARGETS = ("fix", "tests", "docs")
 
-RELEASE_NOTES = re.compile(r"(^|/)(releases?|changes?|changelog|whats_?new|news|upcoming_changes)(/|\.|$)"
-                           r"|CHANGES|CHANGELOG|HISTORY", re.I)
-DOC_FILE = re.compile(r"(^|/)(docs?|doc_src)/|\.(rst|md|txt)$")
+#: Version of the docs-target construction (independent of BENCH_VERSION so
+#: fix/tests gold stays byte-identical). docs-2: the upstream fix is the first
+#: commit whose diff reproduces the reference patch (>= 60% of its distinctive
+#: changed lines), widened to the whole merged branch when it arrived through
+#: a merge commit; only prose pages count as documentation.
+DOCS_VERSION = "docs-2"
+DOCS_MIN_OVERLAP = 0.6
+DOCS_MAX_RANGE_FILES = 200
+NOT_TOPICAL = re.compile(
+    r"whats[-_]?new|release|change[-_]?log|(^|/)changes?(/|\.|$)|(^|/)news(/|\.|$)|upcoming[-_]changes"
+    r"|api[-_]changes|history|contributors|authors|(^|/)tests?/", re.I)
+PROSE = re.compile(r"\.(rst|md|txt|rest|adoc)$", re.I)
+DOC_DIR = re.compile(r"(^|/)(docs?|doc_src|documentation)/", re.I)
+
+
+def topical_doc(path: str) -> bool:
+    """A prose documentation page that is not release notes or a people list."""
+    if NOT_TOPICAL.search(path) or not PROSE.search(path):
+        return False
+    return bool(DOC_DIR.search(path)) or not path.lower().endswith(".txt")
 
 
 def _git(clone, *args) -> str:
@@ -228,37 +245,81 @@ def _git(clone, *args) -> str:
                           check=True).stdout
 
 
-def _docs_patch(task: "Task") -> Tuple[str, Dict]:
-    """Topical-docs part of the upstream fix commit, valid in base coordinates.
+def _changed_lines(diff: str) -> Tuple[set, set]:
+    added, removed = set(), set()
+    for line in diff.splitlines():
+        if line.startswith(("+++", "---")):
+            continue
+        if line[:1] in "+-" and line[1:].strip():
+            (added if line[0] == "+" else removed).add(line[1:].strip())
+    return added, removed
 
-    The upstream commit is the first commit after ``base_commit`` that touches
-    every file of the reference fix. Only documentation files that are
-    unchanged between ``base_commit`` and that commit's parent are kept, so
-    hunk coordinates are exact for the compiled base snapshot.
+
+def _distinctive(lines: set) -> set:
+    kept = {l for l in lines if len(l) >= 8 and re.search(r"[A-Za-z0-9_]{3}", l)}
+    return kept or lines
+
+
+_FIRST_PARENT: Dict[str, set] = {}
+
+
+def _find_fix_commit(clone, base: str, head: str, files: Sequence[str], ref_patch: str,
+                     limit: int = 15) -> Tuple[Optional[str], float]:
+    ref_add, ref_rm = _changed_lines(ref_patch)
+    use_added = bool(ref_add)
+    ref = _distinctive(ref_add if use_added else ref_rm)
+    if not ref:
+        return None, 0.0
+    best = 0.0
+    commits = _git(clone, "log", "--format=%H", "--reverse", f"{base}..{head}", "--", *files).split()
+    for commit in commits[:limit]:
+        add, rm = _changed_lines(_git(clone, "show", "--format=", commit, "--", *files))
+        overlap = len(ref & (add if use_added else rm)) / len(ref)
+        if overlap >= DOCS_MIN_OVERLAP:
+            return commit, overlap
+        best = max(best, overlap)
+    return None, best
+
+
+def _docs_patch(task: "Task", ref_patch: str) -> Tuple[str, Dict]:
+    """Topical-docs part of the upstream change that shipped the fix.
+
+    Hunk coordinates are exact for the compiled base snapshot: a docs file is
+    kept only when it is unchanged between ``base_commit`` and the start of
+    the upstream change.
     """
     from .repos import ensure_clone
 
     clone = ensure_clone(task.repo)
     head = _git(clone, "rev-parse", "--abbrev-ref", "origin/HEAD").strip() or "origin/main"
-    commits = _git(clone, "log", "--format=%H", "--reverse", f"{task.base_commit}..{head}",
-                   "--", *task.files).split()
-    meta: Dict = {"commit": None, "docs_files": [], "dropped_changed_since_base": []}
-    for commit in commits[:1]:
-        touched = set(_git(clone, "show", "--name-only", "--format=", commit).split())
-        if not set(task.files) <= touched:
-            break
-        meta["commit"] = commit
-        docs = sorted(f for f in touched if DOC_FILE.search(f) and not RELEASE_NOTES.search(f)
-                      and not re.search(r"(^|/)tests?/", f))
-        parent = f"{commit}^"
-        kept = []
-        for f in docs:
-            unchanged = not _git(clone, "diff", "--name-only", task.base_commit, parent, "--", f).strip()
-            (kept if unchanged else meta["dropped_changed_since_base"]).append(f)
-        meta["docs_files"] = kept
-        if kept:
-            return _git(clone, "show", "--format=", commit, "--", *kept), meta
-    return "", meta
+    meta: Dict = {"version": DOCS_VERSION, "commit": None, "overlap": 0.0, "merge": None,
+                  "docs_files": [], "dropped_changed_since_base": []}
+    commit, overlap = _find_fix_commit(clone, task.base_commit, head, task.files, ref_patch)
+    meta["overlap"] = round(overlap, 3)
+    if commit is None:
+        return "", meta
+    meta["commit"] = commit
+    lo, hi = f"{commit}^", commit
+    key = str(clone)
+    if key not in _FIRST_PARENT:
+        _FIRST_PARENT[key] = set(_git(clone, "rev-list", "--first-parent", head).split())
+    if commit not in _FIRST_PARENT[key]:
+        descendants = _git(clone, "rev-list", "--ancestry-path", "--reverse", f"{commit}..{head}").split()
+        merge = next((c for c in descendants if c in _FIRST_PARENT[key]), None)
+        parents = _git(clone, "rev-list", "--parents", "-n", "1", merge).split()[1:] if merge else []
+        if len(parents) == 2:
+            fork = _git(clone, "merge-base", parents[0], parents[1]).strip()
+            if len(_git(clone, "diff", "--name-only", fork, parents[1]).split()) <= DOCS_MAX_RANGE_FILES:
+                lo, hi, meta["merge"] = fork, parents[1], merge
+    touched = _git(clone, "diff", "--name-only", lo, hi).split()
+    kept = []
+    for f in sorted(f for f in touched if topical_doc(f)):
+        unchanged = not _git(clone, "diff", "--name-only", task.base_commit, lo, "--", f).strip()
+        (kept if unchanged else meta["dropped_changed_since_base"]).append(f)
+    meta["docs_files"] = kept
+    if not kept:
+        return "", meta
+    return _git(clone, "diff", lo, hi, "--", *kept), meta
 
 
 def load(name: str, target: str = "fix") -> List[Task]:
@@ -269,7 +330,7 @@ def load(name: str, target: str = "fix") -> List[Task]:
     rows = pq.read_table(download(name)).to_pylist()
     tasks = []
     docs_cache: Dict[str, list] = {}
-    docs_cache_path = HOME / "gold" / f"{name}-docs-patches-{BENCH_VERSION}.json"
+    docs_cache_path = HOME / "gold" / f"{name}-docs-patches-{DOCS_VERSION}.json"
     if target == "docs" and docs_cache_path.exists():
         import json
         docs_cache = json.loads(docs_cache_path.read_text())
@@ -278,7 +339,7 @@ def load(name: str, target: str = "fix") -> List[Task]:
             fix_hunks, _ = parse_patch(row["patch"])
             probe = Task(row["instance_id"], row["repo"], row["base_commit"], "", fix_hunks)
             if row["instance_id"] not in docs_cache:
-                patch, meta = _docs_patch(probe)
+                patch, meta = _docs_patch(probe, row["patch"])
                 docs_cache[row["instance_id"]] = [patch, meta]
             hunks, new_files = parse_patch(docs_cache[row["instance_id"]][0])
         else:
@@ -294,7 +355,7 @@ def load(name: str, target: str = "fix") -> List[Task]:
         import json
         docs_cache_path.parent.mkdir(parents=True, exist_ok=True)
         docs_cache_path.write_text(json.dumps(docs_cache, sort_keys=True))
-    _refine(tasks, name if target == "fix" else f"{name}-{target}")
+    _refine(tasks, {"fix": name, "tests": f"{name}-tests"}.get(target, f"{name}-{DOCS_VERSION}"))
     return tasks
 
 

@@ -1,7 +1,8 @@
 """NPK-Bench gold extraction and scoring must be exact; decisions depend on it."""
 import math
 
-from benchmarks.npkbench.data import Hunk, Task, _nonblank_anchor, parse_patch
+from benchmarks.npkbench.data import (Hunk, Task, _changed_lines, _distinctive, _nonblank_anchor,
+                                      parse_patch, topical_doc)
 from benchmarks.npkbench.metrics import bootstrap_diff, score, tokens_to_find
 
 PATCH = """diff --git a/pkg/mod.py b/pkg/mod.py
@@ -87,3 +88,22 @@ def test_bootstrap_is_deterministic_and_centered():
     assert mean == 0.25 and lo <= mean <= hi
     assert bootstrap_diff(a, b) == (mean, lo, hi)
     assert all(math.isnan(x) for x in bootstrap_diff([], []))
+
+
+def test_docs_target_counts_only_topical_prose_pages():
+    for path in ["docs/ref/settings.txt", "doc/usage/configuration.rst", "README.rst",
+                 "docs/topics/http/urls.txt", "doc/extdev/deprecated.rst"]:
+        assert topical_doc(path), path
+    for path in ["CONTRIBUTORS.txt", "AUTHORS", "doc/whats-new.rst", "docs/releases/4.0.txt",
+                 "doc/users/prev_whats_new/whats_new_3.0.rst", "CHANGES.rst", "doc/changelog.rst",
+                 "doc/en/example/conftest.py", "requirements.txt", "docs/conf.py",
+                 "doc/api/next_api_changes/behavior/123-XX.rst", "tests/docs/page.rst"]:
+        assert not topical_doc(path), path
+
+
+def test_fix_commit_matching_ignores_trivial_lines():
+    added, removed = _changed_lines(PATCH)
+    assert "import logging" in added and "return a + b" in removed
+    assert "+++ b/pkg/mod.py" not in added and "b/pkg/mod.py" not in added
+    assert _distinctive({")", "else:", "return a + b + c"}) == {"return a + b + c"}
+    assert _distinctive({")", "x"}) == {")", "x"}  # nothing distinctive: keep all
