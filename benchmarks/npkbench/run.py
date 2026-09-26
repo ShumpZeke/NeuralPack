@@ -137,7 +137,17 @@ def main(argv: List[str] | None = None) -> int:
     import npk.pack, npk.pack.compile, npk.pack.select, npk.pack.format  # noqa: F401
     import npk.pack.integrity, npk.pack.conflict, npk.pack.source_policy  # noqa: F401
 
-    args.out.mkdir(parents=True, exist_ok=True)
+    # A run is written to "<out>.partial" and renamed to "<out>" only when it is
+    # complete, so an unfinished run never looks like a result (the .partial
+    # directories are git-ignored). A finished run is never overwritten.
+    final_out = args.out
+    if (final_out / "summary.json").exists():
+        raise SystemExit(f"{final_out} already holds a finished run; choose another --out")
+    args.out = final_out.with_name(final_out.name + ".partial")
+    if args.out.exists():
+        import shutil
+        shutil.rmtree(args.out)  # an interrupted attempt of this same run
+    args.out.mkdir(parents=True)
     started = time.time()
     config = {"split": args.split, "arms": arm_names, "budgets": list(budgets), "tasks": len(tasks),
               "targets": ["fix", *[x for x in args.targets.split(",") if x]],
@@ -182,6 +192,9 @@ def main(argv: List[str] | None = None) -> int:
     if not summary["fingerprints_stable"]:
         print("WARNING: compiler sources changed during the run; results are not attributable")
     (args.out / "summary.json").write_text(json.dumps(summary, indent=1, sort_keys=True))
+    if final_out.exists():  # leftovers of a failed attempt (no summary): keep them aside
+        final_out.rename(final_out.with_name(f"{final_out.name}.partial-aborted-{int(time.time())}"))
+    args.out.rename(final_out)
     print(report.render(summary))
     return 0
 
