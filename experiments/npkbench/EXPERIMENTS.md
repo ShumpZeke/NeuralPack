@@ -22,6 +22,7 @@ Do not edit by hand.
 | E013 | 2026-09-26 | Sibling/near-duplicate collapse (measured before building) | **rejected** | At most 3.1% of selected tokens could be reclaimed on this workload; not worth a new representation now. Revisit for repetitive/vendored corpora or conversation logs. |
 | E014 | 2026-09-26 | Source scan without pathlib relative_to/is_relative_to (update latency) | **kept** | 1.5-2.5x faster updates on a large repository with identical artifacts. Remaining one-file update cost is the global digest over FTS storage (future: incremental global integrity). |
 | E015 | 2026-09-26 | Documentation target for NPK-Bench (docs-1) and first docs-cost measurement | **inconclusive** | Superseded by E015b. Inspection of the docs-1 gold found construction errors: the upstream-commit rule (first commit after base touching every fix file) picked a mass-reformat commit for pytest-5103 (19 doc example files) and a deprecation sweep for matplotlib-24265, and counted CONTRIBUTORS.txt and doc/users/prev_whats_new as topical docs. Directionally, documentation demotion collapsed docs recall (e006_role05: 0.000/0.000/0.000/0.011/0.063 at 1K-16K vs npk_default 0.000/0.092/0.236/0.276/0.425), and definitions+trim cost -9.2 points at 1K (CI [-19.5,-1.1], 0 wins/4 losses) and -6.9 at 8K. docs-3 (patch-overlap commit identification, widening only to the introducing PR merge, prose-only) is the corrected target; docs-2 was built but found to swallow branch-integration merges before any use. |
+| E017 | 2026-09-26 | Context map: a budget share for ranked locations listed without text | **kept** | Kept as an opt-in output mode (select(map_share=...), --map-share), not a default: full-text recall falls as the map share grows. With 25% of the budget as a map (dev-fast, paired vs the product's full text): locatable fix recall +5.3/+4.4/+9.6/+11.3/+9.7 points at 1K-16K (all CIs exclude zero), tests +2.1/+8.8/+9.0/+7.4/+6.5, docs (13 tasks) 0.000->0.077 at 1K, 0.231->0.462 at 4K; full-text fix recall -4.6/-5.8/-2.9/-3.4/-3.6. A 25% map at 2K locates 0.484 of fix hunks, the product's full text at 4K 0.479. Map only (100%): 0.515 located at 1K vs 0.358 in text. |
 | M000 | 2026-09-26 | Baseline: conversation memory (LongMemEval-S dev, 100 questions) | **kept** | Reference point for the second workload family. Weak spots: multi-session aggregation and implicit preferences. |
 | M001 | 2026-09-26 | Source-diverse packing (per-file score decay) for multi-session memory questions | **rejected** | Turn recall falls 10-16 points: fused RRF scores are nearly flat (1/60..1/120), so any per-file decay reorders almost the whole ranking toward weakly matching fresh sessions. Session coverage rises but evidence turns are lost. |
 | M002 | 2026-09-26 | Relevance-density ordering (fused score / tokens^alpha) before greedy fill | **rejected** | Aggregate gain is a disguised role prior: it comes from LongMemEval's composition (842/896 evidence turns are user turns) and collapses the question type whose evidence is in long assistant turns (1K: 0.833 -> 0.333). Not a default. Pursue finer units for long turns instead. |
@@ -949,6 +950,92 @@ Do not edit by hand.
 
 - **Decision:** Superseded by E015b. Inspection of the docs-1 gold found construction errors: the upstream-commit rule (first commit after base touching every fix file) picked a mass-reformat commit for pytest-5103 (19 doc example files) and a deprecation sweep for matplotlib-24265, and counted CONTRIBUTORS.txt and doc/users/prev_whats_new as topical docs. Directionally, documentation demotion collapsed docs recall (e006_role05: 0.000/0.000/0.000/0.011/0.063 at 1K-16K vs npk_default 0.000/0.092/0.236/0.276/0.425), and definitions+trim cost -9.2 points at 1K (CI [-19.5,-1.1], 0 wins/4 losses) and -6.9 at 8K. docs-3 (patch-overlap commit identification, widening only to the introducing PR merge, prose-only) is the corrected target; docs-2 was built but found to swallow branch-integration merges before any use.
 - **Follow-ups:** E015b: re-run on docs-3 gold (dev) and E015c (heldout) for the definition channel's docs cost; E019: Django documents in .txt reST, which the compiler cuts into 60-line windows; split by sections; E018: resolve named entities to the reST object directives that document them
+
+## E017 — Context map: a budget share for ranked locations listed without text
+
+- **Status:** kept
+- **Hypothesis:** Callers that can open files need to know where relevant code is more than they need its text; a one-line-per-place map (path:start-end kind name, Python classes as members) of the ranking beyond the text selection locates more gold per token than full text.
+- **Run:** experiments/npkbench/runs/E017-context-map-devfast
+- **Files changed:** `npk/pack/select.py`, `npk/pack/__init__.py`, `npk/cli.py`, `tests/test_context_map.py`
+- **Results:**
+
+```json
+{
+ "fix_located_1K_16K": {
+  "map10": [
+   0.409,
+   0.455,
+   0.498,
+   0.599,
+   0.675
+  ],
+  "map100": [
+   0.515,
+   0.583,
+   0.665,
+   0.704,
+   0.714
+  ],
+  "map25": [
+   0.411,
+   0.484,
+   0.574,
+   0.636,
+   0.704
+  ],
+  "map50": [
+   0.46,
+   0.529,
+   0.607,
+   0.694,
+   0.704
+  ]
+ },
+ "fix_text_1K_16K": {
+  "map0": [
+   0.358,
+   0.44,
+   0.479,
+   0.523,
+   0.607
+  ],
+  "map25": [
+   0.312,
+   0.382,
+   0.45,
+   0.489,
+   0.571
+  ],
+  "map50": [
+   0.262,
+   0.358,
+   0.44,
+   0.479,
+   0.523
+  ]
+ },
+ "tests_located_1K_16K": {
+  "map0": [
+   0.04,
+   0.064,
+   0.141,
+   0.24,
+   0.309
+  ],
+  "map25": [
+   0.061,
+   0.152,
+   0.231,
+   0.315,
+   0.375
+  ]
+ }
+}
+```
+
+- **Tradeoffs:** Located is not read: the caller must open the listed spans. Useful for agents with file access; for a single-call context the text-only default stays better.
+- **Decision:** Kept as an opt-in output mode (select(map_share=...), --map-share), not a default: full-text recall falls as the map share grows. With 25% of the budget as a map (dev-fast, paired vs the product's full text): locatable fix recall +5.3/+4.4/+9.6/+11.3/+9.7 points at 1K-16K (all CIs exclude zero), tests +2.1/+8.8/+9.0/+7.4/+6.5, docs (13 tasks) 0.000->0.077 at 1K, 0.231->0.462 at 4K; full-text fix recall -4.6/-5.8/-2.9/-3.4/-3.6. A 25% map at 2K locates 0.484 of fix hunks, the product's full text at 4K 0.479. Map only (100%): 0.515 located at 1K vs 0.358 in text.
+- **Follow-ups:** Held-out confirmation of the located gain; Measure agent task success with and without the map (needs an agent harness)
 
 ## M000 — Baseline: conversation memory (LongMemEval-S dev, 100 questions)
 

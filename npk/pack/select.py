@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import collections
+import contextlib
 import copy
 import math
 import re
@@ -103,6 +104,24 @@ class Evidence:
         return d
 
 
+@dataclass(frozen=True)
+class Location:
+    """A ranked place worth reading, listed without its text (context map)."""
+
+    path: str
+    span: str
+    kind: str
+    name: str
+    score: float
+
+    def line(self) -> str:
+        return f"{self.span} {self.kind} {self.name}".rstrip()
+
+    def as_dict(self) -> Dict[str, Any]:
+        return {"path": self.path, "span": self.span, "kind": self.kind, "name": self.name,
+                "score": round(self.score, 6)}
+
+
 @dataclass
 class Selection:
     """Result of a query. Carries its own uncertainty and fallback reasoning."""
@@ -123,6 +142,10 @@ class Selection:
     conflicts_resolved: List[Dict[str, Any]] = field(default_factory=list)
     tokenizer: Optional[Dict[str, Any]] = None
     available_tokens_estimate: Optional[int] = None
+    #: Context map (``select(map_share=...)``): ranked places beyond the text
+    #: evidence, one line each; ``map_tokens`` is their estimated cost.
+    locations: List[Location] = field(default_factory=list)
+    map_tokens: int = 0
 
     def context_text(self, separator: str = "\n\n", *, order: str = "relevance",
                      tokenizer: Optional[LocalTokenizer] = None) -> str:
@@ -150,6 +173,13 @@ class Selection:
         raise ValueError(f"unknown order {order!r}; expected 'relevance' or 'canonical'")
 
     def as_dict(self, include_text: bool = True) -> Dict[str, Any]:
+        result = self._as_dict(include_text)
+        if self.locations or self.map_tokens:
+            result["locations"] = [loc.as_dict() for loc in self.locations]
+            result["map_tokens"] = self.map_tokens
+        return result
+
+    def _as_dict(self, include_text: bool) -> Dict[str, Any]:
         return {
             "query": self.query,
             "evidence": [e.as_dict(include_text) for e in self.evidence],
@@ -199,6 +229,7 @@ def _copy_selection(selection: Selection) -> Selection:
     result.notes = list(selection.notes)
     result.conflicts_resolved = copy.deepcopy(selection.conflicts_resolved)
     result.tokenizer = copy.deepcopy(selection.tokenizer)
+    result.locations = list(selection.locations)
     return result
 
 
@@ -496,6 +527,8 @@ def _expand_dependencies(con: sqlite3.Connection, seeds: Sequence[int], depth: i
 
 #: Only Python blocks at least this large are split into member spans.
 TRIM_MIN_TOKENS = 200
+#: Budget for the full ranking a context map is drawn from (no block is cut).
+MAP_POOL_BUDGET = 10**9
 
 
 def _member_spans(con: sqlite3.Connection, block: Block) -> List[Tuple[int, int, str, str]]:
@@ -683,13 +716,27 @@ class PackSelector:
         budget_tokens: Optional[int] = None,
         target_model: Optional[str] = None,
         allow_escalation: bool = True,
+        map_share: float = 0.0,
     ) -> Selection:
+        """Select evidence for *query* within *budget_tokens*.
+
+        ``map_share`` (0 <= share < 1) reserves that fraction of the budget for
+        a context map: the evidence is selected within the rest, and
+        ``Selection.locations`` lists further ranked places (``path:start-end
+        kind name``; Python classes as their members) whose estimated line cost
+        fits the reserved tokens. For callers that can open files: a 25% map
+        locates as many fix sites at 2K tokens as full text does at 4K (E017).
+        """
         started = time.perf_counter()
         # target_model is accepted for provider-independent integrations. No
         # pricing lookup or automatic model-to-tokenizer inference happens here.
         budget = self.default_budget if budget_tokens is None else budget_tokens
         if type(budget) is not int or budget <= 0:
             raise ValueError("budget_tokens must be a positive integer")
+        if type(map_share) not in (int, float) or not 0 <= map_share < 1:
+            raise ValueError("map_share must be a number in [0, 1)")
+        if map_share:
+            return self._select_with_map(query, budget, target_model, allow_escalation, map_share, started)
 
         if self._con is not None:
             self._con.execute("BEGIN")
@@ -718,6 +765,46 @@ class PackSelector:
             return self._select_with_con(
                 con, manifest, query, budget, target_model, allow_escalation, started
             )
+
+    def _select_with_map(self, query: str, budget: int, target_model: Optional[str],
+                         allow_escalation: bool, map_share: float, started: float) -> Selection:
+        map_budget = int(budget * map_share)
+        result = _copy_selection(self.select(query, budget_tokens=budget - map_budget,
+                                             target_model=target_model, allow_escalation=allow_escalation))
+        result.budget_tokens = budget
+        if map_budget > 0:
+            ranked = self.select(query, budget_tokens=MAP_POOL_BUDGET, target_model=target_model,
+                                 allow_escalation=False)
+            result.locations, result.map_tokens = self._map_locations(
+                ranked.evidence, {e.span for e in result.evidence}, map_budget)
+        result.latency_ms = (time.perf_counter() - started) * 1000.0
+        return result
+
+    def _map_locations(self, ranked: Sequence[Evidence], shown: Set[str],
+                       budget: int) -> Tuple[List[Location], int]:
+        """Ranked places not already shown, in fused order, until *budget* is spent."""
+        locations: List[Location] = []
+        used = 0
+        with contextlib.ExitStack() as stack:
+            con = self._con if self._con is not None else stack.enter_context(open_pack(self.pack_path))
+            blocks = {b.id: b for b in load_blocks(con, [e.block_id for e in ranked])}
+            for evidence in ranked:
+                blk = blocks.get(evidence.block_id)
+                if blk is None or evidence.span in shown:
+                    continue
+                members = (_member_spans(con, blk) if blk.path.endswith((".py", ".pyi"))
+                           and blk.tokens >= TRIM_MIN_TOKENS else [])
+                entries = members if len(members) > 1 else [(blk.start_line, blk.end_line, blk.kind, blk.name or "")]
+                for start, end, kind, name in entries:
+                    location = Location(blk.path, f"{blk.path}:{start}-{end}", kind, name or "", evidence.score)
+                    if location.span in shown:
+                        continue
+                    cost = len(location.line()) // 4 + 1
+                    if used + cost > budget:
+                        return locations, used
+                    used += cost
+                    locations.append(location)
+        return locations, used
 
     def _select_with_con(
         self,

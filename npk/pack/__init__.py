@@ -19,14 +19,14 @@ from .format import (
     COMPILE_MODES, MODE_DETERMINISTIC, MODE_SEMANTIC, PACK_FORMAT_VERSION,
     Block, PackError, open_pack, pack_stats, verify,
 )
-from .select import Evidence, PackSelector, Selection
+from .select import Evidence, Location, PackSelector, Selection
 from .tokenizer import LocalTokenizer
 
 __all__ = [
     "CompileStats", "compile_pack", "update_pack", "estimate_tokens",
     "PACK_FORMAT_VERSION", "COMPILE_MODES", "MODE_DETERMINISTIC", "MODE_SEMANTIC",
     "Block", "PackError", "open_pack", "pack_stats", "verify",
-    "PackSelector", "Selection", "Evidence", "LocalTokenizer",
+    "PackSelector", "Selection", "Evidence", "Location", "LocalTokenizer",
     "select",
 ]
 

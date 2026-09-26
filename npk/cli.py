@@ -88,6 +88,9 @@ def main(argv: list[str] | None = None) -> int:
                        help="do not resolve identifiers named in the query to their definitions")
     query.add_argument("--no-trim", action="store_true",
                        help="skip an oversized top-ranked block instead of emitting its best members")
+    query.add_argument("--map-share", type=float, default=0.0,
+                       help="fraction of the budget for a context map: further ranked places "
+                            "(path:start-end kind name) listed without their text")
 
     verify_p = commands.add_parser("verify", help="Integrity-check a .npk")
     verify_p.add_argument("pack", type=Path)
@@ -189,7 +192,8 @@ def main(argv: list[str] | None = None) -> int:
                                     enable_trim=not args.no_trim)
             selection = selector.select(args.query, budget_tokens=args.budget,
                                         target_model=args.target_model,
-                                        allow_escalation=not args.no_escalation)
+                                        allow_escalation=not args.no_escalation,
+                                        map_share=args.map_share)
             result = selection.as_dict(include_text=args.show_text)
 
         elif args.command == "legacy-compile":
