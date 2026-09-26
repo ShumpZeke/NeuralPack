@@ -32,7 +32,9 @@ Lite and confirmed once on a **held-out** split (SWE-bench Verified minus Lite,
   defining blocks. On the held-out split it adds +5.7 to +10.3 points at every
   budget (2K: +0.103, 95% CI [+0.071, +0.136]), and file recall at 2K rises from 0.350
   to 0.538. **Tradeoff:** recall of where maintainers put regression tests falls 2.4
-  to 4.5 points. Pass `enable_definitions=False` to disable it.
+  to 4.5 points, and recall of the documentation they edited falls about 10 points at
+  2-4K (33 held-out issues edit docs). Weighted by how often each target exists, the net
+  effect is clearly positive. Pass `enable_definitions=False` to disable it.
 - **Top-block trimming** (default): if the best candidate alone exceeds the budget,
   NeuralPack emits its most relevant methods (exact source lines with their own spans)
   instead of dropping it. On dev this adds +13.9 / +7.3 points at 512 / 1K tokens;
