@@ -12,7 +12,48 @@ Your question → local search → selected passages → your chosen AI answers
 The compiler and default runtime use **zero generative LLM calls** and require
 no API key. The final answering model belongs to your application.
 
-## Evidence status: PIVOT REQUIRED
+## Current evidence: NPK-Bench (2026-09-26)
+
+Measured on [NPK-Bench](benchmarks/npkbench/__init__.py), which was built for this
+purpose. Queries are real SWE-bench issue reports, which NeuralPack's developers
+neither wrote nor tuned against. The score is whether the selected context contains
+the lines the maintainers' fix edited ("hunk recall"). Decisions were made on SWE-bench
+Lite and confirmed once on a **held-out** split (SWE-bench Verified minus Lite,
+407 issues). Details: [BASELINE.md](BASELINE.md) and the
+[experiment log](experiments/npkbench/EXPERIMENTS.md).
+
+| Held-out, fix locations found (hunk recall) | 1K | 2K | 4K | 8K | 16K |
+|---|---:|---:|---:|---:|---:|
+| Before this loop's retrieval changes | 0.136 | 0.206 | 0.302 | 0.393 | 0.490 |
+| **Current default** (definition channel) | **0.193** | **0.309** | **0.399** | **0.475** | **0.575** |
+
+- **Definition channel** (default): code identifiers named in the query
+  (`Signal.send_robust()`, `django.core.exceptions.ValidationError`) resolve to their
+  defining blocks. On the held-out split it adds +5.7 to +10.3 points at every
+  budget (2K: +0.103, 95% CI [+0.071, +0.136]), and file recall at 2K rises from 0.350
+  to 0.538. **Tradeoff:** recall of where maintainers put regression tests falls 2.4
+  to 4.5 points. Pass `enable_definitions=False` to disable it.
+- **Top-block trimming** (default): if the best candidate alone exceeds the budget,
+  NeuralPack emits its most relevant methods (exact source lines with their own spans)
+  instead of dropping it. On dev this adds +13.9 / +7.3 points at 512 / 1K tokens, and
+  selections are identical at 2K and above. Pass `enable_trim=False` to disable it.
+- **Robust ingestion:** as received, 46 of 103 benchmark snapshots failed to compile
+  because a single binary, non-UTF-8, or credential-like file aborted the build (for
+  example, every Django snapshot). Files that were never indexed are now skipped and
+  listed in `skipped_sources`. An *indexed* file that becomes unindexable still aborts
+  an update, and `--strict` restores the old behavior.
+- **Speed:** compiles are 1.5× faster with logically identical artifacts. A one-file
+  update of Django takes 0.8 s (was 1.2 s), and a no-op update takes 0.4 s (was 1.0 s).
+- **Conversation memory** (LongMemEval-S, about 120K-token chat histories): 1K tokens of
+  selected context keep 69% of evidence turns and 87% of evidence sessions.
+- Rejected with recorded evidence: path/role priors (they win only by ignoring tests
+  or documentation), budget portfolios, learned re-ranking over the existing channels,
+  file aggregation, callee expansion, coarse-to-fine emission, and diversity/density
+  packing for conversations.
+
+This measures localization evidence, not answer or patch correctness.
+
+## Evidence status before 2026-09-26: PIVOT REQUIRED
 
 NeuralPack is a working local compiler and retrieval runtime. A differentiated
 advantage over strong retrieval alternatives is **not established**. Previous
