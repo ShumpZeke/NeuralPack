@@ -20,6 +20,7 @@ Do not edit by hand.
 | E011 | 2026-09-26 | Learned pairwise re-ranker over the product's candidate pool | **rejected** | With role features the model relearns documentation demotion and a fix->tests transfer (largest weights are role and doc-like kind proxies). Role-blind models do not beat the product's fused ranking (fix within +/-3 points). The remaining ranking headroom needs new evidence (semantic similarity, structure), not reweighting of existing channels. |
 | E013 | 2026-09-26 | Sibling/near-duplicate collapse (measured before building) | **rejected** | At most 3.1% of selected tokens could be reclaimed on this workload; not worth a new representation now. Revisit for repetitive/vendored corpora or conversation logs. |
 | E014 | 2026-09-26 | Source scan without pathlib relative_to/is_relative_to (update latency) | **kept** | 1.5-2.5x faster updates on a large repository with identical artifacts. Remaining one-file update cost is the global digest over FTS storage (future: incremental global integrity). |
+| E015 | 2026-09-26 | Documentation target for NPK-Bench (docs-1) and first docs-cost measurement | **inconclusive** | Superseded by E015b. Inspection of the docs-1 gold found construction errors: the upstream-commit rule (first commit after base touching every fix file) picked a mass-reformat commit for pytest-5103 (19 doc example files) and a deprecation sweep for matplotlib-24265, and counted CONTRIBUTORS.txt and doc/users/prev_whats_new as topical docs. Directionally, documentation demotion collapsed docs recall (e006_role05: 0.000/0.000/0.000/0.011/0.063 at 1K-16K vs npk_default 0.000/0.092/0.236/0.276/0.425), and definitions+trim cost -9.2 points at 1K (CI [-19.5,-1.1], 0 wins/4 losses) and -6.9 at 8K. docs-2 (patch-overlap commit identification, prose-only) is the corrected target. |
 | M000 | 2026-09-26 | Baseline: conversation memory (LongMemEval-S dev, 100 questions) | **kept** | Reference point for the second workload family. Weak spots: multi-session aggregation and implicit preferences. |
 | M001 | 2026-09-26 | Source-diverse packing (per-file score decay) for multi-session memory questions | **rejected** | Turn recall falls 10-16 points: fused RRF scores are nearly flat (1/60..1/120), so any per-file decay reorders almost the whole ranking toward weakly matching fresh sessions. Session coverage rises but evidence turns are lost. |
 | M002 | 2026-09-26 | Relevance-density ordering (fused score / tokens^alpha) before greedy fill | **rejected** | Aggregate gain is a disguised role prior: it comes from LongMemEval's composition (842/896 evidence turns are user turns) and collapses the question type whose evidence is in long assistant turns (1K: 0.833 -> 0.333). Not a default. Pursue finer units for long turns instead. |
@@ -778,6 +779,80 @@ Do not edit by hand.
 ```
 
 - **Decision:** 1.5-2.5x faster updates on a large repository with identical artifacts. Remaining one-file update cost is the global digest over FTS storage (future: incremental global integrity).
+
+## E015 — Documentation target for NPK-Bench (docs-1) and first docs-cost measurement
+
+- **Status:** inconclusive
+- **Hypothesis:** Documentation demotion (E006/E008 d0 arms) and the definition channel (E002) move recall away from topical documentation; a docs target built from the docs edited by the upstream fix commit makes that cost measurable instead of unfalsifiable.
+- **Run:** experiments/npkbench/runs/E015-docs-target-dev
+- **Bench version:** npkbench-1.1 + docs-1
+- **Results:**
+
+```json
+{
+ "docs_hunk_recall_dev_29": {
+  "budgets": [
+   1024,
+   2048,
+   4096,
+   8192,
+   16384
+  ],
+  "e002_defs_role05": [
+   0.0,
+   0.0,
+   0.0,
+   0.011,
+   0.098
+  ],
+  "e006_role05": [
+   0.0,
+   0.0,
+   0.0,
+   0.011,
+   0.063
+  ],
+  "e008b_soft_i60_t30_d10": [
+   0.046,
+   0.132,
+   0.247,
+   0.316,
+   0.362
+  ],
+  "e008c_test40": [
+   0.035,
+   0.035,
+   0.161,
+   0.247,
+   0.356
+  ],
+  "npk_default": [
+   0.0,
+   0.092,
+   0.236,
+   0.276,
+   0.425
+  ],
+  "npk_nodefs": [
+   0.092,
+   0.109,
+   0.247,
+   0.345,
+   0.425
+  ],
+  "npk_notrim": [
+   0.035,
+   0.092,
+   0.236,
+   0.276,
+   0.425
+  ]
+ }
+}
+```
+
+- **Decision:** Superseded by E015b. Inspection of the docs-1 gold found construction errors: the upstream-commit rule (first commit after base touching every fix file) picked a mass-reformat commit for pytest-5103 (19 doc example files) and a deprecation sweep for matplotlib-24265, and counted CONTRIBUTORS.txt and doc/users/prev_whats_new as topical docs. Directionally, documentation demotion collapsed docs recall (e006_role05: 0.000/0.000/0.000/0.011/0.063 at 1K-16K vs npk_default 0.000/0.092/0.236/0.276/0.425), and definitions+trim cost -9.2 points at 1K (CI [-19.5,-1.1], 0 wins/4 losses) and -6.9 at 8K. docs-2 (patch-overlap commit identification, prose-only) is the corrected target.
+- **Follow-ups:** E015b: re-run on docs-2 gold (dev) and E015c (heldout) for the definition channel's docs cost; E019: Django documents in .txt reST, which the compiler cuts into 60-line windows; split by sections; E018: resolve named entities to the reST object directives that document them
 
 ## M000 — Baseline: conversation memory (LongMemEval-S dev, 100 questions)
 
