@@ -22,6 +22,24 @@ Splits (fixed before any NeuralPack result was observed):
 * ``heldout``  -- SWE-bench Verified minus Lite (407 tasks). Used only to
   confirm a promotion decision. Never used for tuning or error analysis.
 
+Targets (one selection is scored against all of them; see ``data.TARGETS``):
+``fix`` (lines the reference fix edits), ``tests`` (existing test-file lines the
+reference test patch edits; 99% of dev tasks) and ``docs`` (topical prose the
+upstream change edited, ``DOCS_VERSION``; 8.7% of dev tasks).
+
+Decision rule (declared 2026-09-26, before any docs-3 result was observed).
+For a candidate change, compute paired per-budget differences on dev (or
+dev-fast) for each target, and the utility
+
+    U(B) = d_fix(B) + 0.99 * d_tests(B) + 0.087 * d_docs(B)
+
+with each target weighted by how often it exists among dev tasks. Promote only
+if some budget shows a significant gain (paired bootstrap CI excluding zero) on
+the target the change addresses, U(B) >= 0 at every budget, and no target loses
+significantly at a budget where U(B) is not clearly positive. Then confirm
+once on ``heldout``. Changes to shared machinery must also hold on the
+conversation-memory workload (``memory-dev``).
+
 Data never enters the git repository: parquet files are downloaded from pinned
 HuggingFace revisions and checked against SHA-256 digests; source trees are
 exported from pinned git commits into ``NPK_BENCH_HOME`` (default ``~/npk-data``).

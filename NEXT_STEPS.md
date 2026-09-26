@@ -24,6 +24,9 @@ have ~20 GB free. Record every experiment with `benchmarks.npkbench.expdb.append
 ## Evidence discipline that must not be relaxed
 
 - Decide on `dev`/`dev-fast`; confirm once on `heldout`; never tune on `heldout`.
+- Apply the declared decision rule in `benchmarks/npkbench/__init__.py`: frequency-weighted
+  utility `U = d_fix + 0.99 d_tests + 0.087 d_docs` must be >= 0 at every budget, with a
+  significant gain on the target the change addresses.
 - Always score **all three targets** (`--targets tests,docs`): a change that wins the fix
   target by ignoring tests or documentation is gaming (E006, E011 were caught this way;
   documentation demotion collapses the docs target, E015).
