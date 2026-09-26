@@ -9,6 +9,7 @@ Do not edit by hand.
 | E001 | 2026-09-26 | Compile speed: parse Python once, statement-only raise walk, memoized term analysis | **kept** | 1.49x faster (not the >=2x expected: cProfile overstated pure-Python call overhead) with logically identical packs on real Django; kept. |
 | E001b | 2026-09-26 | Cache joined per-word analysis strings in analyzed_text | **rejected** | No measurable gain without the profiler (within noise). Reverted to keep the simpler code. Lesson: confirm profiler-guided micro-optimizations with uninstrumented paired timing. |
 | E003 | 2026-09-26 | File-level evidence aggregation (block score + alpha * file top-3 sum) | **rejected** | No significant gain at any budget; alpha 1.0 hurts at 16K. Discarded. File recall even drops at 4K+ (0.524 vs 0.592). |
+| E004 | 2026-09-26 | Skip and report never-indexed unindexable files instead of aborting the build | **kept** | Product can now compile every dev-fast snapshot, with explicit per-file reports and identical retrieval. |
 | E013 | 2026-09-26 | Sibling/near-duplicate collapse (measured before building) | **rejected** | At most 3.1% of selected tokens could be reclaimed on this workload; not worth a new representation now. Revisit for repetitive/vendored corpora or conversation logs. |
 
 ## E000 — Baseline: product as received on NPK-Bench dev-fast
@@ -137,6 +138,35 @@ Do not edit by hand.
 ```
 
 - **Decision:** No significant gain at any budget; alpha 1.0 hurts at 16K. Discarded. File recall even drops at 4K+ (0.524 vs 0.592).
+
+## E004 — Skip and report never-indexed unindexable files instead of aborting the build
+
+- **Status:** kept
+- **Hypothesis:** Aborting a whole build on one NUL/non-UTF-8/oversized/credential-like file makes the product unusable on real repositories; skipping never-indexed files with an explicit report fixes that without silent evidence loss.
+- **Expected:** 0/103 dev-fast snapshots blocked (from 46/103); identical retrieval
+- **Run:** experiments/npkbench/runs/E004-rebuild-parity-devfast
+- **Commit:** b56e96a
+- **Files changed:** `npk/pack/compile.py`, `npk/pack/source_policy.py`, `npk/pack/contracts.py`, `npk/cli.py`, `tests/test_source_boundary.py`, `tests/test_source_scan_failures.py`, `benchmarks/contract_mutations.py`
+- **Results:**
+
+```json
+{
+ "compile_s_mean_4_workers": {
+  "E000": 25.82,
+  "E001+E004": 14.96
+ },
+ "skipped_sources_reported": "46/103 tasks; reasons nul 46, non_utf8 15, credential 5",
+ "snapshots_needing_harness_removal": {
+  "after": "0/103",
+  "before": "46/103"
+ },
+ "span_level_parity_with_E000b": "1545/1545 selections identical",
+ "tests": "1228 passed; 5 targeted mutants assertion-killed"
+}
+```
+
+- **Tradeoffs:** A file that is already indexed and becomes unindexable still aborts an update (no silent evidence loss). strict=True/--strict restores fail-closed builds. Credential text never reaches the artifact or the report.
+- **Decision:** Product can now compile every dev-fast snapshot, with explicit per-file reports and identical retrieval.
 
 ## E013 — Sibling/near-duplicate collapse (measured before building)
 
