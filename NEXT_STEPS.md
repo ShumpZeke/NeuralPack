@@ -10,9 +10,9 @@ uv venv --python /usr/bin/python3.12 .venv && . .venv/bin/activate
 uv pip install -e '.[dev,tokenizers]' numpy==2.2.6 psutil==7.0.0 urllib3==2.7.0 click==8.5.0 \
     tiktoken==0.12.0 safetensors==0.6.2 pyarrow transformers==4.57.6
 uv pip install torch==2.8.0 --index-url https://download.pytorch.org/whl/cpu
-python -m pytest tests/ -q -p no:cacheprovider      # 1238 pass, 28 skip; one test needs a file not in this snapshot
+python -m pytest tests/ -q -p no:cacheprovider      # 1248 pass, 20 skip; one test needs a file not in this snapshot
 export NPK_BENCH_HOME=~/npk-data                     # datasets, clones, packs (never committed)
-python -m benchmarks.npkbench.run --split dev-fast --targets tests --arms npk_default,npk_nodefs \
+python -m benchmarks.npkbench.run --split dev-fast --targets tests,docs --arms npk_default,npk_nodefs \
     --workers 4 --out experiments/npkbench/runs/<id>
 python -m benchmarks.npkbench.report --compare RUN_A:ARM RUN_B:ARM   # paired bootstrap
 ```
@@ -24,30 +24,40 @@ have ~20 GB free. Record every experiment with `benchmarks.npkbench.expdb.append
 ## Evidence discipline that must not be relaxed
 
 - Decide on `dev`/`dev-fast`; confirm once on `heldout`; never tune on `heldout`.
-- Always score **both targets** (`--targets tests`): a change that wins the fix target by
-  ignoring tests is gaming (E006, E011 were caught this way).
-- NPK-Bench has **no documentation target**; any documentation demotion is
-  unfalsifiable here (E008). Build a docs target before revisiting.
+- Always score **all three targets** (`--targets tests,docs`): a change that wins the fix
+  target by ignoring tests or documentation is gaming (E006, E011 were caught this way;
+  documentation demotion collapses the docs target, E015).
+- The docs target is `docs-3` (`benchmarks/npkbench/data.py`, `DOCS_VERSION`): topical
+  prose pages edited by the upstream change (commit or PR) that reproduces the reference patch. It is
+  small (about 30 dev tasks, mostly Django), so read its paired bootstrap, not the means.
+  The docs-1 gold (E015) and docs-2 (integration merges) had construction errors; do not use them.
 - Performance changes must be proven output-identical with
   `benchmarks.npkbench.equivalence` and timed with `benchmarks.npkbench.compile_timing`
   (profilers overstate pure-Python call overhead; E001b).
+- Compiler experiments run from a separate git worktree (`git worktree add`), never by
+  editing the main tree while queued runs are pending: the pack fingerprint is the
+  compiler source of the tree the harness runs from.
 
 ## Strongest remaining hypotheses (ranked)
 
-1. **Dense similarity as a new evidence channel (E012, in progress).** Re-ranking the
-   product's top-100 pool; content-addressed vector cache. Headroom is large (gold is
-   first for 36% of issues, in the top-100 for 79%). If it wins on both targets, the
-   product path is compile-time vectors with reuse by block hash (already supported by
-   `update_pack`), not query-time encoding.
-2. **A documentation target** for NPK-Bench (e.g. Django upstream commits that touch
-   `docs/` alongside code), so documentation demotion (the largest unvalidated effect,
-   +2-4 points on both code targets) can be judged honestly.
-3. **Conversation memory (LongMemEval):** the weak types are multi-session aggregation
-   and implicit preferences. Diversity (M001), density ordering (M002) and paragraph
-   units (M003) failed; next candidates are temporal metadata use and dense similarity.
-4. **Held-out confirmation of E005c** (top-block trimming) alongside E002.
-5. **Update latency on large repositories** (measure a one-file Django update; the
-   global digest still rehashes FTS storage).
+In flight at the time of writing (run directories under `experiments/npkbench/runs/`;
+worktree branches `exp/e019-rst-text`, `exp/e018-doc-entities` are local only):
+
+1. **E012 dense re-ranking** of the product's top-100 pool (MiniLM, bge-small), all targets,
+   and **M004** the same on conversation memory (21 of 191 memory evidence turns at 2K are
+   never retrieved lexically: vocabulary mismatch). If dense wins, the product path is
+   compile-time vectors reused by block hash, not query-time encoding.
+2. **E019 reST in `.txt`:** Django writes its documentation as reST in `.txt`, which the
+   compiler cut into 60-line windows. Splitting by sections gives named, topical blocks
+   (settings.txt: 223 sections instead of 60 windows). Judge on docs *and* code targets.
+3. **E018 documentation channel:** reST object directives (`.. method::`, `.. setting::`,
+   `.. class::` ...) become `documents` symbols; a second definition-style channel resolves
+   named entities to the prose that documents them. Aims to recover the definition
+   channel's docs cost (E015: -9 points at 1K) without demoting anything.
+4. **E016 test-mate** (tests-target recovery by path convention) and **E017 context map**
+   (budget share for a location map; scored by `~loc` rows).
+5. **Held-out confirmation of E005c** (`E005h-trim-heldout`, queued last).
+6. **Update latency on large repositories:** the global digest still rehashes FTS storage.
 
 ## Things that were tried and must not be repeated without a new idea
 

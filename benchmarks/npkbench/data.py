@@ -218,16 +218,19 @@ def _refine(tasks: List[Task], name: str) -> None:
 TARGETS = ("fix", "tests", "docs")
 
 #: Version of the docs-target construction (independent of BENCH_VERSION so
-#: fix/tests gold stays byte-identical). docs-2: the upstream fix is the first
+#: fix/tests gold stays byte-identical). docs-3: the upstream fix is the first
 #: commit whose diff reproduces the reference patch (>= 60% of its distinctive
-#: changed lines), widened to the whole merged branch when it arrived through
-#: a merge commit; only prose pages count as documentation.
-DOCS_VERSION = "docs-2"
+#: changed lines), widened to its pull request when a GitHub PR merge
+#: introduced it (never to branch-integration merges such as 3.x -> master);
+#: only topical prose pages count as documentation. (docs-2 widened to any
+#: first-parent merge and swallowed integration merges; it was never used.)
+DOCS_VERSION = "docs-3"
 DOCS_MIN_OVERLAP = 0.6
 DOCS_MAX_RANGE_FILES = 200
 NOT_TOPICAL = re.compile(
     r"whats[-_]?new|release|change[-_]?log|(^|/)changes?(/|\.|$)|(^|/)news(/|\.|$)|upcoming[-_]changes"
-    r"|api[-_]changes|history|contributors|authors|(^|/)tests?/", re.I)
+    r"|api[-_]changes|history|contributors|authors|contributing|code[-_]of[-_]conduct|(^|/)\."
+    r"|(^|/)tests?/", re.I)
 PROSE = re.compile(r"\.(rst|md|txt|rest|adoc)$", re.I)
 DOC_DIR = re.compile(r"(^|/)(docs?|doc_src|documentation)/", re.I)
 
@@ -258,6 +261,12 @@ def _changed_lines(diff: str) -> Tuple[set, set]:
 def _distinctive(lines: set) -> set:
     kept = {l for l in lines if len(l) >= 8 and re.search(r"[A-Za-z0-9_]{3}", l)}
     return kept or lines
+
+
+def _is_ancestor(clone, older: str, newer: str) -> bool:
+    import subprocess
+    return subprocess.run(["git", "-C", str(clone), "merge-base", "--is-ancestor", older, newer],
+                          capture_output=True).returncode == 0
 
 
 _FIRST_PARENT: Dict[str, set] = {}
@@ -304,13 +313,20 @@ def _docs_patch(task: "Task", ref_patch: str) -> Tuple[str, Dict]:
     if key not in _FIRST_PARENT:
         _FIRST_PARENT[key] = set(_git(clone, "rev-list", "--first-parent", head).split())
     if commit not in _FIRST_PARENT[key]:
-        descendants = _git(clone, "rev-list", "--ancestry-path", "--reverse", f"{commit}..{head}").split()
-        merge = next((c for c in descendants if c in _FIRST_PARENT[key]), None)
-        parents = _git(clone, "rev-list", "--parents", "-n", "1", merge).split()[1:] if merge else []
-        if len(parents) == 2:
-            fork = _git(clone, "merge-base", parents[0], parents[1]).strip()
-            if len(_git(clone, "diff", "--name-only", fork, parents[1]).split()) <= DOCS_MAX_RANGE_FILES:
-                lo, hi, meta["merge"] = fork, parents[1], merge
+        # The merge that introduced the fix: the oldest merge descending from it
+        # whose first parent does not already contain it.
+        merges = _git(clone, "rev-list", "--ancestry-path", "--merges", "--topo-order", "--reverse",
+                      f"{commit}..{head}").split()
+        for merge in merges[:200]:
+            parents = _git(clone, "rev-list", "--parents", "-n", "1", merge).split()[1:]
+            if len(parents) != 2 or _is_ancestor(clone, commit, parents[0]):
+                continue
+            subject = _git(clone, "log", "-1", "--format=%s", merge)
+            if subject.startswith("Merge pull request #"):
+                fork = _git(clone, "merge-base", parents[0], parents[1]).strip()
+                if len(_git(clone, "diff", "--name-only", fork, parents[1]).split()) <= DOCS_MAX_RANGE_FILES:
+                    lo, hi, meta["merge"] = fork, parents[1], merge
+            break
     touched = _git(clone, "diff", "--name-only", lo, hi).split()
     kept = []
     for f in sorted(f for f in touched if topical_doc(f)):
