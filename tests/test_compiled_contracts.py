@@ -136,7 +136,10 @@ def test_default_query_never_loads_optional_channels(tmp_path, monkeypatch):
         monkeypatch.setattr(module, name, forbidden)
     result = PackSelector(pack).select("REQUEST_TIMEOUT")
     assert "30" in result.context_text()
-    assert result.channels_used == ["lexical"]
+    # The definition channel (E002) is a default, index-only channel; the
+    # optional symbol/embedding/dependency channels above stay forbidden.
+    assert result.channels_used == ["definition", "lexical"]
+    assert PackSelector(pack, enable_definitions=False).select("REQUEST_TIMEOUT").channels_used == ["lexical"]
 
 
 def test_default_keeps_conflicting_variants(tmp_path):

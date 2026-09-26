@@ -11,7 +11,7 @@ Do not edit by hand.
 | E003 | 2026-09-26 | File-level evidence aggregation (block score + alpha * file top-3 sum) | **rejected** | No significant gain at any budget; alpha 1.0 hurts at 16K. Discarded. File recall even drops at 4K+ (0.524 vs 0.592). |
 | E004 | 2026-09-26 | Skip and report never-indexed unindexable files instead of aborting the build | **kept** | Product can now compile every dev-fast snapshot, with explicit per-file reports and identical retrieval. |
 | E005 | 2026-09-26 | Rank coarse blocks, emit only the best-matching K method-level children of large blocks | **rejected** | Helps only at 1K; loses 5-10 pts at 2K-16K on the fix target: trimming blocks that would have fit drops gold lines (non-top children, class-level lines, class-end insertions) more often than the freed budget recovers. Follow-up E005c trims only blocks that no longer fit. |
-| E005c | 2026-09-26 | Fit-or-trim for the top-ranked block only (emit its best member spans when the whole block does not fit) | **inconclusive** | Strict improvement in the prototype (+8.2 points at 1K on the fix target, identical selections at 2K-16K), but it needs member spans that match the python_members splitter; re-parsing at query time is much weaker (0.298). Worth productizing with compile-time member spans (metadata only, no text duplication). |
+| E005c | 2026-09-26 | Top-block fit-or-trim: an oversized top-ranked Python block degrades to its best member spans | **kept** | Strict improvement on dev-fast: +13.9 / +7.3 points at 512 / 1K on the fix target, +0.7 / +0.5 on tests, identical selections at 2K-16K. Every emitted span is exact source with its own span; a note records the trim. enable_trim=False restores skipping. |
 | E006 | 2026-09-26 | Implementation-first role prior (demote tests/docs/examples by a BM25 factor) | **rejected** | Benchmark gaming, confirmed by attack: the fix-target gain is bought by nearly eliminating recall of where maintainers put regression tests (4K: 0.141 -> 0.034). Not a default. Could only return as an explicit caller-declared intent. |
 | E008 | 2026-09-26 | Role portfolio: per-role budget shares (impl/tests/docs), soft shares, pure test reservation | **rejected** | Attack by decomposition: the arms that improve both targets do so by demoting documentation, which NPK-Bench cannot falsify (it has no documentation target); giving docs 10-20% removes most of the gain, and a pure test reservation only transfers recall from fix to tests (two-target mean within noise). Hard shares also lose 10 points at 1K. Not promoted. |
 | E009 | 2026-09-26 | Callee expansion from named-definition seeds | **rejected** | Fix-target changes stay within +/-2 points (noise at n=103) and the tests target loses up to 5.5 points. Precise seeds do not rescue graph expansion here; gold is mostly named or lexically matched directly. |
@@ -247,55 +247,60 @@ Do not edit by hand.
 - **Decision:** Helps only at 1K; loses 5-10 pts at 2K-16K on the fix target: trimming blocks that would have fit drops gold lines (non-top children, class-level lines, class-end insertions) more often than the freed budget recovers. Follow-up E005c trims only blocks that no longer fit.
 - **Follow-ups:** E005c fit-or-trim (graceful degradation instead of skipping)
 
-## E005c — Fit-or-trim for the top-ranked block only (emit its best member spans when the whole block does not fit)
+## E005c — Top-block fit-or-trim: an oversized top-ranked Python block degrades to its best member spans
 
-- **Status:** inconclusive
-- **Hypothesis:** Trimming hurts when a block would have fit; restricting it to a top-ranked block that cannot fit at all is graceful degradation with no downside.
-- **Run:** experiments/npkbench/runs/E005d-fit-or-trim-devfast-{fix,tests}
+- **Status:** kept
+- **Hypothesis:** Trimming hurts only when a block would have fit; when the top-ranked block cannot fit at all, emitting its most relevant members (exact line slices) is graceful degradation with no downside at larger budgets.
+- **Run:** experiments/npkbench/runs/E005f-product-trim-devfast
+- **Files changed:** `npk/pack/select.py`, `tests/test_top_block_trim.py`, `tests/test_python_members.py`, `tests/test_compiled_contracts.py`, `benchmarks/contract_mutations.py`
 - **Results:**
 
 ```json
 {
- "fix": {
-  "fot_all_ranks": [
-   0.341,
-   0.409,
-   0.464,
-   0.527,
-   0.597
-  ],
-  "fot_rank1": [
-   0.367,
-   0.44,
-   0.479,
-   0.523,
-   0.607
-  ],
-  "product": [
+ "design": "No schema change: the file is rebuilt from its stored blocks (exact spans), parsed once, and members are cut with the compiler's own _class_member_spans; members overlapping the block are clipped (a method straddling a chunk boundary stays eligible); children are ranked by BM25-style overlap with file-local IDF (works under the query_only reader).",
+ "fix_hunk_recall_512_1K_2K_4K_8K_16K": {
+  "no_trim": [
+   0.123,
    0.285,
    0.44,
    0.479,
    0.523,
    0.607
   ],
-  "single_pack_rank3": [
-   0.298,
-   0.414,
+  "product_trim": [
+   0.262,
+   0.358,
+   0.44,
    0.479,
    0.523,
    0.607
+  ],
+  "two_pack_prototype": [
+   0.254,
+   0.367,
+   0.44,
+   0.479,
+   null,
+   null
   ]
  },
- "tests": {
-  "fot_rank1": [
-   0.04,
+ "latency_ms_p50_1K": {
+  "no_trim": 63,
+  "trim": 69
+ },
+ "tests": "1238 passed; mutants definition_channel_disabled, definition_ambiguity_cap_ignored, top_block_trim_disabled assertion-killed",
+ "tests_hunk_recall": {
+  "no_trim": [
+   0.033,
+   0.035,
    0.064,
    0.141,
    0.24,
    0.309
   ],
-  "product": [
-   0.035,
+  "product_trim": [
+   0.04,
+   0.04,
    0.064,
    0.141,
    0.24,
@@ -305,8 +310,7 @@ Do not edit by hand.
 }
 ```
 
-- **Decision:** Strict improvement in the prototype (+8.2 points at 1K on the fix target, identical selections at 2K-16K), but it needs member spans that match the python_members splitter; re-parsing at query time is much weaker (0.298). Worth productizing with compile-time member spans (metadata only, no text duplication).
-- **Follow-ups:** Store member spans per large Python block at compile time; trim only the top-ranked non-fitting block
+- **Decision:** Strict improvement on dev-fast: +13.9 / +7.3 points at 512 / 1K on the fix target, +0.7 / +0.5 on tests, identical selections at 2K-16K. Every emitted span is exact source with its own span; a note records the trim. enable_trim=False restores skipping.
 
 ## E006 — Implementation-first role prior (demote tests/docs/examples by a BM25 factor)
 

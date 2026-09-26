@@ -348,3 +348,110 @@ def make_fit_or_trim_single(name: str, *, min_block: int = 200, max_rank: int = 
 
 make_fit_or_trim_single("e005d_fots")
 make_fit_or_trim_single("e005d_fots_r3", max_rank=3)
+
+
+# ---------------------------------------------------------------------------
+# E005e: product-grade single-pack fit-or-trim. Member spans are computed
+# exactly as the python_members splitter does, from the whole file rebuilt
+# out of its stored blocks (blocks carry exact line spans; gaps are blank
+# lines), so chunked classes are handled. Only the top-ranked block is ever
+# trimmed, and only when it cannot fit.
+# ---------------------------------------------------------------------------
+from npk.pack.compile import _class_member_spans as _member_spans
+
+
+def file_member_spans(con, path: str) -> List[Tuple[int, int, str, str]]:
+    rows = con.execute("SELECT b.start_line, b.text FROM blocks b JOIN files f ON f.id=b.file_id "
+                       "WHERE f.path=? ORDER BY b.start_line", (path,)).fetchall()
+    lines: List[str] = []
+    for start, text in rows:
+        body = text.split("\n")
+        while len(lines) < start - 1:
+            lines.append("")
+        lines[start - 1:start - 1 + len(body)] = body
+    try:
+        tree = _ast.parse("\n".join(lines))
+    except (SyntaxError, ValueError):
+        return []
+    spans: List[Tuple[int, int, str, str]] = []
+    for node in tree.body:
+        if isinstance(node, _ast.ClassDef):
+            spans.extend(_member_spans(node, node.name))
+    return spans
+
+
+def _local_scores(texts: Dict[int, str], terms: Sequence[str], idf: Dict[str, float]) -> Dict[int, float]:
+    out = {}
+    for key, body in texts.items():
+        counts: Dict[str, int] = {}
+        for term in _analyzed_terms(body):
+            counts[term] = counts.get(term, 0) + 1
+        n = sum(counts.values()) or 1
+        out[key] = sum(idf.get(t, 0.0) * counts[t] * 2.2 / (counts[t] + 1.2 * (0.25 + 0.75 * n / 200))
+                       for t in terms if t in counts)
+    return out
+
+
+def make_fot_exact(name: str, *, idf_mode: str) -> Arm:
+    def runner(pack: Path, task: Task, budgets: Sequence[int]) -> Dict[int, ArmResult]:
+        import sqlite3 as _sqlite3
+        started = time.perf_counter()
+        with PackSelector(str(pack), enable_cache=False) as selector:
+            ranked = selector.select(task.query, budget_tokens=10**9, allow_escalation=False).evidence
+        out = {}
+        trimmed = None
+        for budget in budgets:
+            spans, used, n = [], 0, 0
+            for rank, ev in enumerate(ranked):
+                lo, hi = map(int, ev.span.rsplit(":", 1)[1].split("-"))
+                total_chars = used + len(ev.text) + (2 if n else 0)
+                if max(1, total_chars // 4) <= budget:
+                    used, n = total_chars, n + 1
+                    spans.append((ev.path, lo, hi))
+                    continue
+                if rank != 0 or not ev.path.endswith(".py") or len(ev.text) // 4 < 200:
+                    continue
+                if trimmed is None:
+                    con = _sqlite3.connect(Path(pack).absolute().as_uri() + "?mode=ro", uri=True)
+                    try:
+                        kids = [(s, e, k, nm) for s, e, k, nm in file_member_spans(con, ev.path)
+                                if s >= lo and e <= hi]
+                        # Clip spans that cross the chunk edges, keeping any line inside it.
+                        if not kids:
+                            kids = [(max(s, lo), min(e, hi), k, nm) for s, e, k, nm in file_member_spans(con, ev.path)
+                                    if s <= hi and e >= lo]
+                        lines = ev.text.split("\n")
+                        texts = {i: "\n".join(lines[s - lo:e - lo + 1]) for i, (s, e, _k, _n) in enumerate(kids)}
+                        terms = _lexical_terms(con, task.query)
+                        if idf_mode == "global":
+                            total = con.execute("SELECT COUNT(*) FROM blocks").fetchone()[0]
+                            con.execute("CREATE VIRTUAL TABLE temp.v USING fts5vocab(main, lexical, 'row')")
+                            marks = ",".join("?" * len(terms)) or "''"
+                            df = dict(con.execute(f"SELECT term, doc FROM temp.v WHERE term IN ({marks})", terms))
+                        else:  # file-local: rarity among this file's blocks
+                            file_texts = [r[0] for r in con.execute(
+                                "SELECT b.text FROM blocks b JOIN files f ON f.id=b.file_id WHERE f.path=?", (ev.path,))]
+                            total = len(file_texts)
+                            sets = [set(_analyzed_terms(x)) for x in file_texts]
+                            df = {t: sum(t in s for s in sets) for t in terms}
+                    finally:
+                        con.close()
+                    idf = {t: max(0.0, _math.log((total - df.get(t, 0) + 0.5) / (df.get(t, 0) + 0.5))) + 0.01
+                           for t in terms}
+                    scores = _local_scores(texts, terms, idf)
+                    trimmed = [(kids[i], len(texts[i])) for i in sorted(texts, key=lambda i: (-scores[i], i))]
+                for (s, e, _k, _nm), chars in trimmed:
+                    extra = chars + (2 if n else 0)
+                    if max(1, (used + extra) // 4) <= budget:
+                        used, n = used + extra, n + 1
+                        spans.append((ev.path, s, e))
+            out[budget] = ArmResult(spans, max(1, used // 4) if n else 0,
+                                    (time.perf_counter() - started) * 1000,
+                                    "selected" if n else "fallback_required", n)
+        return out
+
+    return register(Arm(name, runner=runner))
+
+
+make_fot_exact("e005e_exact_global", idf_mode="global")
+make_fot_exact("e005e_exact_local", idf_mode="local")

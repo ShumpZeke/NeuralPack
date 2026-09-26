@@ -491,6 +491,69 @@ def _expand_dependencies(con: sqlite3.Connection, seeds: Sequence[int], depth: i
 
 
 # ---------------------------------------------------------------------------
+# Graceful degradation for an oversized top-ranked block
+# ---------------------------------------------------------------------------
+
+#: Only Python blocks at least this large are split into member spans.
+TRIM_MIN_TOKENS = 200
+
+
+def _member_spans(con: sqlite3.Connection, block: Block) -> List[Tuple[int, int, str, str]]:
+    """Member spans of a Python class block, as the python_members splitter cuts them.
+
+    The file is rebuilt from its stored blocks (exact line spans; gaps are
+    blank lines), so classes that were cut into several line-window chunks
+    still parse. Every member overlapping *block* is returned, clipped to the
+    block's lines: a method that straddles a chunk boundary stays eligible.
+    """
+    import ast
+    from .compile import _class_member_spans
+
+    lines: List[str] = []
+    for start, text in con.execute(
+            "SELECT start_line, text FROM blocks WHERE file_id=? ORDER BY start_line", (block.file_id,)):
+        body = text.split("\n")
+        if len(lines) < start - 1:
+            lines.extend([""] * (start - 1 - len(lines)))
+        lines[start - 1:start - 1 + len(body)] = body
+    try:
+        tree = ast.parse("\n".join(lines))
+    except (SyntaxError, ValueError, RecursionError, MemoryError):
+        return []
+    spans = [span for node in tree.body if isinstance(node, ast.ClassDef)
+             for span in _class_member_spans(node, node.name)]
+    lo, hi = block.start_line, block.end_line
+    return [(max(s, lo), min(e, hi), kind, name) for s, e, kind, name in spans if s <= hi and e >= lo]
+
+
+def _rank_members(con: sqlite3.Connection, block: Block, members, query: str):
+    """Order member spans by BM25-style overlap with the query.
+
+    IDF is local to the block's file (rarity among its blocks), which needs
+    no index writes and distinguishes sibling methods of one class.
+    """
+    terms = _lexical_terms(con, query)
+    rows = [r[0] for r in con.execute("SELECT text FROM blocks WHERE file_id=?", (block.file_id,))]
+    vocab = [set(analyzed_terms(text)) for text in rows]
+    total = len(vocab)
+    idf = {t: max(0.0, math.log((total - sum(t in v for v in vocab) + 0.5)
+                                / (sum(t in v for v in vocab) + 0.5))) + 0.01 for t in terms}
+    lines = block.text.split("\n")
+    ranked = []
+    for index, (start, end, kind, name) in enumerate(members):
+        text = "\n".join(lines[start - block.start_line:end - block.start_line + 1])
+        counts: Dict[str, int] = {}
+        for term in analyzed_terms(text):
+            counts[term] = counts.get(term, 0) + 1
+        n = sum(counts.values()) or 1
+        score = sum(idf[t] * counts[t] * 2.2 / (counts[t] + 1.2 * (0.25 + 0.75 * n / 200))
+                    for t in terms if t in counts)
+        ranked.append((-score, index, start, end, kind, name, text))
+    ranked.sort()
+    return [(start, end, kind, name, text) for _s, _i, start, end, kind, name, text in ranked]
+
+
+# ---------------------------------------------------------------------------
 # Selector
 # ---------------------------------------------------------------------------
 
@@ -515,6 +578,7 @@ class PackSelector:
         tokenizer: Optional[LocalTokenizer] = None,
         enable_relations: bool = True,
         enable_definitions: bool = True,
+        enable_trim: bool = True,
         enable_cache: bool = True,
         max_cache_entries: int = 128,
     ):
@@ -539,6 +603,9 @@ class PackSelector:
         if type(enable_definitions) is not bool:
             raise ValueError("enable_definitions must be a boolean")
         self.enable_definitions = enable_definitions
+        if type(enable_trim) is not bool:
+            raise ValueError("enable_trim must be a boolean")
+        self.enable_trim = enable_trim
         self._con: Optional[sqlite3.Connection] = None
         self._manifest: Optional[Dict[str, str]] = None
         self._data_version: Optional[int] = None
@@ -678,6 +745,7 @@ class PackSelector:
                     self.candidate_limit,
                     self.enable_relations,
                     self.enable_definitions,
+                    self.enable_trim,
                     self.tokenizer.sha256 if self.tokenizer is not None else None,
                 )
                 if cache_key in self._cache:
@@ -813,11 +881,19 @@ class PackSelector:
 
         evidence: List[Evidence] = []
         used_chars = 0
+        top = ordered_ids[0] if ordered_ids else None
         for block_id in ordered_ids:
             blk = blocks.get(block_id)
             if blk is None:
                 continue
             if not self._fits(evidence, blk.text, budget, used_chars=used_chars):
+                # The best candidate never silently disappears: when it alone
+                # cannot fit, admit its most query-relevant member spans.
+                # Lower-ranked blocks that do not fit are skipped as before.
+                if block_id == top and self.enable_trim:
+                    used_chars = self._admit_members(
+                        con, blk, query, budget, evidence, used_chars,
+                        fused[block_id], channels_of.get(block_id, []), notes)
                 continue
             used_chars += len(blk.text) + (2 if evidence else 0)
             evidence.append(Evidence(
@@ -833,6 +909,35 @@ class PackSelector:
             channels_used=sorted(ranks), escalations=[],
             risk_band=risk, seed_failed=not evidence, latency_ms=0.0, notes=notes,
         )
+
+    def _admit_members(self, con, blk: Block, query: str, budget: int, evidence: List[Evidence],
+                       used_chars: int, score: float, channels: List[str], notes: List[str]) -> int:
+        """Admit the best member spans of an oversized block; return used chars.
+
+        Members are exact line slices of the block with their own spans, so
+        each can be cited and the elided remainder re-read by span. Only
+        Python class blocks of at least ``TRIM_MIN_TOKENS`` are split.
+        """
+        if not blk.path.endswith((".py", ".pyi")) or blk.tokens < TRIM_MIN_TOKENS:
+            return used_chars
+        members = _member_spans(con, blk)
+        if len(members) <= 1:
+            return used_chars
+        added = 0
+        for start, end, kind, name, text in _rank_members(con, blk, members, query):
+            if not text.strip() or not self._fits(evidence, text, budget, used_chars=used_chars):
+                continue
+            used_chars += len(text) + (2 if evidence else 0)
+            evidence.append(Evidence(
+                block_id=blk.id, path=blk.path, span=f"{blk.path}:{start}-{end}",
+                kind=kind, name=name, tokens=max(1, len(text) // 4), text=text,
+                score=score, channels=list(channels) + ["trimmed"],
+            ))
+            added += 1
+        if added:
+            notes.append(f"top-ranked block {blk.span} exceeds the budget; "
+                         f"emitted {added} of its {len(members)} member spans")
+        return used_chars
 
     def _assemble(self, con, query, base: Selection, extra_ids: List[int], budget: int) -> Selection:
         have = {e.block_id for e in base.evidence}
