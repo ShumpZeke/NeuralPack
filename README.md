@@ -24,9 +24,15 @@ Lite and confirmed once on a **held-out** split (SWE-bench Verified minus Lite,
 
 | Held-out, fix locations found (hunk recall) | 1K | 2K | 4K | 8K | 16K |
 |---|---:|---:|---:|---:|---:|
-| Before this loop's retrieval changes | 0.136 | 0.206 | 0.302 | 0.393 | 0.490 |
+| Standard RAG baseline: BM25 over 60-line chunks (identifier-split) | 0.101 | 0.149 | 0.217 | 0.267 | 0.321 |
+| NeuralPack before this loop's retrieval changes | 0.136 | 0.206 | 0.302 | 0.393 | 0.490 |
 | **Current default** (definition channel + top-block trimming) | **0.230** | **0.309** | **0.399** | **0.475** | **0.575** |
 
+- **Against a standard RAG pipeline** (same files, budgets and gold; BM25 over fixed
+  60-line chunks, filled in score order): NeuralPack finds 1.6-2.1x as many fix sites
+  on held-out, and every gap is significant. Regression-test recall is equal at 1-2K and
+  higher from 4K. The baseline finds more documentation at 2K (documentation edits
+  occur in 33 of 407 held-out issues).
 - **Definition channel** (default): code identifiers named in the query
   (`Signal.send_robust()`, `django.core.exceptions.ValidationError`) resolve to their
   defining blocks. On the held-out split it adds +5.7 to +10.3 points at every

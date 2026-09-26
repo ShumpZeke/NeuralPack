@@ -94,7 +94,9 @@ def environment() -> Dict[str, Any]:
     def git(*args):
         return subprocess.run(["git", "-C", str(root), *args], capture_output=True, text=True).stdout.strip()
     return {
-        "git_commit": git("rev-parse", "HEAD"), "git_dirty": bool(git("status", "--porcelain")),
+        # Untracked files (e.g. other runs' outputs) do not change what ran.
+        "git_commit": git("rev-parse", "HEAD"),
+        "git_dirty": bool(git("status", "--porcelain", "--untracked-files=no")),
         "python": sys.version.split()[0], "sqlite": sqlite3.sqlite_version,
         "platform": platform.platform(), "cpus": os.cpu_count(), "bench_version": data.BENCH_VERSION,
     }

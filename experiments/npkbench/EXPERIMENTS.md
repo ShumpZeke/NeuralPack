@@ -5,6 +5,7 @@ Do not edit by hand.
 
 | ID | Date | Title | Status | Reason |
 |---|---|---|---|---|
+| B001 | 2026-09-26 | Standard-RAG baseline: Okapi BM25 over fixed 60-line chunks (whole and split identifiers) | **kept** | Kept as a permanent baseline arm. Held-out (407 issues), fix recall: product 0.230/0.309/0.399/0.475/0.575 vs chunk BM25 0.102/0.146/0.190/0.227/0.262 (+12.8 to +31.4 points) and identifier-split chunk BM25 0.101/0.149/0.217/0.267/0.321 (+12.9 to +25.5); every CI excludes zero. Even the pre-loop product (0.136/0.206/0.302/0.393/0.490) beat both. Tests: split baseline equal at 1-2K, product ahead from 8K (+5.7, +6.6 significant). Docs (33 issues): baseline ahead at 2K (+14.6 split, +21.4 whole; significant), equal from 8K. Dev-fast agrees on fix (+19 to +30 points). Memory-dev at 256-1K is not a fair comparison for 60-line chunks of long chat lines; B002 uses the common ~1,000-character chunker instead. |
 | E000 | 2026-09-26 | Baseline: product as received on NPK-Bench dev-fast | **kept** | Reference point. Ranking (not packing) is the dominant loss; ~45% of selected tokens are docs/tests; 46/103 snapshots need blocker removal to compile. |
 | E001 | 2026-09-26 | Compile speed: parse Python once, statement-only raise walk, memoized term analysis | **kept** | 1.49x faster (not the >=2x expected: cProfile overstated pure-Python call overhead) with logically identical packs on real Django; kept. |
 | E001b | 2026-09-26 | Cache joined per-word analysis strings in analyzed_text | **rejected** | No measurable gain without the profiler (within noise). Reverted to keep the simpler code. Lesson: confirm profiler-guided micro-optimizations with uninstrumented paired timing. |
@@ -43,6 +44,82 @@ Do not edit by hand.
 | M005 | 2026-09-26 | Time-window channel for dated conversation memory | **rejected** | No effect: identical to the product except one win at 4K (+0.5 points; temporal-reasoning 0.732 -> 0.751 at 4K). Pre-run analysis predicted a small ceiling: LongMemEval-S histories span 10-90 days, so period expressions cover every session (reporting lag makes the window run to the question date), and only 3 of 17 parsable memory-dev questions get a selective point window. |
 | M006 | 2026-09-26 | The shipped semantic/hybrid mode on conversation memory | **kept** | Kept as the documented configuration for conversation memory (no code change). vs lexical default on memory-dev: +4.5 [+0.4,+9.0] / +1.4 / +0.3 / +3.5 / +4.4 [+0.2,+9.2] / +7.1 [+2.8,+12.2] points at 256-8K; largest on preferences (0.67 -> 1.00 at 8K) and multi-session (0.74 -> 0.83 at 8K). Within about 3 points of M004's bge-small pool fusion (-3.3 at 4K, +1.3 at 8K) and indistinguishable from MiniLM pool fusion. Cost: 48.9 s compile per history (one CPU thread) vs 0.25 s; query p50 5.9 ms vs 1.9 ms. |
 | O001 | 2026-09-26 | Out-of-distribution check on six never-used repositories (SWE-bench Lite dev) | **kept** | Generalizes on the fix target (23 issues: sqlfluff, pvlib, astroid, pydicom, marshmallow, pyvista). Definition channel + trimming vs neither: fix +19.6 [+4.3,+37.0] / +13.8 / +8.7 / +2.2 / +0.7 points at 1K-16K; tests -5/-10/-7.5/-7.5/-2.5 (not significant, same direction as held-out). Trimming alone: fix +15.2 [+2.2,+30.4] at 1K, identical beyond. Test mate (opt-in): tests +5/+15/+10/+5/+5 with no fix loss (20 tasks, lower CI bounds at zero). |
+
+## B001 — Standard-RAG baseline: Okapi BM25 over fixed 60-line chunks (whole and split identifiers)
+
+- **Status:** kept
+- **Hypothesis:** NeuralPack's structure-aware blocks, fielded BM25 and channels beat the typical retrieval pipeline on the same repositories, budgets and gold.
+- **Run:** experiments/npkbench/runs/B001-rag-baseline-heldout, experiments/npkbench/runs/B001-rag-baseline-devfast, experiments/npkbench/runs/B001-rag-baseline-memory-dev
+- **Results:**
+
+```json
+{
+ "heldout_docs_1K_16K": {
+  "bm25_chunks_split": [
+   0.125,
+   0.311,
+   0.372,
+   0.537,
+   0.614
+  ],
+  "product": [
+   0.137,
+   0.165,
+   0.305,
+   0.517,
+   0.602
+  ]
+ },
+ "heldout_fix_1K_16K": {
+  "bm25_chunks": [
+   0.102,
+   0.146,
+   0.19,
+   0.227,
+   0.262
+  ],
+  "bm25_chunks_split": [
+   0.101,
+   0.149,
+   0.217,
+   0.267,
+   0.321
+  ],
+  "product": [
+   0.23,
+   0.309,
+   0.399,
+   0.475,
+   0.575
+  ],
+  "product_before_loop": [
+   0.136,
+   0.206,
+   0.302,
+   0.393,
+   0.49
+  ]
+ },
+ "heldout_tests_1K_16K": {
+  "bm25_chunks_split": [
+   0.06,
+   0.088,
+   0.129,
+   0.163,
+   0.221
+  ],
+  "product": [
+   0.058,
+   0.105,
+   0.149,
+   0.22,
+   0.287
+  ]
+ }
+}
+```
+
+- **Decision:** Kept as a permanent baseline arm. Held-out (407 issues), fix recall: product 0.230/0.309/0.399/0.475/0.575 vs chunk BM25 0.102/0.146/0.190/0.227/0.262 (+12.8 to +31.4 points) and identifier-split chunk BM25 0.101/0.149/0.217/0.267/0.321 (+12.9 to +25.5); every CI excludes zero. Even the pre-loop product (0.136/0.206/0.302/0.393/0.490) beat both. Tests: split baseline equal at 1-2K, product ahead from 8K (+5.7, +6.6 significant). Docs (33 issues): baseline ahead at 2K (+14.6 split, +21.4 whole; significant), equal from 8K. Dev-fast agrees on fix (+19 to +30 points). Memory-dev at 256-1K is not a fair comparison for 60-line chunks of long chat lines; B002 uses the common ~1,000-character chunker instead.
 
 ## E000 — Baseline: product as received on NPK-Bench dev-fast
 
