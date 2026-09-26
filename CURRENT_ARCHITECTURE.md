@@ -115,3 +115,40 @@ Artifact: 45.7 MB. A typical long-issue query takes 57-71 ms on this pack.
 
 NPK-Bench (`benchmarks/npkbench/`) was built in this loop to close that gap; see
 [BASELINE.md](BASELINE.md).
+
+## 7. What changed since the snapshot (current product, kept by experiments)
+
+The sections above describe the product as found. These changes were kept, each on
+NPK-Bench evidence recorded in [EXPERIMENTS.md](experiments/npkbench/EXPERIMENTS.md):
+
+```text
+source tree ──scan──▶ files ──split──▶ blocks ──index──▶ project.npk (SQLite v8)
+  (unindexable never-indexed files are skipped and listed in manifest skipped_sources)
+                                                            │
+query ──analyze──▶ terms ──FTS5 bm25 top-60───────────┐     │
+      ├─raise-intent──▶ relation sites ───────────────┤     │
+      └─named code entities──▶ defining blocks ───────┴─RRF─▶ greedy fill ──▶ Selection
+                                  (if the top block alone exceeds the budget,
+                                   its most query-relevant member spans are emitted)
+```
+
+- **Compile (E001):** one cached AST parse per Python file and a statement-only walk for
+  raise sites; 1.49x faster Django compiles, logically identical artifacts.
+- **Ingestion (E004):** a never-indexed file that is not indexable text (oversize, NUL,
+  non-UTF-8, credential-shaped, link outside the root) is skipped and reported in
+  `stats.skipped_sources` and the manifest instead of aborting the build (46 of 103
+  benchmark snapshots could not be compiled before). An already-indexed file that becomes
+  unindexable still aborts `update_pack`; `strict=True` / `--strict` restores abort-on-any.
+- **Updates (E014):** string-prefix path handling in `scan_source`; one-file Django
+  updates 1.5-2.5x faster. Remaining cost (profiled): scan with per-file `realpath`
+  (kept deliberately: every file is resolved before it is read) and the global
+  integrity digest, computed before and after the update.
+- **Definition channel (E002, `enable_definitions`, `--no-definitions`):** identifiers the
+  query names (dotted parts, called names, backticked words, snake/camel-case words) are
+  resolved against the definition-only `symbols` table; each name votes for its defining
+  blocks with weight `1/log2(1+n)`, names with more than 10 definitions are ignored.
+  Held-out: fix-target recall +5.7 to +10.3 points at 1K-16K; tests target -2.4 to -4.5.
+- **Top-block trimming (E005c, `enable_trim`, `--no-trim`):** when the best-ranked Python
+  block alone exceeds the budget, its member spans (methods/statement runs rebuilt from
+  the file) are ranked by file-local BM25 and admitted as `trimmed` evidence instead of
+  skipping the block. +13.9 / +7.3 points at 512 / 1K tokens; identical at 2K and above.
