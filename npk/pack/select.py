@@ -692,7 +692,7 @@ class PackSelector:
         enable_relations: bool = True,
         enable_definitions: bool = True,
         enable_trim: bool = True,
-        enable_test_mate: bool = True,
+        enable_test_mate: bool = False,
         enable_cache: bool = True,
         max_cache_entries: int = 128,
     ):
@@ -1098,10 +1098,12 @@ class PackSelector:
                          deep: Optional[Sequence[int]] = None) -> List[int]:
         """Put the test block that mirrors the top implementation file right after it.
 
-        Tests that exercise the code under change are where a regression test
-        goes; lexical ranking alone places them far down once definitions rank
-        first (E002). The mate is chosen structurally (path convention) and
-        lexically within that file, never by demoting anything else.
+        Opt-in (``enable_test_mate=True``). Tests that exercise the code under
+        change are where a regression test goes; lexical ranking alone places
+        them far down once definitions rank first (E002). The mate is chosen
+        structurally (path convention) and lexically within that file, never by
+        demoting anything else. Held-out (E016b/H001): regression-test sites
+        found +1.1 to +4.5 points at 1K-16K, fix sites -0.3 to -1.4 points.
         """
         paths = dict(con.execute(
             f"SELECT b.id, f.path FROM blocks b JOIN files f ON f.id=b.file_id "

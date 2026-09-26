@@ -47,11 +47,11 @@ def test_mate_score_prefers_the_mirroring_test_file():
 
 def test_mate_follows_top_implementation_block(tmp_path):
     _src, pack = _pack(tmp_path)
-    with PackSelector(str(pack), enable_cache=False) as selector:
+    with PackSelector(str(pack), enable_cache=False, enable_test_mate=True) as selector:
         chosen = selector.select(QUERY, budget_tokens=10**6, allow_escalation=False).evidence
     assert chosen[0].path == "pkg/throttle.py"
     assert chosen[1].path == "tests/test_throttle.py" and "test_mate" in chosen[1].channels
-    with PackSelector(str(pack), enable_cache=False, enable_test_mate=False) as selector:
+    with PackSelector(str(pack), enable_cache=False) as selector:  # opt-in: off by default
         plain = selector.select(QUERY, budget_tokens=10**6, allow_escalation=False).evidence
     assert all("test_mate" not in e.channels for e in plain)
 
@@ -69,7 +69,7 @@ def test_reused_ranking_matches_a_dedicated_query(tmp_path):
 
 def test_mate_sees_test_files_added_by_an_update(tmp_path):
     src, pack = _pack(tmp_path, with_tests=False)
-    with PackSelector(str(pack), enable_cache=False) as selector:
+    with PackSelector(str(pack), enable_cache=False, enable_test_mate=True) as selector:
         before = selector.select(QUERY, budget_tokens=10**6, allow_escalation=False).evidence
         assert all("test_mate" not in e.channels for e in before)
         _tests(src)

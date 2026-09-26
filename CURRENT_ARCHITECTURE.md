@@ -152,3 +152,12 @@ query ──analyze──▶ terms ──FTS5 bm25 top-60───────�
   block alone exceeds the budget, its member spans (methods/statement runs rebuilt from
   the file) are ranked by file-local BM25 and admitted as `trimmed` evidence instead of
   skipping the block. +13.9 / +7.3 points at 512 / 1K tokens; identical at 2K and above.
+- **Context map (E017, opt-in `map_share`, `--map-share`):** the evidence is selected within
+  `(1 - share)` of the budget and `Selection.locations` lists further ranked places
+  (`path:start-end kind name`, Python classes as members) until the reserved tokens are
+  spent. Held-out: located fix recall +7 to +13 points over full text.
+- **Test mate (E016b, opt-in `enable_test_mate`, `--test-mate`):** after fusion, the best
+  lexical block of the test file whose path mirrors the top implementation file is placed
+  right after that block. The lexical ranking is fetched once to depth 1000 and reused for
+  the mate lookup; parsed test paths are cached per artifact snapshot. Held-out:
+  regression-test recall +1.1 to +4.5 points, fix recall -0.3 to -1.4.
