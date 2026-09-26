@@ -115,3 +115,12 @@ channel, no trimming) on `heldout-b` (400 fresh issues), targets fix and tests.
   H001's 1K result, so it must not be confirmed on `heldout`.
 - E002+E005c replication: the product's fix recall must exceed `npk_nodefs`
   significantly at 1K-4K.
+
+## OM01 (queued): non-Python generalization, measurement only
+
+`ood-multi-sample` (114 SWE-bench Multilingual issues, 41 repositories: Rust, Ruby, Java,
+Go, C/C++, PHP, JS/TS). Arms: product, no-definitions/no-trim, and both chunk-BM25
+baselines. It answers whether NeuralPack's advantage over standard RAG holds outside
+Python, and whether the definition channel helps there (trimming and member spans are
+Python-only; the test mate's path rules miss `_test.go`, `*.spec.ts` and `spec/`). No
+default may be tuned on this split.
