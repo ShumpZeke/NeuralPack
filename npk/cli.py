@@ -57,11 +57,15 @@ def main(argv: list[str] | None = None) -> int:
     build.set_defaults(build_deps=False)
     build.add_argument("--python-members", action="store_true",
                        help="EXPERIMENTAL: split Python classes at method boundaries")
+    build.add_argument("--strict", action="store_true",
+                       help="abort on any unindexable file instead of skipping and reporting it")
 
     update = commands.add_parser("update", help="Incrementally refresh a .npk from its source")
     update.add_argument("pack", type=Path)
     update.add_argument("source", type=Path)
     update.add_argument("--quick", action="store_true", help="Skip re-hashing files whose mtime and size match verified artifact records")
+    update.add_argument("--strict", action="store_true",
+                        help="abort on any unindexable file instead of skipping and reporting it")
     update_deps = update.add_mutually_exclusive_group()
     update_deps.add_argument("--deps", dest="build_deps", action="store_true")
     update_deps.add_argument("--no-deps", dest="build_deps", action="store_false")
@@ -163,10 +167,12 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "compile":
             output = args.output or args.source.absolute().with_suffix(".npk")
             result = compile_pack(args.source, output, mode=args.mode,
-                                  build_deps=args.build_deps, python_members=args.python_members).as_dict()
+                                  build_deps=args.build_deps, python_members=args.python_members,
+                                  strict=args.strict).as_dict()
             result["output"] = str(Path(output).absolute())
         elif args.command == "update":
-            result = update_pack(args.pack, args.source, build_deps=args.build_deps, quick=args.quick).as_dict()
+            result = update_pack(args.pack, args.source, build_deps=args.build_deps, quick=args.quick,
+                                 strict=args.strict).as_dict()
         elif args.command == "verify":
             result = verify(args.pack)
         elif args.command == "query":
