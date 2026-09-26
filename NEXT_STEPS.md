@@ -54,12 +54,15 @@ at 1K-16K, 1.6-2.1x a standard BM25-over-chunks RAG baseline (B001/B002), confir
 unseen repositories (O001). Opt-in modes: context map (E017), test mate (E016b), semantic/
 hybrid for chat histories (M006).
 
-1. **Documentation retrieval is the main weakness.** Chunk-BM25 baselines find far more of
-   the documentation maintainers edit (dev-fast 0.42 vs 0.00 at 2K; held-out 0.31 vs 0.17).
-   Code-first ranking (definition channel) gives docs up, and E018b showed that adding docs
-   votes costs code recall. Candidate: prose units sized like chunks (about 250 tokens,
-   paragraph-aligned) for documentation files only, so docs cost less budget without
-   gaining votes; judge with the declared utility, which weights docs 0.087.
+1. **Documentation retrieval is the main weakness, and it is the definition channel's
+   known tradeoff.** Chunk-BM25 baselines find more of the documentation maintainers edit
+   (held-out at 2K: 0.31-0.38 vs 0.17). Without the definition channel the product is
+   already at baseline level (0.29), so the gap is code-first ranking, not unit size:
+   smaller documentation units did not help (E019), and documentation votes cost code
+   recall (E018b). Under the declared utility (docs weight 0.087) the current trade is
+   the best found. A new idea must raise docs without moving code blocks down: for
+   example, filling budget that code cannot use (remainders too small for the next code
+   block) with the best small documentation units.
 2. **HB01 (running): budget-gated test mate (E016c) and a replication of E002+E005c on
    `heldout-b`,** with criteria declared in this file before the run.
 3. **MH01 (queued): the semantic/hybrid memory configuration on memory-heldout (370).**
