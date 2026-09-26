@@ -22,6 +22,7 @@ import struct
 import tempfile
 import time
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+import warnings
 
 from .format import (
     COMPILE_MODES, MODE_DETERMINISTIC, MODE_SEMANTIC, PACK_FORMAT_VERSION,
@@ -149,15 +150,40 @@ def _source_lines(source: str) -> List[str]:
     return lines
 
 
+# One-entry parse cache keyed by object identity: splitting and raise-site
+# extraction receive the same ``str`` for a file, so it is parsed once. An
+# identity check cannot return a tree for different text.
+_LAST_PARSE: Tuple[Optional[str], Optional[ast.Module]] = (None, None)
+
+
+def _parse_python(source: str) -> Optional[ast.Module]:
+    """Parse a Python file, or return None when it does not parse.
+
+    Repository code routinely contains deprecated escapes; the per-file
+    SyntaxWarnings they raise are diagnostics about the source, not the build.
+    """
+    global _LAST_PARSE
+    cached_source, cached_tree = _LAST_PARSE
+    if cached_source is source:
+        return cached_tree
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", SyntaxWarning)
+        try:
+            tree: Optional[ast.Module] = ast.parse(source)
+        except SyntaxError:
+            tree = None
+    _LAST_PARSE = (source, tree)
+    return tree
+
+
 def _split_python(source: str, *, python_members: bool = False) -> List[RawBlock]:
     """Split Python into top-level defs/classes plus a module-preamble block.
 
     Falls back to line-window splitting when the file does not parse, so a
     syntax error never costs us the whole file.
     """
-    try:
-        tree = ast.parse(source)
-    except SyntaxError:
+    tree = _parse_python(source)
+    if tree is None:
         return _split_lines(source)
 
     lines = _source_lines(source)
@@ -581,14 +607,33 @@ def _split_lines(source: str, window: int = 60) -> List[RawBlock]:
     return blocks
 
 
+_STATEMENT_FIELDS = ("body", "orelse", "finalbody", "handlers", "cases")
+
+
+def _statements(tree: ast.AST) -> Iterable[ast.AST]:
+    """Every statement node (plus handler/case wrappers) in the tree.
+
+    ``raise`` is a statement and cannot occur inside an expression, so this
+    visits the same Raise nodes as ``ast.walk`` while skipping expression
+    subtrees, which are most of a module's nodes.
+    """
+    stack: List[ast.AST] = [tree]
+    while stack:
+        node = stack.pop()
+        yield node
+        for name in _STATEMENT_FIELDS:
+            children = getattr(node, name, None)
+            if children:
+                stack.extend(children)
+
+
 def _python_raise_sites(source: str) -> List[Tuple[int, int, str]]:
     """Return literal named raise sites in physical source coordinates."""
-    try:
-        tree = ast.parse(source)
-    except SyntaxError:
+    tree = _parse_python(source)
+    if tree is None:
         return []
     sites: List[Tuple[int, int, str]] = []
-    for node in ast.walk(tree):
+    for node in _statements(tree):
         if not isinstance(node, ast.Raise) or node.exc is None:
             continue
         value = node.exc.func if isinstance(node.exc, ast.Call) else node.exc
