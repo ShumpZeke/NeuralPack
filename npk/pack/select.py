@@ -372,6 +372,58 @@ def _query_entities(query: str) -> List[str]:
     return list(dict.fromkeys(names))
 
 
+TEST_PATH = re.compile(r"(^|/)(tests?|testing)(/|$)|(^|/)test_[^/]*$|_tests?\.py$|(^|/)conftest\.py$")
+DOC_PATH = re.compile(r"(^|/)(docs?|doc_src)(/|$)|\.(rst|md|txt)$")
+_GENERIC_PATH_PARTS = frozenset({"tests", "test", "testing", "src", "lib", "py", "__init__", "unit", "units", "t"})
+
+
+def _path_parts(path: str) -> List[str]:
+    stem = re.sub(r"\.[A-Za-z0-9]+$", "", path)
+    return [part for part in re.split(r"[/_.-]+", stem.lower()) if part]
+
+
+def _mate_score(impl: str, test: str) -> float:
+    """How strongly a test path mirrors an implementation path (0 = unrelated).
+
+    ``pkg/mod.py`` -> ``tests/pkg/test_mod.py``: the module name counts 2, its
+    package 1, any other shared non-generic path part 0.25.
+    """
+    ip, tp = _path_parts(impl), _path_parts(test)
+    if not ip or not tp:
+        return 0.0
+    module, parent = ip[-1], (ip[-2] if len(ip) > 1 else "")
+    score = 0.0
+    if module in tp and module not in _GENERIC_PATH_PARTS:
+        score += 2.0
+    if parent and parent in tp and parent not in _GENERIC_PATH_PARTS:
+        score += 1.0
+    shared = (set(ip) & set(tp)) - _GENERIC_PATH_PARTS - {module, parent}
+    return score + 0.25 * len(shared)
+
+
+def _test_mate(con: sqlite3.Connection, query: str, impl_path: str, exclude: Set[int]) -> Optional[int]:
+    """Best query-matching block of the test file that mirrors *impl_path*."""
+    scored = sorted(((_mate_score(impl_path, row[0]), row[0]) for row in con.execute("SELECT path FROM files")
+                     if TEST_PATH.search(row[0])), key=lambda pair: (-pair[0], pair[1]))
+    if not scored or scored[0][0] < 1.0:
+        return None
+    mates = [path for score, path in scored[:3] if score == scored[0][0]]
+    terms = _lexical_terms(con, query)
+    if not terms:
+        return None
+    marks = ",".join("?" * len(mates))
+    try:
+        rows = con.execute(
+            "SELECT lexical.rowid FROM lexical JOIN blocks b ON b.id=lexical.rowid "
+            "JOIN files f ON f.id=b.file_id WHERE lexical MATCH ? "
+            f"AND f.path IN ({marks}) ORDER BY bm25(lexical,1.0,1.0,1.0),"
+            "f.path COLLATE BINARY,b.ordinal LIMIT 5",
+            (" OR ".join(f'"{term}"' for term in terms), *mates)).fetchall()
+    except sqlite3.OperationalError:
+        return None
+    return next((row[0] for row in rows if row[0] not in exclude), None)
+
+
 def _definition_channel(con: sqlite3.Connection, query: str, limit: int,
                         lexical: Sequence[int]) -> List[int]:
     """Blocks that define identifiers the query names.
@@ -579,6 +631,7 @@ class PackSelector:
         enable_relations: bool = True,
         enable_definitions: bool = True,
         enable_trim: bool = True,
+        enable_test_mate: bool = True,
         enable_cache: bool = True,
         max_cache_entries: int = 128,
     ):
@@ -606,6 +659,9 @@ class PackSelector:
         if type(enable_trim) is not bool:
             raise ValueError("enable_trim must be a boolean")
         self.enable_trim = enable_trim
+        if type(enable_test_mate) is not bool:
+            raise ValueError("enable_test_mate must be a boolean")
+        self.enable_test_mate = enable_test_mate
         self._con: Optional[sqlite3.Connection] = None
         self._manifest: Optional[Dict[str, str]] = None
         self._data_version: Optional[int] = None
@@ -746,6 +802,7 @@ class PackSelector:
                     self.enable_relations,
                     self.enable_definitions,
                     self.enable_trim,
+                    self.enable_test_mate,
                     self.tokenizer.sha256 if self.tokenizer is not None else None,
                 )
                 if cache_key in self._cache:
@@ -877,6 +934,8 @@ class PackSelector:
                 channels_of.setdefault(block_id, []).append(channel)
 
         ordered_ids = sorted(fused, key=lambda b: -fused[b])
+        if self.enable_test_mate and ordered_ids:
+            ordered_ids = self._place_test_mate(con, query, ordered_ids, fused, channels_of)
         blocks = {b.id: b for b in load_blocks(con, ordered_ids)}
 
         evidence: List[Evidence] = []
@@ -909,6 +968,31 @@ class PackSelector:
             channels_used=sorted(ranks), escalations=[],
             risk_band=risk, seed_failed=not evidence, latency_ms=0.0, notes=notes,
         )
+
+    def _place_test_mate(self, con, query: str, ordered_ids: List[int], fused: Dict[int, float],
+                         channels_of: Dict[int, List[str]]) -> List[int]:
+        """Put the test block that mirrors the top implementation file right after it.
+
+        Tests that exercise the code under change are where a regression test
+        goes; lexical ranking alone places them far down once definitions rank
+        first (E002). The mate is chosen structurally (path convention) and
+        lexically within that file, never by demoting anything else.
+        """
+        paths = dict(con.execute(
+            f"SELECT b.id, f.path FROM blocks b JOIN files f ON f.id=b.file_id "
+            f"WHERE b.id IN ({','.join('?' * len(ordered_ids))})", ordered_ids).fetchall())
+        position = next((i for i, b in enumerate(ordered_ids)
+                         if not TEST_PATH.search(paths.get(b, "")) and not DOC_PATH.search(paths.get(b, ""))), None)
+        if position is None:
+            return ordered_ids
+        mate = _test_mate(con, query, paths[ordered_ids[position]], set(ordered_ids[:position + 1]))
+        if mate is None:
+            return ordered_ids
+        reordered = [b for b in ordered_ids if b != mate]
+        reordered.insert(position + 1, mate)
+        fused.setdefault(mate, 0.0)
+        channels_of.setdefault(mate, []).append("test_mate")
+        return reordered
 
     def _admit_members(self, con, blk: Block, query: str, budget: int, evidence: List[Evidence],
                        used_chars: int, score: float, channels: List[str], notes: List[str]) -> int:

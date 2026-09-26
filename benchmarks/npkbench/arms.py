@@ -101,6 +101,7 @@ ARMS: Dict[str, Arm] = {
     # means current product defaults, so historical comparisons use this.
     "npk_nodefs": Arm("npk_nodefs", selector_options={"enable_definitions": False, "enable_trim": False}),
     "npk_notrim": Arm("npk_notrim", selector_options={"enable_trim": False}),
+    "npk_nomate": Arm("npk_nomate", selector_options={"enable_test_mate": False}),
     "npk_members": Arm("npk_members", compile_options={"python_members": True}),
     "oracle_blocks": Arm("oracle_blocks", runner=_oracle_blocks),
 }
