@@ -80,3 +80,12 @@ points), portfolios (E008), callee expansion (E009), learned re-ranking over exi
 channels (E011), equal-weight dense fusion for code (E012), sibling collapse (E013),
 reST sectioning of `.txt` docs (E019), a documentation channel (E018/E018b: trades code
 for docs), diversity/density/paragraph units for conversations (M001-M003).
+
+## Pre-declared criteria for H001 (written before its results)
+
+- E016b test mate is promoted if, on held-out: the tests gain is significant at one or
+  more budgets, utility `d_fix + 0.99 d_tests + 0.087 d_docs` is >= 0 at every budget
+  (point estimates), and fix recall has no significant loss at a budget where utility is
+  not clearly positive. The merge is prepared on local branch `merge/e016b`.
+- E005c trimming stays if utility (trim vs notrim) is >= 0 at every budget on held-out.
+- E017 context map: located recall must exceed full-text recall significantly on held-out.
