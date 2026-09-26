@@ -89,3 +89,15 @@ for docs), diversity/density/paragraph units for conversations (M001-M003).
   not clearly positive. The merge is prepared on local branch `merge/e016b`.
 - E005c trimming stays if utility (trim vs notrim) is >= 0 at every budget on held-out.
 - E017 context map: located recall must exceed full-text recall significantly on held-out.
+
+## Pre-declared criteria for HB01 (heldout-b; written before its results)
+
+HB01 runs `npk_default` (product), `npk_mate` (test mate on) and `npk_nodefs` (no definition
+channel, no trimming) on `heldout-b` (400 fresh issues), targets fix and tests.
+- E016c budget-gated test mate (off below 2K, on at 2K and above; the 1K cell is the
+  product's by construction): promoted to default if utility `d_fix + 0.99 d_tests` is
+  >= 0 at every budget, the tests gain is significant at one or more budgets, and fix recall
+  has no significant loss at a budget where utility is not clearly positive. Motivated by
+  H001's 1K result, so it must not be confirmed on `heldout`.
+- E002+E005c replication: the product's fix recall must exceed `npk_nodefs`
+  significantly at 1K-4K.

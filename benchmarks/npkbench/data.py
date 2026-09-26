@@ -26,6 +26,11 @@ SOURCES = {
         "princeton-nlp/SWE-bench_Verified", "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
         "data/test-00000-of-00001.parquet",
         "a45b1fe4e2f0c8390b2b2938ac83e92ed5979000856808f3679c07812e9e6dcd"),
+    # Added 2026-09-26 for a second confirmation split (heldout-b); never tuned on.
+    "swe_full_test": (
+        "princeton-nlp/SWE-bench", "e48e2bd1e9fecd5bbd641e9414ac59da9f2e69f6",
+        "data/test-00000-of-00001.parquet",
+        "db4f70ef735b3162c74801ddcdf8d7bae8d704193788c6d844f898c20b571cbb"),
 }
 
 # 1.1: insertion anchors resolve to the nearest non-blank original lines, so
@@ -393,7 +398,8 @@ def split(name: str) -> List[Task]:
     if target:
         wanted = {t.instance_id for t in split(base)}
         dataset = {"dev": "swe_lite_test", "dev-fast": "swe_lite_test",
-                   "heldout": "swe_verified_test", "ood": "swe_lite_dev"}[base]
+                   "heldout": "swe_verified_test", "ood": "swe_lite_dev",
+                   "heldout-b": "swe_full_test", "heldout-b-all": "swe_full_test"}[base]
         lite = {t.instance_id for t in load("swe_lite_test")} if base == "heldout" else set()
         return [t for t in load(dataset, target)
                 if t.instance_id in wanted and t.instance_id not in lite]
@@ -416,4 +422,21 @@ def split(name: str) -> List[Task]:
         return [t for t in load("swe_verified_test") if t.instance_id not in lite]
     if name == "ood":
         return load("swe_lite_dev")
+    if name in ("heldout-b", "heldout-b-all"):
+        # Second confirmation split (declared 2026-09-26, after `heldout` was spent on
+        # E016b): SWE-bench test minus Verified minus Lite. `heldout-b` is a fixed,
+        # repository-stratified sample of 400 (at least two per repository).
+        used = ({t.instance_id for t in load("swe_lite_test")}
+                | {t.instance_id for t in load("swe_verified_test")})
+        rest = [t for t in load("swe_full_test") if t.instance_id not in used]
+        if name == "heldout-b-all":
+            return rest
+        by_repo: Dict[str, List[Task]] = {}
+        for task in rest:
+            by_repo.setdefault(task.repo, []).append(task)
+        chosen = []
+        for repo, items in sorted(by_repo.items()):
+            items.sort(key=lambda t: _stable_hash("heldout-b:" + t.instance_id))
+            chosen.extend(items[:max(2, round(400 * len(items) / len(rest)))])
+        return sorted(chosen, key=lambda t: t.instance_id)
     raise ValueError(f"unknown split {name!r}")

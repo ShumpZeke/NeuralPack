@@ -21,6 +21,10 @@ Splits (fixed before any NeuralPack result was observed):
 * ``dev-fast`` -- a deterministic, repository-stratified 100-task subset of dev.
 * ``heldout``  -- SWE-bench Verified minus Lite (407 tasks). Used only to
   confirm a promotion decision. Never used for tuning or error analysis.
+  (Spent on E016b by H001; later confirmations use ``heldout-b``.)
+* ``heldout-b`` -- SWE-bench test minus Verified minus Lite, a fixed
+  repository-stratified sample of 400 (``heldout-b-all``: all of them).
+  Declared 2026-09-26 before any result on it; confirmation only.
 
 Targets (one selection is scored against all of them; see ``data.TARGETS``):
 ``fix`` (lines the reference fix edits), ``tests`` (existing test-file lines the
