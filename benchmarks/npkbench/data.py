@@ -407,7 +407,8 @@ def split(name: str) -> List[Task]:
                    "heldout": "swe_verified_test", "ood": "swe_lite_dev",
                    "heldout-b": "swe_full_test", "heldout-b-all": "swe_full_test",
                    "heldout-c": "swe_full_test",
-                   "ood-multi": "swe_multi_test", "ood-multi-sample": "swe_multi_test"}[base]
+                   "ood-multi": "swe_multi_test", "ood-multi-sample": "swe_multi_test",
+                   "ood-multi-dev": "swe_multi_test"}[base]
         lite = {t.instance_id for t in load("swe_lite_test")} if base == "heldout" else set()
         return [t for t in load(dataset, target)
                 if t.instance_id in wanted and t.instance_id not in lite]
@@ -430,6 +431,12 @@ def split(name: str) -> List[Task]:
         return [t for t in load("swe_verified_test") if t.instance_id not in lite]
     if name == "ood":
         return load("swe_lite_dev")
+    if name == "ood-multi-dev":
+        # Declared 2026-09-26 before any ood-multi result: the 186 multilingual issues
+        # outside ood-multi-sample, for developing non-Python handling. Changes found
+        # here are then measured on ood-multi-sample.
+        sample = {t.instance_id for t in split("ood-multi-sample")}
+        return [t for t in load("swe_multi_test") if t.instance_id not in sample]
     if name in ("ood-multi", "ood-multi-sample"):
         # Non-Python generalization (declared 2026-09-26, measurement only). The
         # sample keeps at most 3 issues per repository (41 repositories), in a fixed
