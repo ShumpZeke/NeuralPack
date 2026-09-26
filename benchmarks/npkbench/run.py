@@ -64,6 +64,13 @@ def _job(args) -> Dict[str, Any]:
                     if res.extra:
                         row["extra"] = res.extra
                     out["rows"].append(row)
+                    map_spans = (res.extra or {}).get("map_spans")
+                    if map_spans is not None:
+                        # "Locatable" view: full text OR a map entry naming the span.
+                        loc = dict(row, arm=f"{name}~loc{suffix}")
+                        loc.update(metrics.score(target, list(res.spans) + [tuple(x) for x in map_spans]))
+                        loc.pop("extra", None)
+                        out["rows"].append(loc)
             ranking = arm.ranking(pack, task)
             if ranking is not None:
                 for suffix, target in scored:
