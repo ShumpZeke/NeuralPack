@@ -233,6 +233,20 @@ if selection.seed_failed or not selection.evidence:
 response = target_llm(query=query, context=selection.context_text())
 ```
 
+Opt-in modes, each measured on NPK-Bench (see "Current evidence" above):
+
+```bash
+# Callers that can open files: 25% of the budget lists further ranked places
+# (path:start-end kind name) in "locations", without their text.
+npk query project.npk "Why is retry behavior wrong?" --budget 2000 --map-share 0.25
+# More regression-test context: the mirroring test file's best block follows the
+# top implementation block (slightly fewer fix sites).
+npk query project.npk "Why is retry behavior wrong?" --budget 2000 --test-mate
+# Chat histories and other prose: local embeddings plus hybrid retrieval.
+npk compile ./chats chats.npk --mode semantic
+npk query chats.npk "Which book did I finish a week ago?" --retrieval hybrid
+```
+
 Results include source paths and line spans, text, ranking scores, the original
 query, estimated tokens, uncalibrated risk indicators, and fallback reasons.
 A nonempty selection is **not proof of sufficient evidence**. Applications must
