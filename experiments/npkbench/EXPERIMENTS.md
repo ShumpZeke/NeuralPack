@@ -16,6 +16,7 @@ Do not edit by hand.
 | E008 | 2026-09-26 | Role portfolio: per-role budget shares (impl/tests/docs), soft shares, pure test reservation | **rejected** | Attack by decomposition: the arms that improve both targets do so by demoting documentation, which NPK-Bench cannot falsify (it has no documentation target); giving docs 10-20% removes most of the gain, and a pure test reservation only transfers recall from fix to tests (two-target mean within noise). Hard shares also lose 10 points at 1K. Not promoted. |
 | E009 | 2026-09-26 | Callee expansion from named-definition seeds | **rejected** | Fix-target changes stay within +/-2 points (noise at n=103) and the tests target loses up to 5.5 points. Precise seeds do not rescue graph expansion here; gold is mostly named or lexically matched directly. |
 | E010 | 2026-09-26 | Drop very-high-document-frequency terms from long queries | **inconclusive** | ~3x faster lexical stage for long queries with fix-target recall within noise, but up to -3 points on the tests target at 16K. Latency is not a bottleneck at this scale (~30 ms uncontended); not promoted. Revisit for interactive/agent loops on very large repositories. |
+| E011 | 2026-09-26 | Learned pairwise re-ranker over the product's candidate pool | **rejected** | With role features the model relearns documentation demotion and a fix->tests transfer (largest weights are role and doc-like kind proxies). Role-blind models do not beat the product's fused ranking (fix within +/-3 points). The remaining ranking headroom needs new evidence (semantic similarity, structure), not reweighting of existing channels. |
 | E013 | 2026-09-26 | Sibling/near-duplicate collapse (measured before building) | **rejected** | At most 3.1% of selected tokens could be reclaimed on this workload; not worth a new representation now. Revisit for repetitive/vendored corpora or conversation logs. |
 | M000 | 2026-09-26 | Baseline: conversation memory (LongMemEval-S dev, 100 questions) | **kept** | Reference point for the second workload family. Weak spots: multi-session aggregation and implicit preferences. |
 | M001 | 2026-09-26 | Source-diverse packing (per-file score decay) for multi-session memory questions | **rejected** | Turn recall falls 10-16 points: fused RRF scores are nearly flat (1/60..1/120), so any per-file decay reorders almost the whole ranking toward weakly matching fresh sessions. Session coverage rises but evidence turns are lost. |
@@ -557,6 +558,88 @@ Do not edit by hand.
 ```
 
 - **Decision:** ~3x faster lexical stage for long queries with fix-target recall within noise, but up to -3 points on the tests target at 16K. Latency is not a bottleneck at this scale (~30 ms uncontended); not promoted. Revisit for interactive/agent loops on very large repositories.
+
+## E011 — Learned pairwise re-ranker over the product's candidate pool
+
+- **Status:** rejected
+- **Hypothesis:** Gold is ranked first for 36% of issues but is in the top-100 pool for 79%; a pairwise logistic re-ranker over repository-agnostic candidate features closes part of that gap.
+- **Files changed:** `benchmarks/npkbench/ltr.py`
+- **Results:**
+
+```json
+{
+ "all_features": {
+  "fix": {
+   "base": [
+    0.136,
+    0.311,
+    0.476,
+    0.524
+   ],
+   "ltr": [
+    0.126,
+    0.262,
+    0.418,
+    0.515
+   ]
+  },
+  "tests": {
+   "base": [
+    0.058,
+    0.078,
+    0.107,
+    0.204
+   ],
+   "ltr": [
+    0.087,
+    0.155,
+    0.262,
+    0.33
+   ]
+  }
+ },
+ "protocol": "leave-one-repository-out CV on dev-fast; pairs from both targets with equal query weight; any-gold-block recall with whole-block greedy fill at 512/1K/2K/4K",
+ "role_blind_both": {
+  "fix": [
+   0.126,
+   0.301,
+   0.447,
+   0.524
+  ],
+  "tests": [
+   0.058,
+   0.068,
+   0.165,
+   0.243
+  ]
+ },
+ "role_blind_fix_only": {
+  "fix": [
+   0.126,
+   0.32,
+   0.456,
+   0.524
+  ],
+  "tests": [
+   0.058,
+   0.068,
+   0.117,
+   0.155
+  ]
+ },
+ "top_weights_all_features": {
+  "file_best_rank": -0.566,
+  "kind_chunk": -0.414,
+  "kind_class": 0.442,
+  "kind_section": -0.461,
+  "role_doc": -0.631,
+  "role_test": 0.509
+ }
+}
+```
+
+- **Decision:** With role features the model relearns documentation demotion and a fix->tests transfer (largest weights are role and doc-like kind proxies). Role-blind models do not beat the product's fused ranking (fix within +/-3 points). The remaining ranking headroom needs new evidence (semantic similarity, structure), not reweighting of existing channels.
+- **Follow-ups:** H11: dense embeddings as a new evidence source, with content-addressed vector reuse across snapshots
 
 ## E013 — Sibling/near-duplicate collapse (measured before building)
 
