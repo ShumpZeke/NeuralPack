@@ -1,0 +1,201 @@
+From 182b234dd0eda827a770594535c55235ccb4f92c Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Sat, 26 Sep 2026 21:01:56 +0000
+Subject: [PATCH] E024 (experiment): bulk integrity leaves and batched framing
+
+---
+ benchmarks/contract_mutations.py    | 10 ++++
+ npk/pack/integrity.py               | 82 +++++++++++++++++++++++++++--
+ tests/test_incremental_integrity.py | 23 +++++++-
+ 3 files changed, 110 insertions(+), 5 deletions(-)
+
+diff --git a/benchmarks/contract_mutations.py b/benchmarks/contract_mutations.py
+index 9425b81..ffa1cf3 100644
+--- a/benchmarks/contract_mutations.py
++++ b/benchmarks/contract_mutations.py
+@@ -346,6 +346,11 @@ MUTANTS = [
+      "tests/test_definition_channel.py::test_ambiguous_names_cast_no_vote"),
+     ("top_block_trim_disabled", "npk/pack/select.py", "_member_spans", "return []",
+      "tests/test_top_block_trim.py::test_top_block_that_cannot_fit_emits_its_best_member"),
++    ("bulk_digest_drops_a_file", "npk/pack/integrity.py", "bulk_file_digests",
++     "file_ids = [r[0] for r in con.execute('SELECT id FROM files ORDER BY id')][1:] if file_ids is None else file_ids",
++     "tests/test_incremental_integrity.py::test_bulk_leaves_equal_per_file_leaves_across_every_local_table"),
++    ("bulk_digest_unordered_rows", "npk/pack/integrity.py", None, None,
++     "tests/test_incremental_integrity.py::test_bulk_leaves_equal_per_file_leaves_across_every_local_table"),
+     ("credential_screen_bypass", "npk/pack/source_policy.py", "credential_kind", "return None",
+      "tests/test_source_boundary.py::test_credential_shaped_source_is_never_published[nvidia-compile]"),
+     ("credential_update_bypass", "npk/pack/source_policy.py", "credential_kind", "return None",
+@@ -458,6 +463,11 @@ def main():
+                 assert isinstance(matches[0].values[0], ast.Constant) and matches[0].values[0].value is True
+                 matches[0].values[0] = ast.Constant(value=False)
+                 changed = ast.unparse(ast.fix_missing_locations(tree))+'\n'
++            elif name == "bulk_digest_unordered_rows":
++                target = "ORDER BY 1,{order}"
++                if source.count(target) != 1:
++                    raise ValueError("bulk digest ordering is no longer unique")
++                changed = source.replace(target, "ORDER BY 1")
+             elif name == "known_compound_vocabulary_guard_bypassed":
+                 target = "return whole or expanded"
+                 if source.count(target) != 1:
+diff --git a/npk/pack/integrity.py b/npk/pack/integrity.py
+index 7f249b9..6e245ca 100644
+--- a/npk/pack/integrity.py
++++ b/npk/pack/integrity.py
+@@ -14,6 +14,8 @@ import sqlite3
+ from .format import PackError
+ 
+ LOCAL_TABLES=("files","provenance","blocks","symbols","relations","embeddings","assignments")
++#: Above this many changed files, leaves are computed with one scan per table.
++BULK_DIGEST_MIN_FILES=64
+ GLOBAL_TABLES=("manifest","deps","lexical_data","lexical_idx","lexical_docsize",
+                "lexical_config","integrity_files","integrity_dirty")
+ 
+@@ -64,9 +66,47 @@ def framed(value):
+     return tag+len(data).to_bytes(8,"big")+data
+ 
+ 
++_FRAMED_NONE=framed(None)
++
++
+ def _feed_rows(digest,rows):
++    """Feed framed rows; byte-for-byte the stream of framed(len(row)) + framed(value)...
++
++    Inlines the common str/int/bytes/None cases and hashes in batches: a Django
++    compile frames about 500K values, and per-value calls dominated sealing.
++    Any other type goes through framed(), which keeps its exact bytes or error.
++    """
++    update=digest.update
++    chunks=[]
++    append=chunks.append
++    row_frames={}
+     for row in rows:
+-        digest.update(framed(len(row))+b"".join(framed(value) for value in row))
++        width=len(row)
++        head=row_frames.get(width)
++        if head is None:
++            head=row_frames[width]=framed(width)
++        append(head)
++        for value in row:
++            kind=type(value)
++            if kind is str:
++                data=value.encode("utf-8")
++                append(b"s"+len(data).to_bytes(8,"big"))
++                append(data)
++            elif kind is int:
++                data=str(value).encode("ascii")
++                append(b"i"+len(data).to_bytes(8,"big")+data)
++            elif kind is bytes:
++                append(b"b"+len(value).to_bytes(8,"big"))
++                append(value)
++            elif value is None:
++                append(_FRAMED_NONE)
++            else:
++                append(framed(value))
++        if len(chunks)>=8192:
++            update(b"".join(chunks))
++            chunks.clear()
++    if chunks:
++        update(b"".join(chunks))
+ 
+ 
+ def _rows(con,table,where="",params=()):
+@@ -86,9 +126,40 @@ def file_digest(con,file_id):
+     return digest.digest()
+ 
+ 
++def bulk_file_digests(con,file_ids=None):
++    """file_digest() for many files with one ordered scan per table.
++
++    Byte-identical to calling file_digest per file: every file's hash sees the
++    same table frames and the same rows in the same order (all columns, then
++    BINARY collation), but 7 scans replace 7 queries per file.
++    """
++    ids=sorted(file_ids) if file_ids is not None else [r[0] for r in con.execute("SELECT id FROM files ORDER BY id")]
++    digests={file_id:hashlib.sha256(b"npk-integrity-v8-file\0") for file_id in ids}
++    for table in LOCAL_TABLES:
++        head=framed(table)
++        for digest in digests.values():
++            digest.update(head)
++        count=len(con.execute(f'SELECT * FROM "{table}" LIMIT 0').description)
++        order=",".join(f"t.{c[0]}" for c in con.execute(f'SELECT * FROM "{table}" LIMIT 0').description)
++        if table=="files":owner="t.id"
++        elif table in {"blocks","provenance"}:owner="t.file_id"
++        else:owner="(SELECT b.file_id FROM blocks b WHERE b.id=t.block_id)"
++        rows=con.execute(f'SELECT {owner},t.* FROM "{table}" t ORDER BY 1,{order}')
++        current=None
++        batch=[]
++        for row in rows:
++            if row[0]!=current:
++                if batch and current in digests:
++                    _feed_rows(digests[current],batch)
++                current,batch=row[0],[]
++            batch.append(row[1:count+1])
++        if batch and current in digests:
++            _feed_rows(digests[current],batch)
++    return {file_id:digest.digest() for file_id,digest in digests.items()}
++
++
+ def full_file_digests(con):
+-    ids=[r[0] for r in con.execute("SELECT id FROM files ORDER BY id")]
+-    return {file_id:file_digest(con,file_id) for file_id in ids}
++    return bulk_file_digests(con)
+ 
+ 
+ def cached_file_digests(con):
+@@ -131,9 +202,12 @@ def refresh_file_digests(con):
+     dirty={r[0] for r in con.execute("SELECT file_id FROM integrity_dirty")}
+     cached={r[0] for r in con.execute("SELECT file_id FROM integrity_files")}
+     refresh=(dirty & ids)|(ids-cached)
++    # One scan per table beats per-file queries once many files changed.
++    fresh=(bulk_file_digests(con,refresh) if len(refresh)>BULK_DIGEST_MIN_FILES
++           else {file_id:file_digest(con,file_id) for file_id in refresh})
+     for file_id in sorted(refresh):
+         con.execute("INSERT INTO integrity_files(file_id,digest) VALUES(?,?) ON CONFLICT(file_id) DO UPDATE SET digest=excluded.digest",
+-                    (file_id,file_digest(con,file_id)))
++                    (file_id,fresh[file_id]))
+     # FK cascades normally remove these; explicit pruning also covers initial state.
+     con.execute("DELETE FROM integrity_files WHERE file_id NOT IN (SELECT id FROM files)")
+     con.execute("DELETE FROM integrity_dirty")
+diff --git a/tests/test_incremental_integrity.py b/tests/test_incremental_integrity.py
+index 8a926e3..ca487e3 100644
+--- a/tests/test_incremental_integrity.py
++++ b/tests/test_incremental_integrity.py
+@@ -22,9 +22,12 @@ def pack(tmp_path):
+ def test_small_edit_rehashes_only_its_file_and_matches_full_verification(pack,monkeypatch):
+     source,target=pack
+     module=importlib.import_module("npk.pack.integrity")
+-    original=module.file_digest;calls=[]
++    original=module.file_digest;original_bulk=module.bulk_file_digests;calls=[]
+     def recorded(con,file_id):calls.append(file_id);return original(con,file_id)
++    def recorded_bulk(con,file_ids=None):
++        result=original_bulk(con,file_ids);calls.extend(result);return result
+     monkeypatch.setattr(module,"file_digest",recorded)
++    monkeypatch.setattr(module,"bulk_file_digests",recorded_bulk)
+     (source/"a.py").write_text("LIMIT = 8\ndef run():\n    return LIMIT\n")
+     stats=update_pack(target,source)
+     assert len(calls)==1 and stats.integrity_files_hashed==1 and stats.integrity_files_reused==1
+@@ -147,3 +150,21 @@ def test_graph_policy_reuses_file_hashes_but_updates_the_global_root(pack):
+     assert stats.integrity_files_hashed==0 and stats.integrity_files_reused==2
+     new=verify(target)
+     assert new['ok'] and new['actual_root_sha256']!=old_root
++
++
++def test_bulk_leaves_equal_per_file_leaves_across_every_local_table(tmp_path):
++    source=tmp_path/"source";source.mkdir()
++    for i in range(5):
++        (source/f"m{i}.py").write_text(f"LIMIT_{i} = {i}\nclass Err{i}(Exception):\n    pass\n"
++                                        f"def run_{i}(x):\n    if x:\n        raise Err{i}('bad')\n    return LIMIT_{i}\n")
++    (source/"README.md").write_text("# Title\n\nSome prose.\n")
++    # Rows stored out of sorted order: the bulk scan must still sort within a file.
++    (source/"order.py").write_text("ZETA = 1\nALPHA = 2\ndef zeta():\n    return ZETA\ndef alpha():\n    return ALPHA\n")
++    target=tmp_path/"project.npk";compile_pack(source,target)
++    integrity=importlib.import_module("npk.pack.integrity")
++    with closing(sqlite3.connect(target)) as con:
++        counts={t:con.execute(f'SELECT COUNT(*) FROM "{t}"').fetchone()[0] for t in ("symbols","relations","assignments")}
++        assert all(counts.values()), counts
++        ids=[r[0] for r in con.execute("SELECT id FROM files ORDER BY id")]
++        assert integrity.bulk_file_digests(con)=={i:integrity.file_digest(con,i) for i in ids}
++        assert integrity.bulk_file_digests(con,ids[1:3])=={i:integrity.file_digest(con,i) for i in ids[1:3]}
+-- 
+2.43.0
+
