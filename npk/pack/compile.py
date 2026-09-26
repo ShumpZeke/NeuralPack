@@ -30,7 +30,7 @@ from .format import (
 )
 from .integrity import install_tracking, refresh_file_digests, require_clean_cache, check_cached_base
 from .search import analyzed_text
-from .source_policy import check_source, safe_label, stat_identity
+from .source_policy import SKIP_REASONS, check_source, credential_kind, safe_label, stat_identity
 
 #: Directories and files never read into an artifact. Credential-bearing names
 #: are excluded by name. Ordinary source still requires secret review.
@@ -100,6 +100,10 @@ class CompileStats:
     dependency_index: bool = False
     integrity_files_hashed: int = 0
     integrity_files_reused: int = 0
+    #: Eligible-suffix files left out because their content is not indexable
+    #: text (binary/NUL, non-UTF-8, oversized, credential-like, outside root).
+    #: Each entry is {"path": redacted label, "reason": code}. Never silent.
+    skipped_sources: List[Dict[str, str]] = field(default_factory=list)
 
     def as_dict(self) -> Dict[str, Any]:
         return {k: v for k, v in self.__dict__.items()}
@@ -732,11 +736,32 @@ def _source_scan_error(error: OSError) -> None:
                     f"({type(error).__name__}); fix access and retry") from None
 
 
-def scan_source(root: str | Path, *, known_files: Optional[Dict[str, Tuple[str, int, int]]] = None) -> List[SourceFile]:
+class UnsupportedSource(PackError):
+    """A file's content is not indexable text. ``reason`` is a stable code."""
+
+    def __init__(self, message: str, reason: str, label: str):
+        super().__init__(message)
+        self.reason = reason
+        self.label = label
+
+
+def scan_source(root: str | Path, *, known_files: Optional[Dict[str, Tuple[str, int, int]]] = None,
+                indexed: Optional[set] = None, strict: bool = False,
+                skipped: Optional[List[Dict[str, str]]] = None) -> List[SourceFile]:
+    """Read every eligible source file under *root*.
+
+    Content that is not indexable text (binary/NUL, non-UTF-8, over 2 MiB,
+    credential-like, or a link resolving outside the root) is **skipped and
+    reported** in *skipped* when that path has never been indexed. It still
+    aborts the scan when the path is already indexed (a previously searchable
+    file must not silently lose its evidence) or when *strict* is set. Read
+    and access failures always abort: they are not evidence of absence.
+    """
     root = Path(root).resolve()
     check_source(str(root),'source root path')
     if not root.is_dir():
         raise PackError(f"source root is not a directory: {root}")
+    indexed = indexed or set()
 
     out: List[SourceFile] = []
     for dirpath, dirnames, filenames in os.walk(root,onerror=_source_scan_error):
@@ -749,54 +774,65 @@ def scan_source(root: str | Path, *, known_files: Optional[Dict[str, Tuple[str, 
                 continue
             full = Path(dirpath) / fn
             rel = full.relative_to(root).as_posix()
-            check_source(rel,'source relative path')
             try:
-                if not full.resolve().is_relative_to(root):
-                    raise PackError(f"source path resolves outside the requested root: {safe_label(full.relative_to(root))}")
-                st = full.stat()
-                if st.st_size > MAX_FILE_BYTES:
-                    raise PackError(f"source exceeds size limit ({MAX_FILE_BYTES} bytes): {full.relative_to(root)}")
-                if st.st_size == 0:
-                    continue
-
-                if known_files and rel in known_files:
-                    k_sha, k_size, k_mtime = known_files[rel]
-                    if st.st_size == k_size and st.st_mtime_ns == k_mtime and k_mtime != 0:
-                        out.append(SourceFile(
-                            path=rel,
-                            text="",
-                            sha256=k_sha,
-                            size=k_size,
-                            language=language,
-                            mtime_ns=st.st_mtime_ns,
-                        ))
-                        continue
-
-                raw = full.read_bytes()
-                after = full.stat()
-                if stat_identity(st)!=stat_identity(after) or len(raw)!=after.st_size:
-                    raise PackError(f"source changed during read: {safe_label(full.relative_to(root))}; retry a stable checkout")
-            except OSError as error:
-                _source_scan_error(error)
-            if len(raw) > MAX_FILE_BYTES:
-                raise PackError(f"source exceeds size limit ({MAX_FILE_BYTES} bytes): {full.relative_to(root)}")
-            if b"\x00" in raw:
-                raise PackError(f"source contains NUL bytes: {safe_label(full.relative_to(root))}; convert the input explicitly")
-            try:
-                text = raw.decode("utf-8")
-            except UnicodeDecodeError:
-                raise PackError(f"source is not valid UTF-8: {full.relative_to(root)}; "
-                                "convert its encoding explicitly before compiling") from None
-            check_source(text,full.relative_to(root))
-            out.append(SourceFile(
-                path=rel,
-                text=text,
-                sha256=hashlib.sha256(raw).hexdigest(),
-                size=len(raw),
-                language=language,
-                mtime_ns=st.st_mtime_ns,
-            ))
+                source = _read_source(root, full, rel, language, known_files)
+            except UnsupportedSource as unsupported:
+                if strict or rel in indexed or skipped is None:
+                    raise
+                skipped.append({"path": unsupported.label, "reason": unsupported.reason})
+                continue
+            if source is not None:
+                out.append(source)
     return out
+
+
+def _read_source(root: Path, full: Path, rel: str, language: str,
+                 known_files: Optional[Dict[str, Tuple[str, int, int]]]) -> Optional[SourceFile]:
+    label = safe_label(rel)
+    if credential_kind(rel) is not None:
+        check_source(rel, 'source relative path')  # raises with a redacted message
+    try:
+        if not full.resolve().is_relative_to(root):
+            raise UnsupportedSource(f"source path resolves outside the requested root: {label}",
+                                    "outside_root", label)
+        st = full.stat()
+        if st.st_size > MAX_FILE_BYTES:
+            raise UnsupportedSource(f"source exceeds size limit ({MAX_FILE_BYTES} bytes): {label}",
+                                    "oversize", label)
+        if st.st_size == 0:
+            return None
+
+        if known_files and rel in known_files:
+            k_sha, k_size, k_mtime = known_files[rel]
+            if st.st_size == k_size and st.st_mtime_ns == k_mtime and k_mtime != 0:
+                return SourceFile(path=rel, text="", sha256=k_sha, size=k_size,
+                                  language=language, mtime_ns=st.st_mtime_ns)
+
+        raw = full.read_bytes()
+        after = full.stat()
+        if stat_identity(st)!=stat_identity(after) or len(raw)!=after.st_size:
+            raise PackError(f"source changed during read: {label}; retry a stable checkout")
+    except OSError as error:
+        _source_scan_error(error)
+    if len(raw) > MAX_FILE_BYTES:
+        raise UnsupportedSource(f"source exceeds size limit ({MAX_FILE_BYTES} bytes): {label}",
+                                "oversize", label)
+    if b"\x00" in raw:
+        raise UnsupportedSource(f"source contains NUL bytes: {label}; convert the input explicitly",
+                                "nul", label)
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError:
+        raise UnsupportedSource(f"source is not valid UTF-8: {label}; "
+                                "convert its encoding explicitly before compiling",
+                                "non_utf8", label) from None
+    kind = credential_kind(text)
+    if kind is not None:
+        raise UnsupportedSource(f'source contains potential credential ({kind}): {label}; '
+                                'remove it from the source or compile a reviewed source collection',
+                                "credential", label)
+    return SourceFile(path=rel, text=text, sha256=hashlib.sha256(raw).hexdigest(),
+                      size=len(raw), language=language, mtime_ns=st.st_mtime_ns)
 
 
 # ---------------------------------------------------------------------------
@@ -1050,6 +1086,11 @@ def _set_manifest(con: sqlite3.Connection, values: Dict[str, Any]) -> None:
     )
 
 
+def _skipped_json(skipped: Sequence[Dict[str, str]]) -> str:
+    return json.dumps(sorted(skipped, key=lambda item: (item["path"], item["reason"])),
+                      sort_keys=True, separators=(",", ":"))
+
+
 def _available_tokens(con: sqlite3.Connection) -> int:
     """Cache the exact neutral estimate at compile/update, including separators."""
     row = con.execute("SELECT count(*), coalesce(sum(length(text)), 0) FROM blocks").fetchone()
@@ -1076,8 +1117,12 @@ def compile_pack(
     mode: str = MODE_DETERMINISTIC,
     build_deps: bool = False,
     python_members: bool = False,
+    strict: bool = False,
 ) -> CompileStats:
     """Build privately, then replace the artifact after a successful commit.
+
+    Unindexable files are skipped and listed in ``stats.skipped_sources`` and
+    the manifest; ``strict=True`` aborts on them instead.
 
     Failed compilation leaves an existing output untouched. Publication uses a
     same-filesystem rename; concurrent writers must be serialized by the caller.
@@ -1104,7 +1149,7 @@ def compile_pack(
             raise PackError("staging directory escaped output parent")
         staged_pack = staging / "artifact.npk"
         stats = _compile_unpublished(source_root, staged_pack, mode=mode, build_deps=build_deps,
-                                     python_members=python_members)
+                                     python_members=python_members, strict=strict)
         if any(Path(str(out) + suffix).exists() for suffix in ("-wal", "-shm", "-journal")):
             raise PackError("output has active SQLite sidecars; close readers/writers before recompiling")
         os.replace(staged_pack, out)
@@ -1119,6 +1164,7 @@ def _compile_unpublished(
     mode: str = MODE_DETERMINISTIC,
     build_deps: bool = False,
     python_members: bool = False,
+    strict: bool = False,
 ) -> CompileStats:
     """Create an unpublished artifact owned by compile_pack's staging directory."""
     if mode not in COMPILE_MODES:
@@ -1128,8 +1174,10 @@ def _compile_unpublished(
     out = Path(output)
     out.parent.mkdir(parents=True, exist_ok=True)
 
-    files = scan_source(source)
-    stats = CompileStats(files_scanned=len(files), mode=mode, dependency_index=build_deps)
+    skipped: List[Dict[str, str]] = []
+    files = scan_source(source, strict=strict, skipped=skipped)
+    stats = CompileStats(files_scanned=len(files), mode=mode, dependency_index=build_deps,
+                         skipped_sources=skipped)
 
     con = connect(out, readonly=False, create=True)
     try:
@@ -1181,6 +1229,7 @@ def _compile_unpublished(
             "file_count": stats.files_indexed,
             "block_count": stats.blocks,
             "available_tokens": _available_tokens(con),
+            "skipped_sources": _skipped_json(skipped),
         })
         stats.integrity_files_hashed,stats.integrity_files_reused=_seal(con)
         con.commit()
@@ -1191,7 +1240,8 @@ def _compile_unpublished(
     return stats
 
 
-def update_pack(pack: str | Path, source: str | Path, *, build_deps: Optional[bool] = None, quick: bool = False) -> CompileStats:
+def update_pack(pack: str | Path, source: str | Path, *, build_deps: Optional[bool] = None,
+                quick: bool = False, strict: bool = False) -> CompileStats:
     """Incrementally refresh *pack* from *source*.
 
     Content-hash driven: unchanged files are skipped without being read into
@@ -1224,15 +1274,21 @@ def update_pack(pack: str | Path, source: str | Path, *, build_deps: Optional[bo
         existing = {r["path"]: (r["id"], r["sha256"]) for r in existing_rows}
         known_files = {r["path"]: (r["sha256"], r["size"], r["mtime_ns"]) for r in existing_rows} if quick else None
 
+        skipped: List[Dict[str, str]] = []
         try:
-            files = scan_source(source, known_files=known_files)
+            # An indexed file that stops being indexable aborts the update:
+            # its evidence must not disappear silently.
+            files = scan_source(source, known_files=known_files, indexed=set(existing),
+                                strict=strict, skipped=skipped)
         except TypeError:
             files = scan_source(source)
         by_path = {f.path: f for f in files}
 
         stats = CompileStats(files_scanned=len(files), mode=mode, dependency_index=enabled_deps,
                              embedding_model=manifest.get("embedding_model") or None,
-                             embedding_status=manifest.get("embedding_status","unknown" if mode==MODE_SEMANTIC else "disabled"))
+                             embedding_status=manifest.get("embedding_status","unknown" if mode==MODE_SEMANTIC else "disabled"),
+                             skipped_sources=skipped)
+        skipped_changed = manifest.get("skipped_sources", _skipped_json([])) != _skipped_json(skipped)
 
         obsolete_ids = [file_id for path,(file_id,sha) in existing.items()
                         if path not in by_path or by_path[path].sha256!=sha]
@@ -1280,6 +1336,12 @@ def update_pack(pack: str | Path, source: str | Path, *, build_deps: Optional[bo
         changed = stats.files_indexed or stats.files_removed
         policy_changed = enabled_deps != previous_deps
         if not changed and not policy_changed:
+            if skipped_changed:
+                # Only the report of unindexable files changed; record it.
+                check_cached_base(con, manifest.get("root_sha256", ""))
+                _set_manifest(con, {"updated_utc": _utc(), "skipped_sources": _skipped_json(skipped)})
+                stats.integrity_files_hashed, stats.integrity_files_reused = _seal(con)
+                con.commit()
             stats.seconds = round(time.perf_counter() - started, 4)
             return stats
 
@@ -1313,6 +1375,7 @@ def update_pack(pack: str | Path, source: str | Path, *, build_deps: Optional[bo
             "block_count": totals["b"],
             "available_tokens": _available_tokens(con),
             "dependency_index": int(enabled_deps),
+            "skipped_sources": _skipped_json(skipped),
         })
         stats.integrity_files_hashed,stats.integrity_files_reused=_seal(con)
         con.commit()

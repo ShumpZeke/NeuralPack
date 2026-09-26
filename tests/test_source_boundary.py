@@ -17,7 +17,7 @@ def existing(tmp_path):
 
 @pytest.mark.parametrize('operation',['compile','update'])
 @pytest.mark.parametrize('kind',['nvidia','openai','aws','github','private_key'])
-def test_credential_shaped_source_aborts_without_publication(existing,kind,operation):
+def test_credential_shaped_source_is_never_published(existing,kind,operation):
     source,file,pack=existing;before=pack.read_bytes()
     # Obviously synthetic runtime fixtures; never a literal credential on disk
     # in tracked source. The transient input is rejected, not silently redacted.
@@ -25,14 +25,23 @@ def test_credential_shaped_source_aborts_without_publication(existing,kind,opera
             'aws':'AKIA'+'C'*16,'github':'ghp_'+'D'*36,
             'private_key':'-----BEGIN '+'PRIVATE KEY-----\n'+'E'*40}
     value=values[kind];file.write_text('VALUE = '+repr(value)+'\n')
-    try:
-        if operation=='compile':compile_pack(source,pack)
-        else:update_pack(pack,source)
-    except PackError as error:
-        assert value not in str(error)
-        assert 'credential' in str(error)
-    else:assert False,'credential-shaped source was silently compiled'
-    assert pack.read_bytes()==before and verify(pack)['ok']
+    if operation=='compile':
+        # A fresh build never indexed this file: it is skipped and reported,
+        # and the credential never reaches the published artifact or report.
+        stats=compile_pack(source,pack)
+        assert stats.skipped_sources==[{'path':'app.py','reason':'credential'}]
+        assert value not in repr(stats.as_dict())
+        assert value.encode() not in pack.read_bytes() and verify(pack)['ok']
+        with pytest.raises(PackError,match='credential') as error:
+            compile_pack(source,pack.with_name('strict.npk'),strict=True)
+        assert value not in str(error.value)
+        assert not pack.with_name('strict.npk').exists()
+    else:
+        # An indexed file that becomes unindexable must not lose evidence silently.
+        with pytest.raises(PackError,match='credential') as error:
+            update_pack(pack,source)
+        assert value not in str(error.value)
+        assert pack.read_bytes()==before and verify(pack)['ok']
     assert file.read_text()=='VALUE = '+repr(value)+'\n'
 
 
@@ -87,8 +96,12 @@ def test_source_symlink_cannot_read_outside_the_requested_root(existing,tmp_path
     link=source/'alias.py'
     try:link.symlink_to(outside)
     except OSError:pytest.skip('host does not permit symlink creation')
-    with pytest.raises(PackError,match='outside'):update_pack(pack,source)
+    with pytest.raises(PackError,match='outside'):update_pack(pack,source,strict=True)
     assert pack.read_bytes()==before
+    # Default: the link is never followed; it is skipped and reported.
+    stats=update_pack(pack,source)
+    assert stats.skipped_sources==[{'path':'alias.py','reason':'outside_root'}]
+    assert b'OUTSIDE_LIMIT' not in pack.read_bytes() and verify(pack)['ok']
 
 
 def test_mock_external_resolution_is_rejected_before_source_read(existing,tmp_path,monkeypatch):

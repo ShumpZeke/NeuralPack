@@ -99,16 +99,46 @@ def test_excluded_directory_is_not_read_or_treated_as_an_error(source_pack,monke
     assert pack.read_bytes()==before
 
 
-@pytest.mark.parametrize("failure",["encoding","size"])
-def test_initial_compile_does_not_publish_unsupported_source(tmp_path,monkeypatch,failure):
+@pytest.mark.parametrize("failure",["encoding","size","nul"])
+def test_initial_compile_reports_and_skips_unindexable_source(tmp_path,monkeypatch,failure):
     import importlib
     module=importlib.import_module("npk.pack.compile")
     root=tmp_path/"source";root.mkdir()
-    body=b'VALUE = "x\xffy"\n' if failure=="encoding" else b"VALUE = 123\n"*30
+    body={"encoding":b'VALUE = "x\xffy"\n',"size":b"VALUE = 123\n"*30,"nul":b"VALUE = 1\x00\n"}[failure]
     (root/"settings.py").write_bytes(body)
+    (root/"ok.py").write_text("GOOD = 1\n",encoding="utf-8")
     monkeypatch.setattr(module,"MAX_FILE_BYTES",100)
-    pack=tmp_path/"project.npk"
+    reason={"encoding":"non_utf8","size":"oversize","nul":"nul"}[failure]
+    # Strict mode keeps the fail-closed contract and publishes nothing.
+    strict=tmp_path/"strict.npk"
     with pytest.raises(PackError):
-        compile_pack(root,pack)
-    assert not pack.exists()
+        compile_pack(root,strict,strict=True)
+    assert not strict.exists()
+    # The default build indexes everything else and names what it left out.
+    pack=tmp_path/"project.npk"
+    stats=compile_pack(root,pack)
+    assert stats.skipped_sources==[{"path":"settings.py","reason":reason}]
+    assert stats.files_indexed==1 and verify(pack)["ok"]
+    import json
+    from npk.pack.format import open_pack,read_manifest
+    with open_pack(pack) as con:
+        assert json.loads(read_manifest(con)["skipped_sources"])==stats.skipped_sources
+    assert "GOOD = 1" in PackSelector(pack).select("GOOD").context_text()
     assert list(tmp_path.glob(".npk-build-*"))==[]
+
+
+def test_update_records_new_unindexable_files_without_touching_evidence(source_pack):
+    root,path,pack=source_pack
+    (root/"blob.txt").write_bytes(b"binary\x00payload")
+    stats=update_pack(pack,root)
+    assert stats.skipped_sources==[{"path":"blob.txt","reason":"nul"}]
+    assert stats.files_indexed==0 and verify(pack)["ok"]
+    import json
+    from npk.pack.format import open_pack,read_manifest
+    with open_pack(pack) as con:
+        assert json.loads(read_manifest(con)["skipped_sources"])==stats.skipped_sources
+    (root/"blob.txt").unlink()
+    assert update_pack(pack,root).skipped_sources==[]
+    with open_pack(pack) as con:
+        assert read_manifest(con)["skipped_sources"]=="[]"
+    assert verify(pack)["ok"]
