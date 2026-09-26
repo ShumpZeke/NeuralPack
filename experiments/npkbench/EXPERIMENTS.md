@@ -41,6 +41,7 @@ Do not edit by hand.
 | M004 | 2026-09-26 | Dense similarity on conversation memory (pool fusion, bge-small / MiniLM) | **kept** | Significant gains on memory-dev (100 questions): bge-small +4.1/+3.4/+4.3/+7.0/+7.7/+5.8 points at 256-8K (CI excludes zero at 2K, 4K, 8K); MiniLM +4.4/+1.4/+1.7/+4.7/+4.4/+4.1 (significant at 4K, 8K). By type (bge): multi-session +8 to +13, single-session-preference +17 to +22, temporal +5 to +13; knowledge-update -3 to -13 at 256-1K. The same fusion hurts code at small budgets (E012), so it cannot be a global default. Productized as the documented semantic/hybrid configuration for chat histories (M006: most of the gain with the shipped MiniLM path). |
 | M005 | 2026-09-26 | Time-window channel for dated conversation memory | **rejected** | No effect: identical to the product except one win at 4K (+0.5 points; temporal-reasoning 0.732 -> 0.751 at 4K). Pre-run analysis predicted a small ceiling: LongMemEval-S histories span 10-90 days, so period expressions cover every session (reporting lag makes the window run to the question date), and only 3 of 17 parsable memory-dev questions get a selective point window. |
 | M006 | 2026-09-26 | The shipped semantic/hybrid mode on conversation memory | **kept** | Kept as the documented configuration for conversation memory (no code change). vs lexical default on memory-dev: +4.5 [+0.4,+9.0] / +1.4 / +0.3 / +3.5 / +4.4 [+0.2,+9.2] / +7.1 [+2.8,+12.2] points at 256-8K; largest on preferences (0.67 -> 1.00 at 8K) and multi-session (0.74 -> 0.83 at 8K). Within about 3 points of M004's bge-small pool fusion (-3.3 at 4K, +1.3 at 8K) and indistinguishable from MiniLM pool fusion. Cost: 48.9 s compile per history (one CPU thread) vs 0.25 s; query p50 5.9 ms vs 1.9 ms. |
+| O001 | 2026-09-26 | Out-of-distribution check on six never-used repositories (SWE-bench Lite dev) | **kept** | Generalizes on the fix target (23 issues: sqlfluff, pvlib, astroid, pydicom, marshmallow, pyvista). Definition channel + trimming vs neither: fix +19.6 [+4.3,+37.0] / +13.8 / +8.7 / +2.2 / +0.7 points at 1K-16K; tests -5/-10/-7.5/-7.5/-2.5 (not significant, same direction as held-out). Trimming alone: fix +15.2 [+2.2,+30.4] at 1K, identical beyond. Test mate (opt-in): tests +5/+15/+10/+5/+5 with no fix loss (20 tasks, lower CI bounds at zero). |
 
 ## E000 — Baseline: product as received on NPK-Bench dev-fast
 
@@ -1640,3 +1641,47 @@ Do not edit by hand.
 
 - **Decision:** Kept as the documented configuration for conversation memory (no code change). vs lexical default on memory-dev: +4.5 [+0.4,+9.0] / +1.4 / +0.3 / +3.5 / +4.4 [+0.2,+9.2] / +7.1 [+2.8,+12.2] points at 256-8K; largest on preferences (0.67 -> 1.00 at 8K) and multi-session (0.74 -> 0.83 at 8K). Within about 3 points of M004's bge-small pool fusion (-3.3 at 4K, +1.3 at 8K) and indistinguishable from MiniLM pool fusion. Cost: 48.9 s compile per history (one CPU thread) vs 0.25 s; query p50 5.9 ms vs 1.9 ms.
 - **Follow-ups:** Swap the semantic encoder to bge-small if its pool-fusion edge (+3.3 at 4K) survives memory-heldout
+
+## O001 — Out-of-distribution check on six never-used repositories (SWE-bench Lite dev)
+
+- **Status:** kept
+- **Hypothesis:** The kept changes are not specific to the 12 development repositories.
+- **Run:** experiments/npkbench/runs/O001-ood-generalization
+- **Results:**
+
+```json
+{
+ "fix_1K_16K": {
+  "no_defs_no_trim": [
+   0.304,
+   0.37,
+   0.565,
+   0.652,
+   0.667
+  ],
+  "no_trim_mate_on": [
+   0.348,
+   0.522,
+   0.652,
+   0.674,
+   0.674
+  ],
+  "product": [
+   0.5,
+   0.507,
+   0.652,
+   0.674,
+   0.674
+  ],
+  "product_mate_on": [
+   0.5,
+   0.522,
+   0.652,
+   0.674,
+   0.674
+  ]
+ }
+}
+```
+
+- **Decision:** Generalizes on the fix target (23 issues: sqlfluff, pvlib, astroid, pydicom, marshmallow, pyvista). Definition channel + trimming vs neither: fix +19.6 [+4.3,+37.0] / +13.8 / +8.7 / +2.2 / +0.7 points at 1K-16K; tests -5/-10/-7.5/-7.5/-2.5 (not significant, same direction as held-out). Trimming alone: fix +15.2 [+2.2,+30.4] at 1K, identical beyond. Test mate (opt-in): tests +5/+15/+10/+5/+5 with no fix loss (20 tasks, lower CI bounds at zero).
