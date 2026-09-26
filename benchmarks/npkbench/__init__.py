@@ -28,6 +28,8 @@ Splits (fixed before any NeuralPack result was observed):
   (Spent on E016c by HB01.)
 * ``heldout-c`` -- a fixed stratified 400 of ``heldout-b-all`` minus ``heldout-b``,
   declared 2026-09-26 for the next confirmation.
+* ``ood-multi`` -- SWE-bench Multilingual (300 issues, 41 non-Python repositories);
+  ``ood-multi-sample``: at most 3 per repository. Measurement only.
 
 Targets (one selection is scored against all of them; see ``data.TARGETS``):
 ``fix`` (lines the reference fix edits), ``tests`` (existing test-file lines the

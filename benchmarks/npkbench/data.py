@@ -26,6 +26,12 @@ SOURCES = {
         "princeton-nlp/SWE-bench_Verified", "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
         "data/test-00000-of-00001.parquet",
         "a45b1fe4e2f0c8390b2b2938ac83e92ed5979000856808f3679c07812e9e6dcd"),
+    # Added 2026-09-26: non-Python repositories (C/C++, Go, Java, JS/TS, PHP, Ruby,
+    # Rust), MIT licensed. Measurement only (ood-multi*); never tuned on.
+    "swe_multi_test": (
+        "SWE-bench/SWE-bench_Multilingual", "846e647b9f33c0b51b739d005d13d85493c9af09",
+        "data/test-00000-of-00001.parquet",
+        "92abca7cb527b41a9f66d03a26ce441ff7319e3a49f985998fd56be4bb9b08b2"),
     # Added 2026-09-26 for a second confirmation split (heldout-b); never tuned on.
     "swe_full_test": (
         "princeton-nlp/SWE-bench", "e48e2bd1e9fecd5bbd641e9414ac59da9f2e69f6",
@@ -400,7 +406,8 @@ def split(name: str) -> List[Task]:
         dataset = {"dev": "swe_lite_test", "dev-fast": "swe_lite_test",
                    "heldout": "swe_verified_test", "ood": "swe_lite_dev",
                    "heldout-b": "swe_full_test", "heldout-b-all": "swe_full_test",
-                   "heldout-c": "swe_full_test"}[base]
+                   "heldout-c": "swe_full_test",
+                   "ood-multi": "swe_multi_test", "ood-multi-sample": "swe_multi_test"}[base]
         lite = {t.instance_id for t in load("swe_lite_test")} if base == "heldout" else set()
         return [t for t in load(dataset, target)
                 if t.instance_id in wanted and t.instance_id not in lite]
@@ -423,6 +430,21 @@ def split(name: str) -> List[Task]:
         return [t for t in load("swe_verified_test") if t.instance_id not in lite]
     if name == "ood":
         return load("swe_lite_dev")
+    if name in ("ood-multi", "ood-multi-sample"):
+        # Non-Python generalization (declared 2026-09-26, measurement only). The
+        # sample keeps at most 3 issues per repository (41 repositories), in a fixed
+        # hash order, to bound clone and compile cost.
+        rows = load("swe_multi_test")
+        if name == "ood-multi":
+            return rows
+        by_repo_m: Dict[str, List[Task]] = {}
+        for task in rows:
+            by_repo_m.setdefault(task.repo, []).append(task)
+        chosen_m = []
+        for repo, items in sorted(by_repo_m.items()):
+            items.sort(key=lambda t: _stable_hash("ood-multi:" + t.instance_id))
+            chosen_m.extend(items[:3])
+        return sorted(chosen_m, key=lambda t: t.instance_id)
     if name == "heldout-c":
         # Third confirmation split (declared 2026-09-26, after heldout-b was spent on
         # E016c/HB01): a fixed stratified 400 of heldout-b-all minus heldout-b.
