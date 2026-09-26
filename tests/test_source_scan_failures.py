@@ -29,7 +29,8 @@ def test_incomplete_scan_preserves_prior_artifact(source_pack,monkeypatch,operat
     if failure=="directory":
         original=os.scandir
         def denied(p):
-            if Path(p)==path.parent:
+            # Linux shutil.rmtree scans directory file descriptors (ints).
+            if not isinstance(p,int) and Path(p)==path.parent:
                 raise PermissionError(errno.EACCES,"synthetic inaccessible directory",str(p))
             return original(p)
         monkeypatch.setattr(os,"scandir",denied)
