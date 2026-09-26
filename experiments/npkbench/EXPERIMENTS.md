@@ -22,6 +22,7 @@ Do not edit by hand.
 | E013 | 2026-09-26 | Sibling/near-duplicate collapse (measured before building) | **rejected** | At most 3.1% of selected tokens could be reclaimed on this workload; not worth a new representation now. Revisit for repetitive/vendored corpora or conversation logs. |
 | E014 | 2026-09-26 | Source scan without pathlib relative_to/is_relative_to (update latency) | **kept** | 1.5-2.5x faster updates on a large repository with identical artifacts. Remaining one-file update cost is the global digest over FTS storage (future: incremental global integrity). |
 | E015 | 2026-09-26 | Documentation target for NPK-Bench (docs-1) and first docs-cost measurement | **inconclusive** | Superseded by E015b. Inspection of the docs-1 gold found construction errors: the upstream-commit rule (first commit after base touching every fix file) picked a mass-reformat commit for pytest-5103 (19 doc example files) and a deprecation sweep for matplotlib-24265, and counted CONTRIBUTORS.txt and doc/users/prev_whats_new as topical docs. Directionally, documentation demotion collapsed docs recall (e006_role05: 0.000/0.000/0.000/0.011/0.063 at 1K-16K vs npk_default 0.000/0.092/0.236/0.276/0.425), and definitions+trim cost -9.2 points at 1K (CI [-19.5,-1.1], 0 wins/4 losses) and -6.9 at 8K. docs-3 (patch-overlap commit identification, widening only to the introducing PR merge, prose-only) is the corrected target; docs-2 was built but found to swallow branch-integration merges before any use. |
+| E015b | 2026-09-26 | Docs target docs-3: documentation cost of role priors and of the definition channel | **kept** | docs-3 is kept as NPK-Bench's third target. (a) Demotion is decisively harmful: e006_role05 vs product on dev docs -14.1/-30.1/-37.2/-40.4 points at 2K-16K (CIs exclude zero, 0 wins / 5-12 losses), confirming the E006/E008 rejections on evidence rather than suspicion. (b) The definition channel costs docs: dev -10.3 [-21.8,-1.3] at 1K; held-out (33 tasks, confirmation only) -12.1 [-24.2,-3.0] at 2K and -10.1 [-21.2,-1.0] at 4K. Under the declared utility E002 stays net positive (fix gains of 8-10 points dominate the 0.087-weighted docs loss). Top-block trimming is docs-neutral (held-out identical). |
 | E017 | 2026-09-26 | Context map: a budget share for ranked locations listed without text | **kept** | Kept as an opt-in output mode (select(map_share=...), --map-share), not a default: full-text recall falls as the map share grows. With 25% of the budget as a map (dev-fast, paired vs the product's full text): locatable fix recall +5.3/+4.4/+9.6/+11.3/+9.7 points at 1K-16K (all CIs exclude zero), tests +2.1/+8.8/+9.0/+7.4/+6.5, docs (13 tasks) 0.000->0.077 at 1K, 0.231->0.462 at 4K; full-text fix recall -4.6/-5.8/-2.9/-3.4/-3.6. A 25% map at 2K locates 0.484 of fix hunks, the product's full text at 4K 0.479. Map only (100%): 0.515 located at 1K vs 0.358 in text. |
 | M000 | 2026-09-26 | Baseline: conversation memory (LongMemEval-S dev, 100 questions) | **kept** | Reference point for the second workload family. Weak spots: multi-session aggregation and implicit preferences. |
 | M001 | 2026-09-26 | Source-diverse packing (per-file score decay) for multi-session memory questions | **rejected** | Turn recall falls 10-16 points: fused RRF scores are nearly flat (1/60..1/120), so any per-file decay reorders almost the whole ranking toward weakly matching fresh sessions. Session coverage rises but evidence turns are lost. |
@@ -950,6 +951,82 @@ Do not edit by hand.
 
 - **Decision:** Superseded by E015b. Inspection of the docs-1 gold found construction errors: the upstream-commit rule (first commit after base touching every fix file) picked a mass-reformat commit for pytest-5103 (19 doc example files) and a deprecation sweep for matplotlib-24265, and counted CONTRIBUTORS.txt and doc/users/prev_whats_new as topical docs. Directionally, documentation demotion collapsed docs recall (e006_role05: 0.000/0.000/0.000/0.011/0.063 at 1K-16K vs npk_default 0.000/0.092/0.236/0.276/0.425), and definitions+trim cost -9.2 points at 1K (CI [-19.5,-1.1], 0 wins/4 losses) and -6.9 at 8K. docs-3 (patch-overlap commit identification, widening only to the introducing PR merge, prose-only) is the corrected target; docs-2 was built but found to swallow branch-integration merges before any use.
 - **Follow-ups:** E015b: re-run on docs-3 gold (dev) and E015c (heldout) for the definition channel's docs cost; E019: Django documents in .txt reST, which the compiler cuts into 60-line windows; split by sections; E018: resolve named entities to the reST object directives that document them
+
+## E015b — Docs target docs-3: documentation cost of role priors and of the definition channel
+
+- **Status:** kept
+- **Hypothesis:** With a corrected documentation target, (a) documentation demotion costs documentation recall, and (b) the definition channel's code-first ranking displaces topical docs.
+- **Run:** experiments/npkbench/runs/E015b-docs3-dev, experiments/npkbench/runs/E015c-docs3-heldout
+- **Bench version:** npkbench-1.1 + docs-3
+- **Results:**
+
+```json
+{
+ "dev_docs_1K_16K": {
+  "e002_defs_role05": [
+   0.0,
+   0.0,
+   0.0,
+   0.013,
+   0.147
+  ],
+  "e006_role05": [
+   0.0,
+   0.0,
+   0.0,
+   0.013,
+   0.109
+  ],
+  "e008b_soft_i60_t30_d10": [
+   0.051,
+   0.186,
+   0.353,
+   0.391,
+   0.442
+  ],
+  "npk_default": [
+   0.0,
+   0.141,
+   0.301,
+   0.385,
+   0.513
+  ],
+  "npk_nodefs": [
+   0.103,
+   0.16,
+   0.314,
+   0.462,
+   0.513
+  ],
+  "npk_notrim": [
+   0.038,
+   0.141,
+   0.301,
+   0.385,
+   0.513
+  ]
+ },
+ "heldout_docs_1K_16K": {
+  "npk_default": [
+   0.137,
+   0.165,
+   0.305,
+   0.517,
+   0.602
+  ],
+  "npk_nodefs": [
+   0.095,
+   0.286,
+   0.406,
+   0.537,
+   0.617
+  ]
+ }
+}
+```
+
+- **Decision:** docs-3 is kept as NPK-Bench's third target. (a) Demotion is decisively harmful: e006_role05 vs product on dev docs -14.1/-30.1/-37.2/-40.4 points at 2K-16K (CIs exclude zero, 0 wins / 5-12 losses), confirming the E006/E008 rejections on evidence rather than suspicion. (b) The definition channel costs docs: dev -10.3 [-21.8,-1.3] at 1K; held-out (33 tasks, confirmation only) -12.1 [-24.2,-3.0] at 2K and -10.1 [-21.2,-1.0] at 4K. Under the declared utility E002 stays net positive (fix gains of 8-10 points dominate the 0.087-weighted docs loss). Top-block trimming is docs-neutral (held-out identical).
+- **Follow-ups:** E019 (reST sections for .txt) and E018 (documentation channel) aim to recover the definition channel's docs cost
 
 ## E017 — Context map: a budget share for ranked locations listed without text
 
