@@ -25,7 +25,7 @@ Do not edit by hand.
 | E015 | 2026-09-26 | Documentation target for NPK-Bench (docs-1) and first docs-cost measurement | **inconclusive** | Superseded by E015b. Inspection of the docs-1 gold found construction errors: the upstream-commit rule (first commit after base touching every fix file) picked a mass-reformat commit for pytest-5103 (19 doc example files) and a deprecation sweep for matplotlib-24265, and counted CONTRIBUTORS.txt and doc/users/prev_whats_new as topical docs. Directionally, documentation demotion collapsed docs recall (e006_role05: 0.000/0.000/0.000/0.011/0.063 at 1K-16K vs npk_default 0.000/0.092/0.236/0.276/0.425), and definitions+trim cost -9.2 points at 1K (CI [-19.5,-1.1], 0 wins/4 losses) and -6.9 at 8K. docs-3 (patch-overlap commit identification, widening only to the introducing PR merge, prose-only) is the corrected target; docs-2 was built but found to swallow branch-integration merges before any use. |
 | E015b | 2026-09-26 | Docs target docs-3: documentation cost of role priors and of the definition channel | **kept** | docs-3 is kept as NPK-Bench's third target. (a) Demotion is decisively harmful: e006_role05 vs product on dev docs -14.1/-30.1/-37.2/-40.4 points at 2K-16K (CIs exclude zero, 0 wins / 5-12 losses), confirming the E006/E008 rejections on evidence rather than suspicion. (b) The definition channel costs docs: dev -10.3 [-21.8,-1.3] at 1K; held-out (33 tasks, confirmation only) -12.1 [-24.2,-3.0] at 2K and -10.1 [-21.2,-1.0] at 4K. Under the declared utility E002 stays net positive (fix gains of 8-10 points dominate the 0.087-weighted docs loss). Top-block trimming is docs-neutral (held-out identical). |
 | E016 | 2026-09-26 | Test-mate prototype: insert the test block mirroring the top implementation file | **rejected** | Superseded by E016b. The prototype re-filled the budget itself without top-block trimming, so its -6.3 fix points at 1K were mostly the missing trim, not the insertion; its tests gains (+10.8 [+5.2,+17.0] at 2K for position 1) motivated the product-form E016b. |
-| E016b | 2026-09-26 | Test mate in the product selector (placed right after the top implementation block) | **running** | Passes the declared rule on dev-fast (103 tasks, paired vs the same selector with enable_test_mate=False): tests +3.7 [+1.0,+7.3] at 1K (6 wins/0 losses), +7.0 [+2.1,+12.3] at 2K (12/2), +4.9 [0.0,+10.2] at 4K, +2.9/+2.8 at 8K/16K; fix 0.0/-2.4/-1.9/-1.0/-0.5 (none significant); docs 0 except -7.7 at 4K (one task). Utility U = +3.7/+4.5/+2.3/+1.9/+2.2 points. Latency: about +10 ms uncontended on Django after caching parsed test paths and reusing the deep lexical ranking (selections identical on all 515). Held-out confirmation (H001) queued before promotion. |
+| E016b | 2026-09-26 | Test mate in the product selector (placed right after the top implementation block) | **kept** | Kept as an opt-in mode (enable_test_mate=True, --test-mate); the held-out confirmation did not support a default change. Dev-fast: tests +3.7/+7.0/+4.9/+2.9/+2.8 points, fix changes not significant. Held-out H001 (407 issues; criteria committed before the run): tests +1.15 [+0.2,+2.3] / +3.8 [+1.6,+6.0] / +4.5 [+2.2,+7.1] / +3.6 [+2.0,+5.4] / +1.7 [+0.7,+2.9] points at 1K-16K (34 wins/6 losses at 2K); fix -1.15 [-2.2,-0.3] / -0.6 / -1.4 [-2.7,-0.2] / -0.3 / -0.6 [-1.3,-0.1]; docs ~0. Utility -0.012/+3.2/+2.8/+3.3/+1.0 points: negative (by 0.012 points) at 1K with a significant fix loss, so the pre-declared rule blocks a default change. A budget-gated variant (mate only at >=2K) is suggested by these numbers but must not be confirmed on the same held-out split. |
 | E017 | 2026-09-26 | Context map: a budget share for ranked locations listed without text | **kept** | Kept as an opt-in output mode (select(map_share=...), --map-share), not a default: full-text recall falls as the map share grows. With 25% of the budget as a map (dev-fast, paired vs the product's full text): locatable fix recall +5.3/+4.4/+9.6/+11.3/+9.7 points at 1K-16K (all CIs exclude zero), tests +2.1/+8.8/+9.0/+7.4/+6.5, docs (13 tasks) 0.000->0.077 at 1K, 0.231->0.462 at 4K; full-text fix recall -4.6/-5.8/-2.9/-3.4/-3.6. A 25% map at 2K locates 0.484 of fix hunks, the product's full text at 4K 0.479. Map only (100%): 0.515 located at 1K vs 0.358 in text. |
 | E018 | 2026-09-26 | Documentation channel on top of reST sectioning (E019) | **rejected** | Built on E019, which was rejected. On docs (dev, 26 tasks) the channel added +10.3/+5.1/+7.7/+3.8/-2.6 points over E019 alone, but the combination only matched the main compiler beyond 1K. The channel alone on the main compiler was tested as E018b. The code-target run of this combination was stopped as superseded. |
 | E018b | 2026-09-26 | Documentation channel (named entities -> reST object directives) on the main compiler | **rejected** | Trades code for documentation. Docs (dev, 26 tasks): +14.1 [+2.6,+26.9] points at 1K (5 wins/0 losses), +5.8 at 2K, -2.6/-1.3/0 beyond. Dev-fast code targets vs the same selector without the channel: fix -2.4/-1.0/-5.3 [-9.7,-1.5]/-1.0/0.0 (0 wins/6 losses at 4K), tests -0.2/-1.9/-3.9 [-7.8,-1.0]/-1.6/-0.6. Utility -1.9/-2.2/-9.9/-2.6/-0.6 points: negative at every budget. Django documents nearly every entity, so the channel lifts documentation for most queries at the expense of the code the issue is about; documentation matters for 8.7% of tasks. |
@@ -33,6 +33,7 @@ Do not edit by hand.
 | E022 | 2026-09-26 | Segment-aware lexical retrieval: separate channels for issue prose and code | **rejected** | Fails the declared rule at 1K. e022_split vs product (dev-fast): fix -2.4/-2.4/+2.4/+2.6/0.0 (none significant), tests +1.8/+4.4/+5.3/+3.3/+5.3 (significant at 16K), docs 0/+7.7/0/+7.7/0; utility -0.7/+2.6/+7.6/+6.6/+5.3 points. Adding only a code or only a prose channel to the full-query channel is weaker (full_plus_prose: fix -4.4 at 2K, significant). The tests gain overlaps what the test mate (E016b) already recovers; not tuned further on dev-fast to avoid fitting variants to it. |
 | E023 | 2026-09-26 | Import-aware entity extraction and prose-weighted definition votes | **rejected** | No measurable effect. A reimplementation control reproduced the product exactly (all 515 selections). Import-aware tail extraction vs product (dev-fast): fix -0.5/-0.5/+1.5/-0.5/0.0, tests 0.0/+0.5/0.0/+1.9/-0.5, at most 4 tasks changed per budget; code-half weighting and the combination are equally flat (utility within +-2 points, mixed sign). The ambiguity cap already discards most module-path names, so the traced failure is rare in aggregate. The simpler product stays. |
 | E024 | 2026-09-26 | Bulk integrity leaves (one ordered scan per table) and batched framing | **rejected** | Correct but not worth its complexity. Digests are byte-identical (4 Django packs; new equality test across all local tables; two mutants killed), but paired compile timing gives 1.018x (12.86 -> 12.64 s median) and verify ~3% (9.4-9.8 s -> 8.8-9.3 s). The cold-pack microbenchmark (1.4 s -> 0.5 s) overstated the in-compile gain because sealing reads hot pages; verify is dominated by the deliberate FTS source-parity rebuild. Not merged: +40 lines in integrity-critical code for ~2%. |
+| H001 | 2026-09-26 | Held-out confirmation: test mate (E016b), top-block trimming (E005c), context map (E017) | **kept** | E005c confirmed: trimming vs no trimming, fix +3.8 points at 1K (significant), identical at >=2K; utility +2.9/0/0/0/0. E017 confirmed: located fix recall with a 25% map +9.6/+12.3/+13.0/+11.4/+7.2 points over the default's full text, tests +5.3/+5.2/+7.7/+8.0/+8.2 (all CIs exclude zero). E016b confirmed only as a tradeoff: tests up at every budget, fix down 0.3-1.4 points; the 1K utility is -0.012 points with a significant fix loss, so it ships opt-in. Full current default on held-out (definition channel + trimming): fix 0.230/0.309/0.399/0.475/0.575 at 1K-16K (before this loop 0.136/0.206/0.302/0.393/0.490). |
 | M000 | 2026-09-26 | Baseline: conversation memory (LongMemEval-S dev, 100 questions) | **kept** | Reference point for the second workload family. Weak spots: multi-session aggregation and implicit preferences. |
 | M001 | 2026-09-26 | Source-diverse packing (per-file score decay) for multi-session memory questions | **rejected** | Turn recall falls 10-16 points: fused RRF scores are nearly flat (1/60..1/120), so any per-file decay reorders almost the whole ranking toward weakly matching fresh sessions. Session coverage rises but evidence turns are lost. |
 | M002 | 2026-09-26 | Relevance-density ordering (fused score / tokens^alpha) before greedy fill | **rejected** | Aggregate gain is a disguised role prior: it comes from LongMemEval's composition (842/896 evidence turns are user turns) and collapses the question type whose evidence is in long assistant turns (1K: 0.833 -> 0.333). Not a default. Pursue finer units for long turns instead. |
@@ -1110,9 +1111,9 @@ Do not edit by hand.
 
 ## E016b — Test mate in the product selector (placed right after the top implementation block)
 
-- **Status:** running
+- **Status:** kept
 - **Hypothesis:** Placing the best query-matching block of the mirroring test file right after the top implementation block, inside the product's fill and trimming, recovers tests-target recall without a significant fix-target cost.
-- **Run:** experiments/npkbench/runs/E016b-test-mate-product-devfast
+- **Run:** experiments/npkbench/runs/E016b-test-mate-product-devfast, experiments/npkbench/runs/H001-mate-trim-heldout
 - **Files changed:** `npk/pack/select.py`, `benchmarks/npkbench/arms.py`, `tests/test_test_mate.py`
 - **Results:**
 
@@ -1134,6 +1135,45 @@ Do not edit by hand.
    0.607
   ]
  },
+ "heldout_fix_1K_16K": {
+  "mate": [
+   0.219,
+   0.303,
+   0.385,
+   0.472,
+   0.569
+  ],
+  "nomate": [
+   0.23,
+   0.309,
+   0.399,
+   0.475,
+   0.575
+  ]
+ },
+ "heldout_tests_1K_16K": {
+  "mate": [
+   0.07,
+   0.143,
+   0.194,
+   0.256,
+   0.303
+  ],
+  "nomate": [
+   0.058,
+   0.105,
+   0.149,
+   0.22,
+   0.287
+  ]
+ },
+ "heldout_utility": [
+  -0.00012,
+  0.03182,
+  0.02764,
+  0.03262,
+  0.01033
+ ],
  "tests_1K_16K": {
   "mate": [
    0.077,
@@ -1160,7 +1200,7 @@ Do not edit by hand.
 }
 ```
 
-- **Decision:** Passes the declared rule on dev-fast (103 tasks, paired vs the same selector with enable_test_mate=False): tests +3.7 [+1.0,+7.3] at 1K (6 wins/0 losses), +7.0 [+2.1,+12.3] at 2K (12/2), +4.9 [0.0,+10.2] at 4K, +2.9/+2.8 at 8K/16K; fix 0.0/-2.4/-1.9/-1.0/-0.5 (none significant); docs 0 except -7.7 at 4K (one task). Utility U = +3.7/+4.5/+2.3/+1.9/+2.2 points. Latency: about +10 ms uncontended on Django after caching parsed test paths and reusing the deep lexical ranking (selections identical on all 515). Held-out confirmation (H001) queued before promotion.
+- **Decision:** Kept as an opt-in mode (enable_test_mate=True, --test-mate); the held-out confirmation did not support a default change. Dev-fast: tests +3.7/+7.0/+4.9/+2.9/+2.8 points, fix changes not significant. Held-out H001 (407 issues; criteria committed before the run): tests +1.15 [+0.2,+2.3] / +3.8 [+1.6,+6.0] / +4.5 [+2.2,+7.1] / +3.6 [+2.0,+5.4] / +1.7 [+0.7,+2.9] points at 1K-16K (34 wins/6 losses at 2K); fix -1.15 [-2.2,-0.3] / -0.6 / -1.4 [-2.7,-0.2] / -0.3 / -0.6 [-1.3,-0.1]; docs ~0. Utility -0.012/+3.2/+2.8/+3.3/+1.0 points: negative (by 0.012 points) at 1K with a significant fix loss, so the pre-declared rule blocks a default change. A budget-gated variant (mate only at >=2K) is suggested by these numbers but must not be confirmed on the same held-out split.
 - **Follow-ups:** H001: held-out confirmation (tests, docs, fix) together with E005c trimming
 
 ## E017 — Context map: a budget share for ranked locations listed without text
@@ -1295,6 +1335,14 @@ Do not edit by hand.
 - **Run:** experiments/npkbench/runs/E024-bulk-integrity
 - **Files changed:** `npk/pack/integrity.py`, `tests/test_incremental_integrity.py`, `benchmarks/contract_mutations.py`
 - **Decision:** Correct but not worth its complexity. Digests are byte-identical (4 Django packs; new equality test across all local tables; two mutants killed), but paired compile timing gives 1.018x (12.86 -> 12.64 s median) and verify ~3% (9.4-9.8 s -> 8.8-9.3 s). The cold-pack microbenchmark (1.4 s -> 0.5 s) overstated the in-compile gain because sealing reads hot pages; verify is dominated by the deliberate FTS source-parity rebuild. Not merged: +40 lines in integrity-critical code for ~2%.
+
+## H001 — Held-out confirmation: test mate (E016b), top-block trimming (E005c), context map (E017)
+
+- **Status:** kept
+- **Hypothesis:** Dev-fast decisions hold on 407 held-out issues under criteria committed before the run (NEXT_STEPS.md, commit e822844).
+- **Run:** experiments/npkbench/runs/H001-mate-trim-heldout
+- **Bench version:** npkbench-1.1 + docs-3
+- **Decision:** E005c confirmed: trimming vs no trimming, fix +3.8 points at 1K (significant), identical at >=2K; utility +2.9/0/0/0/0. E017 confirmed: located fix recall with a 25% map +9.6/+12.3/+13.0/+11.4/+7.2 points over the default's full text, tests +5.3/+5.2/+7.7/+8.0/+8.2 (all CIs exclude zero). E016b confirmed only as a tradeoff: tests up at every budget, fix down 0.3-1.4 points; the 1K utility is -0.012 points with a significant fix loss, so it ships opt-in. Full current default on held-out (definition channel + trimming): fix 0.230/0.309/0.399/0.475/0.575 at 1K-16K (before this loop 0.136/0.206/0.302/0.393/0.490).
 
 ## M000 — Baseline: conversation memory (LongMemEval-S dev, 100 questions)
 
