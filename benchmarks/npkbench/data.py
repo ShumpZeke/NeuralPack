@@ -209,19 +209,30 @@ def _refine(tasks: List[Task], name: str) -> None:
         tmp.replace(cache_path)
 
 
-def load(name: str) -> List[Task]:
+#: Gold targets. ``fix``: lines the reference fix edits (implementation).
+#: ``tests``: lines of existing test files the reference test patch edits,
+#: i.e. where maintainers put the regression test. The same query and pack
+#: serve both, so a selector cannot win one target by ignoring the other.
+TARGETS = ("fix", "tests")
+
+
+def load(name: str, target: str = "fix") -> List[Task]:
     import pyarrow.parquet as pq
 
+    if target not in TARGETS:
+        raise ValueError(f"unknown target {target!r}")
     rows = pq.read_table(download(name)).to_pylist()
     tasks = []
     for row in rows:
-        hunks, new_files = parse_patch(row["patch"])
+        hunks, new_files = parse_patch(row["patch" if target == "fix" else "test_patch"])
+        if not hunks:
+            continue  # e.g. a test patch that only adds new files
         tasks.append(Task(
             instance_id=row["instance_id"], repo=row["repo"], base_commit=row["base_commit"],
             query=row["problem_statement"], hunks=hunks, created_at=row["created_at"],
             source=name, new_files=new_files,
         ))
-    _refine(tasks, name)
+    _refine(tasks, name if target == "fix" else f"{name}-{target}")
     return tasks
 
 
@@ -230,7 +241,20 @@ def _stable_hash(value: str) -> int:
 
 
 def split(name: str) -> List[Task]:
-    """Return a named split. Membership rules are fixed; see package docstring."""
+    """Return a named split. Membership rules are fixed; see package docstring.
+
+    ``<split>:tests`` scores the same tasks against the test-patch target.
+    Task membership is decided on the fix target, so both views of a split
+    contain the same issues (minus any whose test patch only adds files).
+    """
+    base, _, target = name.partition(":")
+    if target:
+        wanted = {t.instance_id for t in split(base)}
+        dataset = {"dev": "swe_lite_test", "dev-fast": "swe_lite_test",
+                   "heldout": "swe_verified_test", "ood": "swe_lite_dev"}[base]
+        lite = {t.instance_id for t in load("swe_lite_test")} if base == "heldout" else set()
+        return [t for t in load(dataset, target)
+                if t.instance_id in wanted and t.instance_id not in lite]
     if name == "dev":
         return load("swe_lite_test")
     if name == "dev-fast":

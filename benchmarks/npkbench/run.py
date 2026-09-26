@@ -138,6 +138,12 @@ def main(argv: List[str] | None = None) -> int:
     finally:
         for f in files.values():
             f.close()
+    # Rows carry every selected span (for offline re-scoring); compress them
+    # so dozens of runs stay cheap to keep in version control.
+    import gzip
+    rows_path = args.out / "rows.jsonl"
+    (args.out / "rows.jsonl.gz").write_bytes(gzip.compress(rows_path.read_bytes(), mtime=0))
+    rows_path.unlink()
     summary = report.summarize(args.out)
     summary["elapsed_s"] = round(time.time() - started, 1)
     final = {n: packs.compiler_fingerprint(arms_mod.get(n).compile_options) for n in arm_names}

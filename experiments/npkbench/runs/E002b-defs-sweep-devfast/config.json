@@ -1,0 +1,54 @@
+{
+ "split": "dev-fast",
+ "arms": [
+  "npk_default",
+  "e002_defs",
+  "e002_defs_max3",
+  "e002_defs_max5",
+  "e002_defs_max25",
+  "e002_defs_strict",
+  "e002_defs_qual",
+  "e002_defs_strict_qual",
+  "e002_defs_members",
+  "e002_defs_role05",
+  "e002_defs_role07",
+  "e002_defs_members_role05",
+  "e006_role05_members"
+ ],
+ "budgets": [
+  1024,
+  2048,
+  4096,
+  8192,
+  16384
+ ],
+ "tasks": 103,
+ "load": [
+  "benchmarks.npkbench.prototypes.entity_query"
+ ],
+ "environment": {
+  "git_commit": "18a2ed3850d372f7f4e43d6b6dd0070a71e91e53",
+  "git_dirty": true,
+  "python": "3.12.3",
+  "sqlite": "3.45.1",
+  "platform": "Linux-6.18.44-fc-v37-x86_64-with-glibc2.39",
+  "cpus": 4,
+  "bench_version": "npkbench-1.1"
+ },
+ "started_unix": 1790444097.520816,
+ "compiler_fingerprints": {
+  "npk_default": "3c3cc4e616e51c33",
+  "e002_defs": "3c3cc4e616e51c33",
+  "e002_defs_max3": "3c3cc4e616e51c33",
+  "e002_defs_max5": "3c3cc4e616e51c33",
+  "e002_defs_max25": "3c3cc4e616e51c33",
+  "e002_defs_strict": "3c3cc4e616e51c33",
+  "e002_defs_qual": "3c3cc4e616e51c33",
+  "e002_defs_strict_qual": "3c3cc4e616e51c33",
+  "e002_defs_members": "1a5164073f097741",
+  "e002_defs_role05": "3c3cc4e616e51c33",
+  "e002_defs_role07": "3c3cc4e616e51c33",
+  "e002_defs_members_role05": "1a5164073f097741",
+  "e006_role05_members": "1a5164073f097741"
+ }
+}

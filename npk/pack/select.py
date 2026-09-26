@@ -328,6 +328,90 @@ def _relation_channel(con: sqlite3.Connection, query: str, limit: int) -> List[i
     return [row["block_id"] for row in ordered[:limit]]
 
 
+_IDENT = r"[A-Za-z_][A-Za-z0-9_]*"
+_DOTTED_NAME = re.compile(rf"(?<![\w.]){_IDENT}(?:\.{_IDENT})+")
+_CALLED_NAME = re.compile(rf"(?<![\w.])({_IDENT})\(")
+_BACKTICKED = re.compile(r"`([^`\n]{1,200})`")
+_IDENT_WORD = re.compile(_IDENT)
+
+#: A name with more definitions than this is too ambiguous to be evidence
+#: (``__init__``, ``get``). NPK-Bench E002b measured 3-25 within noise.
+MAX_DEFINITION_AMBIGUITY = 10
+
+
+def _code_like(token: str) -> bool:
+    """snake_case, camel humps, or letters mixed with digits (not prose)."""
+    core = token.strip("_")
+    if not core or len(token) < 3:
+        return False
+    if "_" in core:
+        return True
+    if re.search(r"[a-z][A-Z]", core) or re.search(r"[A-Z]{2,}[a-z]", core):
+        return True
+    return bool(re.search(r"[A-Za-z]", core) and re.search(r"\d", core))
+
+
+def _query_entities(query: str) -> List[str]:
+    """Code identifiers a query names explicitly, in first-mention order.
+
+    Sources: dotted references (``django.core.exceptions.ValidationError``,
+    ``Signal.send_robust``), called names (``send_robust(``), backticked code,
+    and words that are code-like by spelling. Plain prose words are ignored.
+    """
+    names: List[str] = []
+    for match in _DOTTED_NAME.finditer(query):
+        parts = match.group(0).split(".")
+        if all(len(part) <= 2 for part in parts):  # e.g. "e.g", "v2.0"
+            continue
+        names.extend(part for part in parts
+                     if len(part) >= 3 and part.lower() not in FUNCTION_WORDS)
+    names.extend(m.group(1) for m in _CALLED_NAME.finditer(query) if len(m.group(1)) >= 3)
+    for match in _BACKTICKED.finditer(query):
+        names.extend(w for w in _IDENT_WORD.findall(match.group(1)) if len(w) >= 3)
+    names.extend(w for w in _IDENT_WORD.findall(query) if _code_like(w))
+    return list(dict.fromkeys(names))
+
+
+def _definition_channel(con: sqlite3.Connection, query: str, limit: int,
+                        lexical: Sequence[int]) -> List[int]:
+    """Blocks that define identifiers the query names.
+
+    Issue-style queries name the code they concern, but a flat OR over many
+    prose terms lets documentation and tests that repeat the vocabulary
+    outrank the definition. Each named identifier votes for its defining
+    blocks with weight ``1/log2(1+n)`` for ``n`` distinct definitions; names
+    defined in more than ``MAX_DEFINITION_AMBIGUITY`` blocks are ignored.
+    Ties keep lexical rank, then source order (never mutable row IDs).
+    """
+    names = _query_entities(query)
+    if not names:
+        return []
+    marks = ",".join("?" * len(names))
+    try:
+        rows = con.execute(
+            "SELECT s.name, s.block_id, f.path, b.ordinal FROM symbols s "
+            "JOIN blocks b ON b.id=s.block_id JOIN files f ON f.id=b.file_id "
+            f"WHERE s.is_def=1 AND s.name IN ({marks})", tuple(names)).fetchall()
+    except sqlite3.OperationalError:
+        return []
+    by_name: Dict[str, Set[int]] = {}
+    position: Dict[int, Tuple[str, int]] = {}
+    for row in rows:
+        by_name.setdefault(row[0], set()).add(row[1])
+        position[row[1]] = (row[2], row[3])
+    score: Dict[int, float] = {}
+    for blocks in by_name.values():
+        if len(blocks) > MAX_DEFINITION_AMBIGUITY:
+            continue
+        weight = 1.0 / math.log2(1 + len(blocks))
+        for block_id in blocks:
+            score[block_id] = score.get(block_id, 0.0) + weight
+    lexical_rank = {block_id: rank for rank, block_id in enumerate(lexical)}
+    unranked = len(lexical_rank)
+    ordered = sorted(score, key=lambda b: (-score[b], lexical_rank.get(b, unranked), position[b]))
+    return ordered[:limit]
+
+
 def _embedding_channel(con: sqlite3.Connection, query: str, limit: int,
                        manifest: Dict[str, str]) -> Tuple[List[int], Optional[float]]:
     """Rank by cosine similarity against the PRECOMPUTED index.
@@ -430,6 +514,7 @@ class PackSelector:
         dense_floor: float = 0.35,
         tokenizer: Optional[LocalTokenizer] = None,
         enable_relations: bool = True,
+        enable_definitions: bool = True,
         enable_cache: bool = True,
         max_cache_entries: int = 128,
     ):
@@ -451,6 +536,9 @@ class PackSelector:
         if type(enable_relations) is not bool:
             raise ValueError("enable_relations must be a boolean")
         self.enable_relations = enable_relations
+        if type(enable_definitions) is not bool:
+            raise ValueError("enable_definitions must be a boolean")
+        self.enable_definitions = enable_definitions
         self._con: Optional[sqlite3.Connection] = None
         self._manifest: Optional[Dict[str, str]] = None
         self._data_version: Optional[int] = None
@@ -589,6 +677,7 @@ class PackSelector:
                     self.resolve_conflicts,
                     self.candidate_limit,
                     self.enable_relations,
+                    self.enable_definitions,
                     self.tokenizer.sha256 if self.tokenizer is not None else None,
                 )
                 if cache_key in self._cache:
@@ -692,6 +781,10 @@ class PackSelector:
             relation = _relation_channel(con, query, limit)
             if relation:
                 ranks["relation"] = relation
+        if self.enable_definitions:
+            definition = _definition_channel(con, query, limit, lex)
+            if definition:
+                ranks["definition"] = definition
 
         if self.retrieval == "hybrid":
             emb, top_sim = _embedding_channel(con, query, limit, manifest)

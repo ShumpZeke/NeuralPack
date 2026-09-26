@@ -44,7 +44,12 @@ def ensure_pack(task: Task, options: Optional[Dict[str, Any]] = None) -> Dict[st
     tree = repos.scratch_tree(task.repo, task.base_commit)
     try:
         export_s = time.perf_counter() - started
-        removed = repos.remove_compile_blockers(tree)
+        # Compilers with the E004 skip-and-report policy handle unindexable
+        # files themselves (reported in stats.skipped_sources); only older
+        # compilers need the harness to remove them before building.
+        import npk.pack.compile as compile_module
+        removed = ({} if hasattr(compile_module, "UnsupportedSource")
+                   else repos.remove_compile_blockers(tree))
         t0 = time.perf_counter()
         stats = compile_pack(tree, path, **(options or {}))
         compile_s = time.perf_counter() - t0

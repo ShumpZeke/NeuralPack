@@ -18,9 +18,16 @@ METRICS = ("hunk_recall", "file_recall", "all_found", "line_recall")
 
 
 def _read(path: Path) -> List[Dict[str, Any]]:
-    if not path.exists():
+    """Read ``x.jsonl`` or its gzip form ``x.jsonl.gz``."""
+    import gzip
+    gz = path.with_name(path.name + ".gz")
+    if gz.exists():
+        text = gzip.decompress(gz.read_bytes()).decode("utf-8")
+    elif path.exists():
+        text = path.read_text()
+    else:
         return []
-    return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+    return [json.loads(line) for line in text.splitlines() if line.strip()]
 
 
 def _mean(values: List[float]) -> float:

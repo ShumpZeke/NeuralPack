@@ -47,13 +47,25 @@ def code_like(token: str) -> bool:
     return False
 
 
-def extract_entities(query: str) -> Dict[str, List[str]]:
-    """Identifiers the issue names explicitly, in first-mention order."""
+def extract_entities(query: str, *, strict: bool = False, qualified: bool = False) -> Dict[str, List[str]]:
+    """Identifiers the issue names explicitly, in first-mention order.
+
+    ``strict`` keeps a dotted component only when it is itself code-like or
+    is the final component (``models.Field`` keeps ``Field``, drops
+    ``models``). ``qualified`` also keeps whole dotted spellings.
+    """
     names: List[str] = []
     for match in DOTTED.finditer(query):
         parts = match.group(0).split(".")
         # Skip abbreviations/versions ("e.g", "i.e", "v2.0") via identifier rules.
         if all(len(p) <= 2 for p in parts):
+            continue
+        if qualified:
+            names.append(match.group(0))
+        if strict:
+            names.extend(p for i, p in enumerate(parts)
+                         if len(p) >= 3 and (code_like(p) or i == len(parts) - 1)
+                         and p.lower() not in FUNCTION_WORDS and p != "self")
             continue
         names.extend(p for p in parts if len(p) >= 3 and p.lower() not in FUNCTION_WORDS)
     names.extend(m.group(1) for m in CALL.finditer(query) if len(m.group(1)) >= 3)
@@ -201,8 +213,8 @@ def role_adjusted(con, scored: Sequence[Tuple[int, int, float]], factor: float) 
 def select_ranked(con, query: str, *, limit: int = 60, weight: int = 1, defs: bool = False,
                   paths: bool = False, relations: bool = True, max_defs: int = 10,
                   agg_alpha: float = 0.0, agg_k: int = 3, agg_pool: int = 200,
-                  role_factor: float = 1.0) -> List[int]:
-    ents = extract_entities(query)
+                  role_factor: float = 1.0, strict: bool = False, qualified: bool = False) -> List[int]:
+    ents = extract_entities(query, strict=strict, qualified=qualified)
     names = ents["names"] if weight > 1 else []
     if agg_alpha > 0 or role_factor != 1.0:
         pool = max(limit, agg_pool)
@@ -238,7 +250,7 @@ def select_ranked(con, query: str, *, limit: int = 60, weight: int = 1, defs: bo
     return sorted(fused, key=lambda b: -fused[b])
 
 
-def make_arm(name: str, **options) -> Arm:
+def make_arm(name: str, compile_options: Optional[Dict] = None, **options) -> Arm:
     def runner(pack: Path, task: Task, budgets: Sequence[int]) -> Dict[int, ArmResult]:
         out = {}
         with open_pack(pack) as con:
@@ -257,7 +269,7 @@ def make_arm(name: str, **options) -> Arm:
         return [(blocks[i].path, blocks[i].start_line, blocks[i].end_line, max(1, len(blocks[i].text) // 4))
                 for i in ordered if i in blocks]
 
-    return register(Arm(name, runner=runner, ranker=ranker))
+    return register(Arm(name, compile_options=dict(compile_options or {}), runner=runner, ranker=ranker))
 
 
 # Parity control: must equal npk_default exactly.
@@ -275,3 +287,15 @@ make_arm("e002_w5", weight=5)
 # H6: implementation-first role prior (reported separately; see gaming caveat).
 make_arm("e006_role05", role_factor=0.5)
 make_arm("e006_role07", role_factor=0.7)
+
+# --- E002 refinement sweep (dev-fast only; held-out untouched) ---
+for _n in (3, 5, 25):
+    make_arm(f"e002_defs_max{_n}", defs=True, max_defs=_n)
+make_arm("e002_defs_strict", defs=True, strict=True)
+make_arm("e002_defs_qual", defs=True, qualified=True)
+make_arm("e002_defs_strict_qual", defs=True, strict=True, qualified=True)
+make_arm("e002_defs_members", compile_options={"python_members": True}, defs=True)
+make_arm("e002_defs_role05", defs=True, role_factor=0.5)
+make_arm("e002_defs_role07", defs=True, role_factor=0.7)
+make_arm("e002_defs_members_role05", compile_options={"python_members": True}, defs=True, role_factor=0.5)
+make_arm("e006_role05_members", compile_options={"python_members": True}, role_factor=0.5)

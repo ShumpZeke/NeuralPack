@@ -97,6 +97,9 @@ def _oracle_blocks(pack: Path, task: Task, budgets: Sequence[int]) -> Dict[int, 
 ARMS: Dict[str, Arm] = {
     "npk_default": Arm("npk_default"),
     "npk_no_relations": Arm("npk_no_relations", selector_options={"enable_relations": False}),
+    # The product before E002 (no definition channel); ``npk_default`` always
+    # means current product defaults, so historical comparisons use this.
+    "npk_nodefs": Arm("npk_nodefs", selector_options={"enable_definitions": False}),
     "npk_members": Arm("npk_members", compile_options={"python_members": True}),
     "oracle_blocks": Arm("oracle_blocks", runner=_oracle_blocks),
 }
