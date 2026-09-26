@@ -1,0 +1,30 @@
+From 310bd86212b88242416fb32a05b6789d7066fedc Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Sat, 26 Sep 2026 19:32:13 +0000
+Subject: [PATCH] E019 (experiment): split .txt files with reST section
+ structure as reST
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01D7rZygmWjP9fbuvC5cX97z
+---
+ npk/pack/compile.py | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/npk/pack/compile.py b/npk/pack/compile.py
+index 2d021f5..213f65a 100644
+--- a/npk/pack/compile.py
++++ b/npk/pack/compile.py
+@@ -687,7 +687,9 @@ def split_source(text: str, language: str, *, python_members: bool = False) -> L
+         blocks = _split_python(text, python_members=python_members)
+     elif language == "markdown":
+         blocks = _split_markdown(text)
+-    elif language == "rst":
++    elif language == "rst" or (language == "text" and _rst_heading_events(_source_lines(text))):
++        # Plain-text files with reST section structure (Django documents its
++        # whole project in .txt reST) split at sections like .rst files.
+         blocks = _split_rst(text)
+     elif language in BRACE_LANGUAGES:
+         blocks = _split_braces(text, language)
+-- 
+2.43.0
+
