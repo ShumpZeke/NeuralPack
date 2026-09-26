@@ -68,15 +68,16 @@ hybrid for chat histories (M006).
    the best found. A new idea must raise docs without moving code blocks down: for
    example, filling budget that code cannot use (remainders too small for the next code
    block) with the best small documentation units.
-2. **HB01 (running): budget-gated test mate (E016c) and a replication of E002+E005c on
-   `heldout-b`,** with criteria declared in this file before the run.
+2. **Done: the budget-gated test mate is the default (E016c, confirmed by HB01 on
+   heldout-b).** Tests +2.3 to +6.0 points at 2K-16K for 0.4-1.1 fix points; 1K unchanged.
 3. **MH01 (queued): the semantic/hybrid memory configuration on memory-heldout (370).**
 4. **bge-small as the semantic encoder** (M004 pool fusion was +3.3 points over MiniLM hybrid
    at 4K on memory-dev): needs CLS pooling and a query prefix in `npk/context/embedding.py`
    and a new encoder identity; for code it passed the rule only barely (E012b) at a large
    compile cost.
-5. **Held-out split hygiene:** `heldout` has been used for E002, E005c, E016b and E017
-   confirmations; use `heldout-b` for future confirmations.
+5. **Held-out split hygiene:** `heldout` confirmed E002, E005c, E016b and E017; `heldout-b`
+   confirmed E016c (HB01). Use `heldout-c` (declared, unused) for the next confirmation,
+   and declare its criteria in this file before running it.
 
 Measured non-opportunities (do not re-run without a new idea): a traceback-frame channel
 (the 7 dev-fast tasks whose traceback names a gold file already score 0.86-0.93 from 1K);

@@ -399,7 +399,8 @@ def split(name: str) -> List[Task]:
         wanted = {t.instance_id for t in split(base)}
         dataset = {"dev": "swe_lite_test", "dev-fast": "swe_lite_test",
                    "heldout": "swe_verified_test", "ood": "swe_lite_dev",
-                   "heldout-b": "swe_full_test", "heldout-b-all": "swe_full_test"}[base]
+                   "heldout-b": "swe_full_test", "heldout-b-all": "swe_full_test",
+                   "heldout-c": "swe_full_test"}[base]
         lite = {t.instance_id for t in load("swe_lite_test")} if base == "heldout" else set()
         return [t for t in load(dataset, target)
                 if t.instance_id in wanted and t.instance_id not in lite]
@@ -422,6 +423,19 @@ def split(name: str) -> List[Task]:
         return [t for t in load("swe_verified_test") if t.instance_id not in lite]
     if name == "ood":
         return load("swe_lite_dev")
+    if name == "heldout-c":
+        # Third confirmation split (declared 2026-09-26, after heldout-b was spent on
+        # E016c/HB01): a fixed stratified 400 of heldout-b-all minus heldout-b.
+        spent = {t.instance_id for t in split("heldout-b")}
+        rest = [t for t in split("heldout-b-all") if t.instance_id not in spent]
+        by_repo_c: Dict[str, List[Task]] = {}
+        for task in rest:
+            by_repo_c.setdefault(task.repo, []).append(task)
+        chosen_c = []
+        for repo, items in sorted(by_repo_c.items()):
+            items.sort(key=lambda t: _stable_hash("heldout-c:" + t.instance_id))
+            chosen_c.extend(items[:max(2, round(400 * len(items) / len(rest)))])
+        return sorted(chosen_c, key=lambda t: t.instance_id)
     if name in ("heldout-b", "heldout-b-all"):
         # Second confirmation split (declared 2026-09-26, after `heldout` was spent on
         # E016b): SWE-bench test minus Verified minus Lite. `heldout-b` is a fixed,

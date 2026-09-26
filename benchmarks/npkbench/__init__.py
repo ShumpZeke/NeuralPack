@@ -25,6 +25,9 @@ Splits (fixed before any NeuralPack result was observed):
 * ``heldout-b`` -- SWE-bench test minus Verified minus Lite, a fixed
   repository-stratified sample of 400 (``heldout-b-all``: all of them).
   Declared 2026-09-26 before any result on it; confirmation only.
+  (Spent on E016c by HB01.)
+* ``heldout-c`` -- a fixed stratified 400 of ``heldout-b-all`` minus ``heldout-b``,
+  declared 2026-09-26 for the next confirmation.
 
 Targets (one selection is scored against all of them; see ``data.TARGETS``):
 ``fix`` (lines the reference fix edits), ``tests`` (existing test-file lines the
