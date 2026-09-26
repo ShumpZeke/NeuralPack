@@ -18,6 +18,7 @@ Do not edit by hand.
 | E010 | 2026-09-26 | Drop very-high-document-frequency terms from long queries | **inconclusive** | ~3x faster lexical stage for long queries with fix-target recall within noise, but up to -3 points on the tests target at 16K. Latency is not a bottleneck at this scale (~30 ms uncontended); not promoted. Revisit for interactive/agent loops on very large repositories. |
 | E011 | 2026-09-26 | Learned pairwise re-ranker over the product's candidate pool | **rejected** | With role features the model relearns documentation demotion and a fix->tests transfer (largest weights are role and doc-like kind proxies). Role-blind models do not beat the product's fused ranking (fix within +/-3 points). The remaining ranking headroom needs new evidence (semantic similarity, structure), not reweighting of existing channels. |
 | E013 | 2026-09-26 | Sibling/near-duplicate collapse (measured before building) | **rejected** | At most 3.1% of selected tokens could be reclaimed on this workload; not worth a new representation now. Revisit for repetitive/vendored corpora or conversation logs. |
+| E014 | 2026-09-26 | Source scan without pathlib relative_to/is_relative_to (update latency) | **kept** | 1.5-2.5x faster updates on a large repository with identical artifacts. Remaining one-file update cost is the global digest over FTS storage (future: incremental global integrity). |
 | M000 | 2026-09-26 | Baseline: conversation memory (LongMemEval-S dev, 100 questions) | **kept** | Reference point for the second workload family. Weak spots: multi-session aggregation and implicit preferences. |
 | M001 | 2026-09-26 | Source-diverse packing (per-file score decay) for multi-session memory questions | **rejected** | Turn recall falls 10-16 points: fused RRF scores are nearly flat (1/60..1/120), so any per-file decay reorders almost the whole ranking toward weakly matching fresh sessions. Session coverage rises but evidence turns are lost. |
 | M002 | 2026-09-26 | Relevance-density ordering (fused score / tokens^alpha) before greedy fill | **rejected** | Aggregate gain is a disguised role prior: it comes from LongMemEval's composition (842/896 evidence turns are user turns) and collapses the question type whose evidence is in long assistant turns (1K: 0.833 -> 0.333). Not a default. Pursue finer units for long turns instead. |
@@ -662,6 +663,41 @@ Do not edit by hand.
 ```
 
 - **Decision:** At most 3.1% of selected tokens could be reclaimed on this workload; not worth a new representation now. Revisit for repetitive/vendored corpora or conversation logs.
+
+## E014 — Source scan without pathlib relative_to/is_relative_to (update latency)
+
+- **Status:** kept
+- **Hypothesis:** A one-file update of Django spends 2.1 of 2.8 s (profiled) in scan_source, mostly pathlib relative_to/is_relative_to; string prefix checks on the same resolved paths are semantically identical and much cheaper.
+- **Files changed:** `npk/pack/compile.py`
+- **Results:**
+
+```json
+{
+ "django_3.2K_files_update_seconds_median3": {
+  "noop_quick": {
+   "after": 0.384,
+   "before": 0.978
+  },
+  "noop_strict": {
+   "after": 0.679,
+   "before": 1.303
+  },
+  "one_file_quick": {
+   "after": 0.797,
+   "before": 1.219
+  },
+  "one_file_strict": {
+   "after": 1.052,
+   "before": 1.531
+  }
+ },
+ "fresh_compile_logically_identical": true,
+ "security_contract": "every file is still resolved (Path.resolve) and rejected before any read if it escapes the root; tests mocking resolve/stat/read_bytes pass",
+ "tests": "1238 passed"
+}
+```
+
+- **Decision:** 1.5-2.5x faster updates on a large repository with identical artifacts. Remaining one-file update cost is the global digest over FTS storage (future: incremental global integrity).
 
 ## M000 — Baseline: conversation memory (LongMemEval-S dev, 100 questions)
 

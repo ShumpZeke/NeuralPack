@@ -763,19 +763,26 @@ def scan_source(root: str | Path, *, known_files: Optional[Dict[str, Tuple[str, 
         raise PackError(f"source root is not a directory: {root}")
     indexed = indexed or set()
 
+    # String prefixes replace pathlib relative_to/is_relative_to, which cost
+    # more than reading the files on a one-file update of a large repository.
+    # os.walk yields dirpath as root-prefixed strings and never descends into
+    # directory symlinks; every file is still resolved before it is read.
+    root_str = str(root)
+    prefix = root_str if root_str.endswith(os.sep) else root_str + os.sep
     out: List[SourceFile] = []
     for dirpath, dirnames, filenames in os.walk(root,onerror=_source_scan_error):
         dirnames[:] = sorted(d for d in dirnames if d not in EXCLUDED_DIRS and not d.startswith("."))
+        rel_dir = "" if dirpath == root_str else dirpath[len(prefix):].replace(os.sep, "/")
         for fn in sorted(filenames):
             if EXCLUDED_FILE_RE.search(fn):
                 continue
-            language = TEXT_SUFFIXES.get(Path(fn).suffix.lower())
+            language = TEXT_SUFFIXES.get(os.path.splitext(fn)[1].lower())
             if language is None:
                 continue
-            full = Path(dirpath) / fn
-            rel = full.relative_to(root).as_posix()
+            full = Path(dirpath, fn)
+            rel = f"{rel_dir}/{fn}" if rel_dir else fn
             try:
-                source = _read_source(root, full, rel, language, known_files)
+                source = _read_source(root, full, rel, language, known_files, prefix)
             except UnsupportedSource as unsupported:
                 if strict or rel in indexed or skipped is None:
                     raise
@@ -787,12 +794,16 @@ def scan_source(root: str | Path, *, known_files: Optional[Dict[str, Tuple[str, 
 
 
 def _read_source(root: Path, full: Path, rel: str, language: str,
-                 known_files: Optional[Dict[str, Tuple[str, int, int]]]) -> Optional[SourceFile]:
+                 known_files: Optional[Dict[str, Tuple[str, int, int]]],
+                 prefix: Optional[str] = None) -> Optional[SourceFile]:
     label = safe_label(rel)
     if credential_kind(rel) is not None:
         check_source(rel, 'source relative path')  # raises with a redacted message
+    if prefix is None:
+        prefix = str(root) if str(root).endswith(os.sep) else str(root) + os.sep
     try:
-        if not full.resolve().is_relative_to(root):
+        resolved = str(full.resolve())
+        if not (resolved == prefix.rstrip(os.sep) or resolved.startswith(prefix)):
             raise UnsupportedSource(f"source path resolves outside the requested root: {label}",
                                     "outside_root", label)
         st = full.stat()
