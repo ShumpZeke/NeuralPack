@@ -19,6 +19,7 @@ Do not edit by hand.
 | E010 | 2026-09-26 | Drop very-high-document-frequency terms from long queries | **inconclusive** | ~3x faster lexical stage for long queries with fix-target recall within noise, but up to -3 points on the tests target at 16K. Latency is not a bottleneck at this scale (~30 ms uncontended); not promoted. Revisit for interactive/agent loops on very large repositories. |
 | E011 | 2026-09-26 | Learned pairwise re-ranker over the product's candidate pool | **rejected** | With role features the model relearns documentation demotion and a fix->tests transfer (largest weights are role and doc-like kind proxies). Role-blind models do not beat the product's fused ranking (fix within +/-3 points). The remaining ranking headroom needs new evidence (semantic similarity, structure), not reweighting of existing channels. |
 | E012 | 2026-09-26 | Dense similarity (MiniLM, bge-small) fused with the product's top-100 pool order | **rejected** | Budget-dependent trade-off that fails the declared rule. bge-small vs product (dev-fast, paired): fix -9.2 [-17.5,-1.0] at 1K and -10.8 [-18.1,-3.9] at 2K, +2.6/+3.1 (n.s.) at 8K/16K; tests +5.3 [+1.6,+9.6] at 1K, +7.5 at 2K, +5.6 at 16K; docs (docs-3 rescored, 13 tasks) 0.000->0.154 at 1K, 0.538->0.692 at 16K. Utility U = -2.7/-2.1/+3.5/+7.6/+9.9 points at 1K-16K: negative at small budgets. Fusing at equal weight with the whole pool order halves every product channel's influence; MiniLM and a sharper dense weight (k=30) are worse on fix. Query-time encoding of 100 blocks costs seconds per query on CPU (37 s p50 cold). |
+| E012b | 2026-09-26 | Dense similarity as one channel inside the product's RRF (pool of 100) | **inconclusive** | bge-small passes the quality rule, barely at 1K; the cost keeps it out of the default. bge vs product (dev-fast): fix -3.9/-3.4/-0.5/+4.2/+4.2 (none significant), tests +3.4*/+6.4*/+2.8/+1.8/+2.9, docs (13 tasks) +7.7/+15.4/+7.7/+23.1/+15.4; utility +0.2/+4.3/+3.0/+8.0/+8.4 points. MiniLM fails (fix -5.8*/-7.8* at 1-2K; utility -3.9 at 1K). A product form needs bge vectors for every block (compile time on Django rises from ~15 s to 10+ minutes on CPU) or query-time pool encoding (seconds per cold query). Candidate for an opt-in semantic mode (swap MiniLM for bge-small, pool-channel form); not a default. |
 | E013 | 2026-09-26 | Sibling/near-duplicate collapse (measured before building) | **rejected** | At most 3.1% of selected tokens could be reclaimed on this workload; not worth a new representation now. Revisit for repetitive/vendored corpora or conversation logs. |
 | E014 | 2026-09-26 | Source scan without pathlib relative_to/is_relative_to (update latency) | **kept** | 1.5-2.5x faster updates on a large repository with identical artifacts. Remaining one-file update cost is the global digest over FTS storage (future: incremental global integrity). |
 | E015 | 2026-09-26 | Documentation target for NPK-Bench (docs-1) and first docs-cost measurement | **inconclusive** | Superseded by E015b. Inspection of the docs-1 gold found construction errors: the upstream-commit rule (first commit after base touching every fix file) picked a mass-reformat commit for pytest-5103 (19 doc example files) and a deprecation sweep for matplotlib-24265, and counted CONTRIBUTORS.txt and doc/users/prev_whats_new as topical docs. Directionally, documentation demotion collapsed docs recall (e006_role05: 0.000/0.000/0.000/0.011/0.063 at 1K-16K vs npk_default 0.000/0.092/0.236/0.276/0.425), and definitions+trim cost -9.2 points at 1K (CI [-19.5,-1.1], 0 wins/4 losses) and -6.9 at 8K. docs-3 (patch-overlap commit identification, widening only to the introducing PR merge, prose-only) is the corrected target; docs-2 was built but found to swallow branch-integration merges before any use. |
@@ -29,6 +30,7 @@ Do not edit by hand.
 | E018 | 2026-09-26 | Documentation channel on top of reST sectioning (E019) | **rejected** | Built on E019, which was rejected. On docs (dev, 26 tasks) the channel added +10.3/+5.1/+7.7/+3.8/-2.6 points over E019 alone, but the combination only matched the main compiler beyond 1K. The channel alone on the main compiler was tested as E018b. The code-target run of this combination was stopped as superseded. |
 | E018b | 2026-09-26 | Documentation channel (named entities -> reST object directives) on the main compiler | **rejected** | Trades code for documentation. Docs (dev, 26 tasks): +14.1 [+2.6,+26.9] points at 1K (5 wins/0 losses), +5.8 at 2K, -2.6/-1.3/0 beyond. Dev-fast code targets vs the same selector without the channel: fix -2.4/-1.0/-5.3 [-9.7,-1.5]/-1.0/0.0 (0 wins/6 losses at 4K), tests -0.2/-1.9/-3.9 [-7.8,-1.0]/-1.6/-0.6. Utility -1.9/-2.2/-9.9/-2.6/-0.6 points: negative at every budget. Django documents nearly every entity, so the channel lifts documentation for most queries at the expense of the code the issue is about; documentation matters for 8.7% of tasks. |
 | E019 | 2026-09-26 | Split .txt files with reST section structure as reST (Django documentation) | **rejected** | No gain on any target. docs (dev, 26 tasks): +3.8/-2.6/-10.9/-3.8/-1.3 points at 1K-16K, none significant (2 wins/5 losses at 4K); dev-fast vs the same selector on the main compiler: fix 0.0/-1.9/-1.9/+1.0/0.0, tests -0.5/0.0/-0.5/+1.5/+1.0, docs 0/0/-7.7/0/-7.7 (13 tasks); utility -0.5/-1.9/-3.1/+2.4/+0.3 points. Compile time +15% (17.3 s vs 15.0 s per Django pack) from more, smaller blocks. Smaller named sections do not rank the edited lines better than windows do. |
+| E022 | 2026-09-26 | Segment-aware lexical retrieval: separate channels for issue prose and code | **rejected** | Fails the declared rule at 1K. e022_split vs product (dev-fast): fix -2.4/-2.4/+2.4/+2.6/0.0 (none significant), tests +1.8/+4.4/+5.3/+3.3/+5.3 (significant at 16K), docs 0/+7.7/0/+7.7/0; utility -0.7/+2.6/+7.6/+6.6/+5.3 points. Adding only a code or only a prose channel to the full-query channel is weaker (full_plus_prose: fix -4.4 at 2K, significant). The tests gain overlaps what the test mate (E016b) already recovers; not tuned further on dev-fast to avoid fitting variants to it. |
 | M000 | 2026-09-26 | Baseline: conversation memory (LongMemEval-S dev, 100 questions) | **kept** | Reference point for the second workload family. Weak spots: multi-session aggregation and implicit preferences. |
 | M001 | 2026-09-26 | Source-diverse packing (per-file score decay) for multi-session memory questions | **rejected** | Turn recall falls 10-16 points: fused RRF scores are nearly flat (1/60..1/120), so any per-file decay reorders almost the whole ranking toward weakly matching fresh sessions. Session coverage rises but evidence turns are lost. |
 | M002 | 2026-09-26 | Relevance-density ordering (fused score / tokens^alpha) before greedy fill | **rejected** | Aggregate gain is a disguised role prior: it comes from LongMemEval's composition (842/896 evidence turns are user turns) and collapses the question type whose evidence is in long assistant turns (1K: 0.833 -> 0.333). Not a default. Pursue finer units for long turns instead. |
@@ -826,6 +828,67 @@ Do not edit by hand.
 - **Decision:** Budget-dependent trade-off that fails the declared rule. bge-small vs product (dev-fast, paired): fix -9.2 [-17.5,-1.0] at 1K and -10.8 [-18.1,-3.9] at 2K, +2.6/+3.1 (n.s.) at 8K/16K; tests +5.3 [+1.6,+9.6] at 1K, +7.5 at 2K, +5.6 at 16K; docs (docs-3 rescored, 13 tasks) 0.000->0.154 at 1K, 0.538->0.692 at 16K. Utility U = -2.7/-2.1/+3.5/+7.6/+9.9 points at 1K-16K: negative at small budgets. Fusing at equal weight with the whole pool order halves every product channel's influence; MiniLM and a sharper dense weight (k=30) are worse on fix. Query-time encoding of 100 blocks costs seconds per query on CPU (37 s p50 cold).
 - **Follow-ups:** E012b: dense as one more channel inside the product's RRF (one of four), with the product's fill and trimming
 
+## E012b — Dense similarity as one channel inside the product's RRF (pool of 100)
+
+- **Status:** inconclusive
+- **Hypothesis:** E012 fused dense at equal weight with the whole product order; as one channel among lexical/definition/relation it should keep the small-budget fix precision while adding tests/docs recall.
+- **Run:** experiments/npkbench/runs/E012b-dense-channel-devfast
+- **Results:**
+
+```json
+{
+ "fix_1K_16K": {
+  "bge_channel": [
+   0.319,
+   0.406,
+   0.474,
+   0.565,
+   0.649
+  ],
+  "minilm_channel": [
+   0.299,
+   0.362,
+   0.464,
+   0.544,
+   0.644
+  ],
+  "npk_default": [
+   0.358,
+   0.44,
+   0.479,
+   0.523,
+   0.607
+  ]
+ },
+ "tests_1K_16K": {
+  "bge_channel": [
+   0.074,
+   0.128,
+   0.169,
+   0.258,
+   0.338
+  ],
+  "npk_default": [
+   0.04,
+   0.064,
+   0.141,
+   0.24,
+   0.309
+  ]
+ },
+ "utility_bge": [
+  0.002,
+  0.043,
+  0.03,
+  0.08,
+  0.084
+ ]
+}
+```
+
+- **Decision:** bge-small passes the quality rule, barely at 1K; the cost keeps it out of the default. bge vs product (dev-fast): fix -3.9/-3.4/-0.5/+4.2/+4.2 (none significant), tests +3.4*/+6.4*/+2.8/+1.8/+2.9, docs (13 tasks) +7.7/+15.4/+7.7/+23.1/+15.4; utility +0.2/+4.3/+3.0/+8.0/+8.4 points. MiniLM fails (fix -5.8*/-7.8* at 1-2K; utility -3.9 at 1K). A product form needs bge vectors for every block (compile time on Django rises from ~15 s to 10+ minutes on CPU) or query-time pool encoding (seconds per cold query). Candidate for an opt-in semantic mode (swap MiniLM for bge-small, pool-channel form); not a default.
+- **Follow-ups:** If the shipped semantic mode is revisited (M006), evaluate bge-small in the pool-channel form as its encoder
+
 ## E013 — Sibling/near-duplicate collapse (measured before building)
 
 - **Status:** rejected
@@ -1206,6 +1269,13 @@ Do not edit by hand.
 - **Run:** experiments/npkbench/runs/E019-rst-text-dev-docs, experiments/npkbench/runs/E019-rst-text-devfast
 - **Files changed:** `npk/pack/compile.py`
 - **Decision:** No gain on any target. docs (dev, 26 tasks): +3.8/-2.6/-10.9/-3.8/-1.3 points at 1K-16K, none significant (2 wins/5 losses at 4K); dev-fast vs the same selector on the main compiler: fix 0.0/-1.9/-1.9/+1.0/0.0, tests -0.5/0.0/-0.5/+1.5/+1.0, docs 0/0/-7.7/0/-7.7 (13 tasks); utility -0.5/-1.9/-3.1/+2.4/+0.3 points. Compile time +15% (17.3 s vs 15.0 s per Django pack) from more, smaller blocks. Smaller named sections do not rank the edited lines better than windows do.
+
+## E022 — Segment-aware lexical retrieval: separate channels for issue prose and code
+
+- **Status:** rejected
+- **Hypothesis:** 80/103 issues contain code (median 36% of words); one OR query lets long reproduction scripts outvote the prose. Separate prose and code lexical channels give each an equal RRF vote.
+- **Run:** experiments/npkbench/runs/E022-segments-devfast
+- **Decision:** Fails the declared rule at 1K. e022_split vs product (dev-fast): fix -2.4/-2.4/+2.4/+2.6/0.0 (none significant), tests +1.8/+4.4/+5.3/+3.3/+5.3 (significant at 16K), docs 0/+7.7/0/+7.7/0; utility -0.7/+2.6/+7.6/+6.6/+5.3 points. Adding only a code or only a prose channel to the full-query channel is weaker (full_plus_prose: fix -4.4 at 2K, significant). The tests gain overlaps what the test mate (E016b) already recovers; not tuned further on dev-fast to avoid fitting variants to it.
 
 ## M000 — Baseline: conversation memory (LongMemEval-S dev, 100 questions)
 
