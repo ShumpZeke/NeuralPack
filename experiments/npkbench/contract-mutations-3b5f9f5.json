@@ -1,0 +1,2039 @@
+{
+  "evidence_mode": "LOCAL",
+  "source_hashes": {
+    "npk/cli.py": "a605987d50a94dc6eb35a44a4ccd0c45c4aea5f68307f6d5a1dc4e5600af4e75",
+    "npk/compatibility.py": "b1f6f81ca06adb4b59d301f7b8b346915683adc10985443ca695a2477ed5edd6",
+    "npk/telemetry.py": "22e288e492e1d22cf3a76de87da5d870105a799c8ee980d0e8b5d5c0271abbb2",
+    "npk/__init__.py": "b8e55431663d9d6acfbd49aad4e065118662834e16f82f8fd520bc71d7f9a6e3",
+    "npk/runtime.py": "3de70e67801a8a954a359fb38166a140547f30a470e88ac15c8a143bfe7ca1df",
+    "npk/optimizer.py": "168982f233fb69578427fa578eedc13a0e69627cb77fae46acc6cd3c2ea93594",
+    "npk/cost.py": "256928100a4d2798bf3ee80395cb9aa10f6ece4141f4a52b82b7c352b63aad4f",
+    "npk/plan.py": "34e58bede7c866b1c2e4e41eff4436ae4dd01d3924bfd88d898882b36ab86ae1",
+    "npk/gateway.py": "6052bab8b6971de7ab3949d049ef59a87158ff6d21fdd406ba7934c64b5040da",
+    "npk/auditor.py": "568314b549652df1a93769211a645544f7ea8f970e477c443151f41c5a9f73f5",
+    "npk/format.py": "867a70a37537b6354db0c1995c5b712b3c2d6d07dbe228631319dcb6113393a2",
+    "npk/compiler.py": "ea9f7710e64288e5c63b2731d103d0e26823853168e390554446b9996dc81e53",
+    "npk/planner.py": "dcf372ba46d164e406caefc44c4220834d3bd370eb4b7ff17b3d95df801c7f65",
+    "npk/providers/nvidia.py": "69a0bff2b9a773340b5a8cf72b7754758af449201b0d1145e115267b220c008f",
+    "npk/providers/base.py": "43bf279d4a4849a4bb8eb9dc1f92a637feaadd0b3241978df8b1438c3c680f74",
+    "npk/providers/__init__.py": "1b237a14cc55091ec8e0ae58d97b229c1c730474731b38487d9c081e023291ed",
+    "npk/providers/openai.py": "e01cb495e2af424bb3522a3f8a7989c3685e9d9156e9e40b11cf528ef5206c9a",
+    "npk/providers/anthropic.py": "c244f33fe2058cc8d20c0d1d098ba571a54b648992079b23124213b753754f8e",
+    "npk/providers/mock.py": "b63049790d453010415ec66adc0ee98fae5cf9178953e6f78a0b7405b2527600",
+    "npk/providers/openai_compatible.py": "9251ff5c4e17506126e3006a681e68b3aed17d8ccd503c1c85ed2777aa2cf4a9",
+    "npk/providers/gemini.py": "4d853d3f82c2f6c9de41fdbf23ea86946d50dcb8d1149e5860706b6e2ba97c32",
+    "npk/providers/registry.py": "0cc6e96818224d7056108ace5228670c9d815ff6f792821bad870a595c7d1855",
+    "npk/pack/tokenizer.py": "7f06f173af6d06f56ca313ab82ae11376b6b46947943535e39790a9d4bf1e671",
+    "npk/pack/integrity.py": "b3826065c16f5b7bbaf5b38ebfce1e65d22ee48f499b0e95cda9fade12395a79",
+    "npk/pack/__init__.py": "5a1c060bd7cca20d45cbe0f4a8a9907f6d79c8dda354366e758be162e5895770",
+    "npk/pack/search.py": "16e234480c53cbefe21926c5df2666cb31aed0daba10885ebbaa0c12e0f2c34b",
+    "npk/pack/source_policy.py": "45a29510490fca1f2a73dcf5f97de40b056d691f0376eea6ff5220447539e1ad",
+    "npk/pack/contracts.py": "9a13d6101f53ad8636d16f540d7a91e6b842bc9cdcbf6db8a38f8e6b813d5f1f",
+    "npk/pack/select.py": "048fb245176f5a328731c289b69496b2a81b29eaaa7b7b9c4d19918d71c5fca6",
+    "npk/pack/format.py": "41c4a14929b999901cff0d8fcd201a2c5bc9289edb3b2c0063aaf66b20183e9c",
+    "npk/pack/conflict.py": "88b7bd42d0f39cb0961bb7c4d0324bc7a00f25758d4de2e0e4eaf998f22a8e22",
+    "npk/pack/compile.py": "b0c62ab48510a9ca3ebe865e69a172cc5262c06fee1b3b4b35f36982d3379f92",
+    "npk/context/compressor.py": "d1c7632ad90884dd37bbb74b26939a2630824ba07a30016d9112ed5bdddf5f8c",
+    "npk/context/trace_compiler.py": "f4d87fbed032c615efcc98ec0beac3d301722fb49f8777ecb460830a10c447e8",
+    "npk/context/analyzer.py": "54555269bfdaa75eff4e8e0a5d641cd507c91a3ed12c7092094f6d8ebb47f64c",
+    "npk/context/bm25.py": "bb15a5339c897713144cbd0bf474d8ca8c14ea6e93afc4d9d39d96b0c15c9331",
+    "npk/context/info_gain.py": "b7b25c6765a3c188f7fd249299e2d342329b1bfde80463cbea2f85ccb59e76e8",
+    "npk/context/convo_compiler.py": "ae95241dc6ff530fdbf9a0b008cac6050c5ed3cb1fcce0a5cf2d0c7ec9feef01",
+    "npk/context/graph_slicer.py": "52393ac348b6da067e7d3b3aff9c5e1e93c337e132b33043f19d08b8151ec46b",
+    "npk/context/safety.py": "e7d71bd7f369fce845a0910de3c07988f5142795dc266e876b906d0a4402c525",
+    "npk/context/embedding.py": "07701a205a67af820648a7fb0b7b56eed70a987fdcb644e317a77faadf5f8277",
+    "npk/context/retrieval.py": "44e82d28835fa89d1b950726a525a2b8b95bb4cd9858d557e01fa71867fa3ce5",
+    "benchmarks/late_lexical.py": "e7b9f196ad3fe045a46f5ec952285609080f1968e22216211744db7aa7f1040c",
+    "benchmarks/transport_behavior.py": "d4972096c16a4920677d422b39af4aa18249ff78ce12b560a1a1443ddc9b62a4",
+    "benchmarks/rival_report.py": "b09c1d3225b8fb9b1dab081e12355d997f8ce5e56419098f6df3a85c505c42f0",
+    "benchmarks/unit_plot.py": "c00928630f5cdb2babffa5f59a8ba04b61240f71e6e05c99f8186b43164e410e",
+    "benchmarks/batch_tokenizer_eval.py": "a4e9bd864f502ce3746df93a1e8a155dab2ef5fccc1a06aacef86f067169f93e",
+    "benchmarks/stdlib_tasks.py": "0aa03b61ea50db3d0b63375ec7911e925a84d7f89eb8a6a74e33f60c74615b35",
+    "benchmarks/operation_seeds.py": "6f8d752b3211fd56074166b21b5dae91cf0964fe404853016068b91bd36751dd",
+    "benchmarks/stat_scan_eval.py": "14fd4cf16bb4d42e474fea5d494e42df51ec3f785853816520ab4cbccf9eb70e",
+    "benchmarks/seed_rank_gate.py": "0096b0c16cdbc0f80d3ff18087cbdbfc44e710779678035145d198e14c6a057d",
+    "benchmarks/policy_profile.py": "bb06b25d5ccdaee51e3e464e1a28c4e0a345b23b5da952311c1ea94e4a0ca61b",
+    "benchmarks/identifier_spelling_eval.py": "fccf6e3137f5566e259a97325b4afdf1794608de608dae11a398e296c993bcbe",
+    "benchmarks/hierarchy_cost.py": "8d430dfbe97a066d86a8bfd1c245e4a6c1fa0eb2cdcea142c0c7b20bdafce64c",
+    "benchmarks/provenance_render_audit.py": "5cbe3e46094c3267612dac00bbf75a48979aa7590220a8897f75d2930767debf",
+    "benchmarks/diagnostic_plan.py": "b9413a963b7fd135933af39ae7aa656d452d2f01c7f9132d776f4d040e92699e",
+    "benchmarks/auditor_profile.py": "b0aeb1300b95a30b7a69ba0cc36a563c3cb1ed127036b8d49456030f87aca3e8",
+    "benchmarks/frontier.py": "70577ea5942b10242db6f1c77b3e85806919e796d15f5a562212feae1b8d6e38",
+    "benchmarks/cycle14_summary.py": "11ebd6d94fd79252aec5ad73b98d4ab39e09f5b0ddb6c6de6ac9e5cec4b7d924",
+    "benchmarks/transport_selection.py": "32d5c7b89fb7dfe6354a7104a288251f7b0c908bca18da52c2fef7a9dda7be09",
+    "benchmarks/pareto_eval.py": "83e22573a4b0b7d75bf3bd3743ad33c4b13f3c5073f8bf01b7dd7ab4e5361620",
+    "benchmarks/update_stage_profile.py": "02033bc49847dc6a70d00a4c82e295447ec00a2dcfd838efe57435cc8199ed78",
+    "benchmarks/compiled_source_contract.py": "c2badcf2d0d17da43675aed80b93813cd1a3150779c74e96bdc84801dac73fab",
+    "benchmarks/spelling_index_plot.py": "cbfe831dcd80a630ae9fd7a1d05c0407e47596bffb19bfeffe11367d11d50912",
+    "benchmarks/sqlalchemy_oracles.py": "3a5cb373984a7df5bb2a26c2be99f41763c4080c17eea20c5f36cf0bb864d189",
+    "benchmarks/incremental_cache_report.py": "131d4e957c005e2baf3e4985ef217f105c9f0e5adefdf2ae3ef91ab2e8826bb8",
+    "benchmarks/complete_program_controls.py": "d0e055a3216e69ec86ec070b70e9b62ddf24c83f303e18323ff6fb4abf3d032a",
+    "benchmarks/legacy_seed_compare.py": "981b30aef4a3d42886b739bd15a29f28c034c12ac8c47645281e6e56e6570d93",
+    "benchmarks/repository_canary.py": "9d5a85bec4c5bfd59b199682c8ff20f37dc1da93eb56f101d75cf5dbaa651d8c",
+    "benchmarks/field_representation_eval.py": "c917d72b3287fcc44ef8ea835f5cdffac2c766cd5c08cac4f4d1f3e48ffddfd0",
+    "benchmarks/test_query_optimization.py": "625f39e18a2e8be88eb8483e2978101f30a4a2e076f089babf8b3f616b4863bc",
+    "benchmarks/clause_plan.py": "97aa86a304e63ddcc806d6881e944d6529a311c87bb17cf51638efca2b075f30",
+    "benchmarks/operation_report.py": "3f6816d5fdd644a8a3fd3331b4311bfaaf07456473099e2a1698429d4520c866",
+    "benchmarks/report.py": "e2e8f79f13a08c619d89e705b0c39bab34802a886e9a1056dcf23d705069bbfb",
+    "benchmarks/seed_candidates.py": "9ac6116939239f8d877808e1ef3a5a7db054108e1f7909700098da1d41719306",
+    "benchmarks/library_checkpoint.py": "a1bd797070e3c33853ef354d32c133e81f12ecb9e2b30ce258fb255f4b4e97d7",
+    "benchmarks/prospective_local.py": "ac5e7314f5a72db5c0d55cf99db6a81c3a7a6e9e72551bfc4583b9b7eff8fca2",
+    "benchmarks/compact_boundary_tokenizer.py": "b2c49a68fb9790d07202daa1b917daadff2a23ccdd9a7b461482b3a6ea9929c9",
+    "benchmarks/clause_tasks.py": "5563cfe317844edf3a57874c2939e02b0b0acaecf8cd1e3a1241dd60442ddd3c",
+    "benchmarks/seed_execution_copy.py": "c159f34bcabf085253aade26255f3cce17d80e1338aab49e3e367cd6fd4eb403",
+    "benchmarks/library_target_profile.py": "cdf4c0a6a8ee4e9b7ba1fd3c14ea4a7b71c914fa8e485be2d824ea7324343ba1",
+    "benchmarks/api_answer_plan.py": "1dbb64edbe6dec03fbb1579900a1329609d904723e5c1d24787dcabd8ff9b0fe",
+    "benchmarks/seed_checkpoint.py": "7ba0c295e433ed21be7b6e3a58bfb033686900c4629091ba868d21e185d00eec",
+    "benchmarks/source_views_audit.py": "06d434754782c66fe496bc9fa6b25abe71cbc1eb281b584225063c2631f58095",
+    "benchmarks/model_baseline.py": "0c4a6ae9c2c8ea969adb3f11a62d245e4ae09bc6b9305344ec49046f5b7a7549",
+    "benchmarks/tasks_hard.py": "75ff65460b319b13967b6c8ae9233497af25a42562e0247aee1a661acd3071f8",
+    "benchmarks/compile_transactions.py": "798ceb7a6982c354156cfe90fb27a02bb4ad3a129cc22179677deef4a4e8372f",
+    "benchmarks/update_batch_audit.py": "319049398a8e39b37ee050231662a922ad4bcdbe3f6e5b139c8668a5aaeeb86e",
+    "benchmarks/cycle18_checkpoint.py": "dc328dfa452ebc17b378ac4c86764d5a488e0d64e3f758c75af0997b117d62d1",
+    "benchmarks/identifier_report.py": "d3ccd996bddcc6caeefd63b1717798722f68e0dcf356a489c538018c9188132f",
+    "benchmarks/source_views.py": "5a9adb40ca57088f31e19b8b6265fee12af0564972e243c53c562da482255c63",
+    "benchmarks/symbol_filter_eval.py": "0923177d17f1bb1081df83fda700989ac0a442fee8f2877fefccf3468af0c9b9",
+    "benchmarks/clause_eval.py": "0ed6a7bc848d144b851c5d8631edf50db55ad88fbcf5ccccded619e25839660e",
+    "benchmarks/cycle25_record.py": "31b867b694035797b2f70fe2ba62b41e04712215d07aeb0791affe034bc7ff9a",
+    "benchmarks/piece_tokenizer.py": "47896b4b55d435c78239692a3aec0303089b3c207f449534d84094ef42ed78e5",
+    "benchmarks/model_quality.py": "4e6e44b2cf05c8cefdb0bf9f8dc8f6ec75aa38f44cfcd946ab8dc24ed9460762",
+    "benchmarks/cycle12_archive.py": "1378e7e4c0a537a2ffe0d6813657ffb103b534c5d945021c81263038f06e82b1",
+    "benchmarks/modern_seed_plan.py": "df35ac0f9846c7c1146f5591d6eab1b9c97ac8bdb40aa63dfebddfd02e6b3986",
+    "benchmarks/ascii_boundary_tokenizer.py": "5cec51aaf672e28a0ef913cad29bc160da9ab463f55020194e89c6bb3557b78c",
+    "benchmarks/local_budget_report.py": "5e1dd66b5962123865b0c95d0d74d503319fc4eaf60359a5207d319a78690dbd",
+    "benchmarks/legacy_fixtures.py": "fb5318197498a97f69cc6bd7fde2d7f8a0feb8e424722d1244c122ddd37892c2",
+    "benchmarks/metadata_limit_followup.py": "db9d71e2c87ca80c3a0c999b695875ea7935d7113655f016ac74f4ba1776ef52",
+    "benchmarks/library_failure_analysis.py": "58dd14a4dc2831e49988b1fed8ccf7fd7f44119991f46aacf912ecf4891a40c7",
+    "benchmarks/cycle27_record.py": "70d67265f7cbb10659c8f8d76920c47775ced226565082c3235f97486e305eb7",
+    "benchmarks/boundary_tokenizer.py": "c5f62645e62296789fa14cb9f4e772f5f3fb20405af993914fd559dee017ea0e",
+    "benchmarks/library_answer_report.py": "a00aa6bd0a0ddf1f79e7db06c590ae15e93ba30859c043947bac21c6051f47b8",
+    "benchmarks/__init__.py": "56dd56e69d7fd8906705188ebdf45c2b757be129e34211c203ae231d2fa8715c",
+    "benchmarks/fast_tokenizer_eval.py": "4f58445666048a49c01b614b6adffce39ebd266de7d040a1ec0e4b810a90f0e4",
+    "benchmarks/update_batch_eval.py": "96da54c6113b4e4d32b4323f49a381cda7ff375acda89c7ddc42b57c4b9ae1d3",
+    "benchmarks/metrics.py": "7e779c0ee8763743ed115cc1f05a6c8084c19a96464530d3212fd9330e9c609f",
+    "benchmarks/lazy_count_index.py": "cf348bfcbe794e0919b0f57e8cdf35cf9df90750b9bf3afb6c2f0a3d60f85266",
+    "benchmarks/metadata_header_audit.py": "157dae50f3149a13638d89fb6423e1cf2a31844d869489cd480ad19818e24fa0",
+    "benchmarks/diagnostic_audit.py": "c07252c7bbe9a7356ba510b5b5d5470615c309dd44b38004777d875af4c8068e",
+    "benchmarks/late_lexical_eval.py": "beac9ae6087a4dba1a371ff4d438faf29fa845b31a8b35d85a39407ccbb1df3f",
+    "benchmarks/message_transform_profile.py": "c0767be7581aa998950e324403eb11cf892d2cffce2b285916de98590b004cc2",
+    "benchmarks/fielded_seeds.py": "d66f3cdd5d4dd8ac57f5ff09b168fe2b92feebddd3ab2cffccd67e1227788465",
+    "benchmarks/batch_tokenizer.py": "859ea32aed304b030bbadfa3793285ffe85a0b75a5b6bdef8ad268dd95dfd2aa",
+    "benchmarks/evolve.py": "d196b3ccbc558e8d5048ed39cd62c2d7701a1a7ea0294aa97b5c8ee6408e15e5",
+    "benchmarks/seed_metadata.py": "0832df65ac2ed8418914d741fc2f9a20edd3264ce9eefa7984c59340d7c81d0e",
+    "benchmarks/rival_snapshot.py": "1dc5ab8e64c14f8ec01fee9c2b3a847956d08da870e78225f19c9401997543ee",
+    "benchmarks/cycle20_record.py": "43c006344591d6514c3aa523d8ba3ac64ee1715363904456364f4c2c94fb1474",
+    "benchmarks/repository_tasks.py": "58ab6a6edbf0802b834735e53331bad9a982cb6386808d4775530394be9166a1",
+    "benchmarks/provenance_render_eval.py": "d8f361dde02ea42fb0bd945a77b348a408094db03a7d8e844095a12f537e2f44",
+    "benchmarks/reference_evidence.py": "c1d5983b28847db6edd802059661c55aac93344dcf3ce5b7195254cccf038231",
+    "benchmarks/test_fts_boost.py": "2125165024de33017d913ec9da6db199db7eae494eec4135bea67a7b5a48296d",
+    "benchmarks/message_transform_cases.py": "03bc0a0e493a1d89697630608397f8762d950ca816bac423ca73c2e4579b6302",
+    "benchmarks/operation_eval.py": "9907bf902a0cd35680c2a70877eecbb33ed7cff12e1cf2988d700476832f144d",
+    "benchmarks/manual_plan.py": "7d29d7c7eb9e9750c9f6d456d614f8c193a98ff3fe6b5c4a4b37600e76888afc",
+    "benchmarks/memory_probe.py": "56ff22649b2540c1da63127bc6c244fb2247a333742b2d0aaa57ac09656da247",
+    "benchmarks/length_normalization_eval.py": "f25ac50118ece02f1988ae85a5829022e385372482401e15dc687b40092fe014",
+    "benchmarks/query_cache_eval.py": "c43d1e9d311396813df1b0f3952b01252535a2c2a95b5b77eef4e7bbe01e1a79",
+    "benchmarks/client_encoder_profile.py": "94ce186939c37c05873e006cc3a8258a2d255abf2063c63a2a3d4de90527ee2f",
+    "benchmarks/cycle24_record.py": "97ee2523ac6da495674987311c6f9d65a51667901d91615e1f1445a378916407",
+    "benchmarks/compiled_corpus.py": "ac001bc76b0b4d6f2d53a4abbb50f88639fe8bae8d39983ce79c92728a7a1699",
+    "benchmarks/identifier_eval.py": "480f2377b6b8700a294ff430a5cd3f653b572e7ae82dccb955eccb76002c6f51",
+    "benchmarks/repository_eval.py": "063ebdab04d854715b08510b399f30ac6ccc35ec416d7ca5b88661fb216ac0ee",
+    "benchmarks/packing_eval.py": "040a92402575aa833eb95a2f7b44b60d34c61d5886b484a149b5036a5f1db7d6",
+    "benchmarks/library_crisp_baseline.py": "6ac344425d540f7d1f1ecec02a02e5cb63323bbca22ab3aa85c37f6bb3c37b40",
+    "benchmarks/library_neural_index.py": "7b3cc3ed87e23b4bfdc6e1c8444fcb58aafff4cb54eee80e57a4f686982cc9a8",
+    "benchmarks/lean_boundary_tokenizer.py": "8039cb1ed7ecfc49e8f87d7e5a955ef330593a2ea017c2f668005879ed79c29e",
+    "benchmarks/lexical_order.py": "966825ed4c79e4f88875d66fa78c48bdc4a3acd5222948943a0cb9073eb1c0dc",
+    "benchmarks/click_tasks.py": "07a763736df02abfb45de9990bc3207a73cab4fd9f984aadaddcd3f5b6306fe8",
+    "benchmarks/unit_eval.py": "686d3331cc2d68973b0c15e7f98e7e26387ca998868e47a5dd5dccf8f4906571",
+    "benchmarks/manual_eval.py": "7b16591f6711519ec05fd6a5c1f5659da6765209c9b1d3a415432511001e24d3",
+    "benchmarks/symbol_aggregate.py": "49909ceb7ee65e0af1ac057fdf8c846be4da1e06955d81d130ea2cfb9b3ef4ed",
+    "benchmarks/incremental.py": "4a33b10f88af8a169e0cb272991f6118a19d048d8fbd28652edba63c14434d59",
+    "benchmarks/answer_recovery.py": "3ddedb8974e3178609b6ccda0d9fe72545cd729eea0369e5def41d1dc2b65bab",
+    "benchmarks/unit_answer_plan.py": "18ada649133733de3e3033438ad4b82f5bbfc9cda66ee186d24550aa3f303a6a",
+    "benchmarks/packing_audit.py": "ec8f00e3a3a61c46430d2b9f664ced953406ee85d5cc3af26fd82f46a31bedcd",
+    "benchmarks/source_screen_profile.py": "b4ff1604b788bcc81279e749a1a78f535c2fa192bf41ce1af2f0feab54b6820d",
+    "benchmarks/definition_units.py": "2d38d907ca0004c5cddc13a996b13028a31e5821e1a0173d5fd0a1fb804ff71c",
+    "benchmarks/target_controls.py": "aa02789865a16bc4cec1dd86e85d3afe96189a7109aaa7720590382433d935d1",
+    "benchmarks/contract_mutations.py": "125ae8ed475eb9971b175ec545141deb405bef64c29d70e56033e0bff8b11749",
+    "benchmarks/integrity_challengers.py": "a992da6cebaeab464e9d0b0fb190eeb502c2f21aa9734396b80cdb0f7d46f763",
+    "benchmarks/operation_answer_plan.py": "6ec119a8cdeb48d6b5819f3b59c00148d6b92f0875f17271a44d170a07df28a6",
+    "benchmarks/boundary_selector.py": "922fbc1f5620e7a1d0f39474178659ca35a3f3a3351ea03aba6f5d7e646a67aa",
+    "benchmarks/block_update_profile.py": "e5e27dccac3cc5566e67589129a22f0c39e140fd46faf24f5b4962687eb46aff",
+    "benchmarks/provenance_renderer.py": "ccf53dd2b763e92a025e3c882f5e23b7064ba8094dd3909b93a5d83213b03ffd",
+    "benchmarks/library_behavior_oracles.py": "dddbeefedd59fc9e8b0563ad126e0ca4f9128dbe79a25b9e734e5cd834b029a4",
+    "benchmarks/semantic_rename_check.py": "164715c972dbdda2e4f940c115813105f9af829cc29ca43d5d8839aa6f782d01",
+    "benchmarks/library_selection_audit.py": "c1858f6bb7b7c4b42267273483c49c8f0675c125dad9bcc4d7499dcaae215cf0",
+    "benchmarks/structural_intent.py": "5dab271896d91eb286864e6031b598f39415b5ed51c4a476b66b83bebeaa5e0d",
+    "benchmarks/spelling_index.py": "8ab39d83622013224b29f76a0f5f3fb6479b166e49a0b1d3b62f318d8c5ac125",
+    "benchmarks/structural_intent_audit.py": "a212fc3b4245af86e9a79eec45d6c8fe388387f7d953a81da5c63bbcf31ef044",
+    "benchmarks/holdout_v1.py": "b31e78fb35efdc224ba88c2d05f9d9915d4e4cf3b1181ccfc2486bb5ea8e04ed",
+    "benchmarks/repository_report.py": "c43fcb46a5cd8da243739fcf06cedb2149def5457b0248f63b3df4d470c26e52",
+    "benchmarks/cycle14_archive.py": "00754074abe7d7726940ff4555943429933f6ce72e7d6aeac64bba7fd605f677",
+    "benchmarks/digit_boundary_tokenizer.py": "426de8a5124552185c1c1674e748e35d1f6afd654cae19948fb0584fb4eb8aab",
+    "benchmarks/piece_tokenizer_eval.py": "1db5018ca626ecb27618ec5d71c744e07bde07a3da32ef613c67cfc2cde6c867",
+    "benchmarks/repository_rerank.py": "16a432fc8bed534befc6759c6187c673a43fbb95ac1d796b252cea9c897229ef",
+    "benchmarks/line_anchor_gate.py": "ae1f753e4eeb3d83539a02ffa56ce13ee7bb3e2d57117a8669271900308b2ee9",
+    "benchmarks/profile_query_stages.py": "1d9d24b6d8dbaa129f3cfad7ed23580ce4d3e6cd4aa0e62a1fc83457ea171cf6",
+    "benchmarks/boundary_plot.py": "03c0a233afe5f2d91c2d0160c6da7ae2c0006f214b6569132dbbb243863df59e",
+    "benchmarks/operation_window_proof.py": "ad3ffc7d94d7fa1f2864a24fdfc0059b78f6d9b3f8315f2583ef617fd40ff5cc",
+    "benchmarks/diagnostic_report.py": "7cc9fb8f662f6ca92c7672871c4a7d4412640cfbd4a05528481fc7b679934fe7",
+    "benchmarks/format_bench.py": "261f261eef71185883a544fc5e2c974f1a1c416d4e6da9ece0c4db1ed79c6b82",
+    "benchmarks/identifier_live.py": "e06e3863757e9785662f5b9a424c12a82f7daf775ea7a7b447606a9a1f2c2206",
+    "benchmarks/spelling_index_updates.py": "b9839a8ede755bc68f777507ad508986b54ae8c5f03eeed5354d3e8971cae1bb",
+    "benchmarks/product_v6_retrieval_audit.py": "3f4d2ab5b76f94bba81ca27a3d40db1545f9a5edc236bd5498360261981f2bad",
+    "benchmarks/clause_cost.py": "72d603f32f315a633fd963a07a72ef929cf665c427bc52626956b8e4ca068942",
+    "benchmarks/evidence_diagnostics.py": "0028840d626728dc07d8072450fce781dd4b14a3095083845e591f817e5ce2cb",
+    "benchmarks/cycle19_record.py": "e73252fbdf2533212a21f0b94b65e6251049b940714cd5a2ab0a3e169bdb73b3",
+    "benchmarks/rival_reproduction.py": "e72a8625a9efd325975ed06554ab10751a63534bb03ca96b33d2b519abd2a332",
+    "benchmarks/operation_plot.py": "73566076f370f6a04e22e5aec4013b8df04a411850f056a1f9f62a6040febf1d",
+    "benchmarks/operation_oracles.py": "76f8f524c115d52750b7839a5aef963974ae2388dbcfa14131009b241803d369",
+    "benchmarks/unit_passages.py": "78750cb940ceb0005e89111939704fb2bc5ca4cd9a71eb0b33f4f2455e7270a8",
+    "benchmarks/literal_seed_gate.py": "197992412efac0eb02da7956c5db91a5c5f791c80471dd278c53c07703205d7b",
+    "benchmarks/cycle15_archive.py": "1e6e104cf773d8ee5ca4ca4de3b3814b24bf91315aa4514e9fa3aabb22273602",
+    "benchmarks/test_lexical_tie_fidelity.py": "a6e3a62cbc49e5f489799991d176680b44382bbb40421403b017994776b779ef",
+    "benchmarks/legacy_seed_audit.py": "27a97a1c751a91dc9767fc40940dcef4b1dc29cd0f6fbb1f6ffab4cd93fa14da",
+    "benchmarks/profile_scan_stages.py": "741e75b54009c41f157b2151cfc86daec9a5b3b2bb9cb80e0b8c1232bdd2382b",
+    "benchmarks/incremental_cache_eval.py": "ec75af10bb59b0ecc49d488415dc5ce5bde874e3640ce0d2369390b1edd29030",
+    "benchmarks/cycle28_checkpoint.py": "ee6cbb69d3c803a16fc5f277eb8e8ea4fe2d6ef240860db1f899e01538de570a",
+    "benchmarks/symbol_aggregate_eval.py": "0ec6bc9b4e269ff406593a52f366a02e23e98d7f8e691b0db8dfa50941320eba",
+    "benchmarks/seed_metadata_eval.py": "c595340cc926390b578a4a4e75aa73efcef6fe0dba7eb8d45bd1191edb5eb997",
+    "benchmarks/embedding_update.py": "b6b57942774e14b5f3592be3920c9d48f4041303b19ce189cc5e77cb91e11c91",
+    "benchmarks/packing_challengers.py": "71f888bc883ffb5c1ca60fb037189aaabef644a7991a60a63a3d5a76d9481fe5",
+    "benchmarks/structural_intent_eval.py": "b604bc5e9f22b6c652d106512f35bddf1433c32b36e8047267c4ea765f0cb5bb",
+    "benchmarks/manual_corpus.py": "c7979675902e3450f2537f9ea63ba7c11dc786d11e1db02d125b2fedd9fdaf13",
+    "benchmarks/hierarchical_seeds.py": "5b2a5d1b79b0ce9b5c864cdc9e05dae30db5d5501fae2a85c829ac3c57413e84",
+    "benchmarks/cycle22_record.py": "35003ca0bcfa2e8cf9cc7cf71484e3d4796b5857c2cb28d35b9c21d44e1f3def",
+    "benchmarks/library_selection.py": "e039f7293d7e856cc775c0e8ebce352aa026009eff08ac4c1fc7446aed91fd2e",
+    "benchmarks/metadata_relation_followup.py": "dad476e9820e28685e31ad4c0aaec406a519627f4434902676015319f1935ffc",
+    "benchmarks/compiled_validation.py": "b6f77b0178bec6571fba55d1854affa1f7d8d0988be4c97045d1c4658f4590f5",
+    "benchmarks/prospective_eval.py": "d67132313f9cd81243a0685a7eb586f48c05ba7437c6b7ce697bf460bae6e6aa",
+    "benchmarks/prospective_report.py": "c29e3adf77481b72e00a9e3e4a7fdc7a1726e06fe2d4ac71e5d9a3626b3397a4",
+    "benchmarks/api_source_report.py": "8c30e97609071a7b51b7a85ca6e1d0fb52c9f738c15b4d454c4432a81da2dc34",
+    "benchmarks/quality.py": "ca125c4175b54cc631f3a305b1128d04b3f3b7ecf2f867b5ebf8d8c73a2fbdcf",
+    "benchmarks/target_controls_report.py": "c13d859d154b669dc12baa76bab0ecd333d49417634d0503e005c79acdd7776a",
+    "benchmarks/cycle17_record.py": "445ade9bcf708c3c80248a595eca4774317febe52cc578ebf88eabf80686e95f",
+    "benchmarks/cycle26_record.py": "103ad69285988fd918c9e918129a1500566c63afe750c62203605c9c57ed2eff",
+    "benchmarks/library_answer_plan.py": "725da603947fa8584d79bf0814526849acbfad76087dada44c55c45fd9da531d",
+    "benchmarks/block_reuse.py": "5abbf1278747570f655f22316da6380e50b46afa28b2c2b95d17ecf0cb875f43",
+    "benchmarks/local_budget_eval.py": "e2dd0cad2f6d109a80ca3758ae0bd06a1be32ae77a622afac694fa2ef775b215",
+    "benchmarks/cycle14_corpus.py": "1f2684970a96bc9f30e6a20d140585abefc5f4277a25e93cd0ec8c154c55f997",
+    "benchmarks/runtime_hardening_eval.py": "7e9b79239aa0c1322df005b6d1535a0c425ddcdefd7c880124d06e50a67d48f1",
+    "benchmarks/compiled_scale.py": "c30e2faa3934a630cc56249259abe5cda672f4efc86ccabcbd621b219962e678",
+    "benchmarks/profile_scale.py": "cbdc3848a542bd34c343a5d87e119e6650f4efac7b3a9a2a86a91d13a081c9b1",
+    "benchmarks/boundary_updates.py": "f8b6089761f800f0e77a017e366b9a4aa17285c5ca6048dd6a15dc16ff426990",
+    "benchmarks/delimited_boundary_tokenizer.py": "65cc294415a8a8be00301a1077ba20c4a382fffb4c4b7672d3dd246cc98f5d23",
+    "benchmarks/economics.py": "f2dfacf96d7879ad6693bc0be242b5d91055a84b8a2c25205e50ac366e01f7d8",
+    "benchmarks/file_insert_batch_eval.py": "7a7e844d08c16b51e252c4888b66a0182a7f014d51976f39225506cdbee8dd51",
+    "benchmarks/modern_seed_report.py": "7856a5082cec42983355b50f5c902ee4a69a3ecf6af2a1ff6e244a25987e990f",
+    "benchmarks/grader_audit.py": "00c847a570d40268a37e4dbd972af036c28ccb711c5f7596534f8847171fcb14",
+    "benchmarks/spelling_runtime_gate.py": "5033485536ef846b2d7893e8544bf2e36639497b4230d4d2d03f8a3fbf948021",
+    "benchmarks/line_anchors.py": "cb0d67753e57289b94d0023dfd1548f7c25283440dcf9a1658b35e2758b2b325",
+    "benchmarks/block_reuse_compare.py": "572168f0753eaa68844793f37bede4e76d5dab8c59f990679af6011104a0b5ac",
+    "benchmarks/api_behavior_oracles.py": "aa6d569da122249d341512cd3a466ca24cbb414ae65cbc6f2d3c3fe41bfaea65",
+    "benchmarks/clause_seeds.py": "877e6c7c897fdfd4e6a5b9c90bea16d6995c93d6d630b7c5a84bb32fa29656f2",
+    "benchmarks/spelling_index_eval.py": "6cf47ec327fd99ee90dd0f38afcd3f29bbb7052518010e664b5478a9e0424bb5",
+    "benchmarks/compiled_count_index.py": "aa7cde3ff4d6a311bf2835b14810216330d9209f59dcea6c06e7ef34bc5d98cb",
+    "benchmarks/cache_isolation_eval.py": "ddcf3be5505651edcd6b7d29ed7d9dbb0f45b688d2f0f1867ad38b61b5909bf7",
+    "benchmarks/qwen_encoder.py": "bc35eb9929345926772d463370b0b48e0508949092ac6ba61089a36a37135730",
+    "benchmarks/api_channel_profile.py": "c2ade93e02b3f7e792a425df0c00a0575ad6e813ebce9d6a453a417b07dab50a",
+    "benchmarks/boundary_retrieval.py": "bdd0f03940167712ffa0b43b852e9d762c6d93a94d5c4abab2a87692481c3efb",
+    "benchmarks/literal_checkpoint.py": "b6a8a81bdab32423ab5672bf98fd063bac7adfb36dd5b3868cadbef9236da343",
+    "benchmarks/integrity_leaves.py": "90535a71bdd0a1845e22a4b18fb125c5fb72ca9b5560487a22a89966eb091f51",
+    "benchmarks/source_screen_scan.py": "2320c8f6714baddad1da7eac74d28e7d1f2c8cab9a4117f3e5d2501ed8e7ed03",
+    "benchmarks/modern_seed_eval.py": "aaa225b4ca21567f55b55b56edb718937cc59b91b7b621cd68e148dde172dc72",
+    "benchmarks/local_budget_checkpoint.py": "ebe7284080dcf40879cb03a2d735ef83e30ef2e202d1385a5a4d95ff66173652",
+    "benchmarks/baselines.py": "21886460998d3bd96736ea14e0afc0268f62bba1a77371452f9be137382b2fe9",
+    "benchmarks/corpus.py": "9f287817dca4e73840c103eb176edc92b9ba1398f31217f05c1f43d9b727acfc",
+    "benchmarks/verified_boundary_tokenizer.py": "2a872307aa3783662b827144943ab56ffb8fafe12f8a0c17af7b8a42f1357546",
+    "benchmarks/request_pacing.py": "322a966866a662a1b2bb6fbc740dae8698c322b8acbaa19f0ad17b3dee746a14",
+    "benchmarks/target_tokenizer_audit.py": "2463222e8f66373f51071d6b2fb7a2ae1460dfd26d91ba44820a86d6328c1f43",
+    "benchmarks/replay_continuation.py": "e8e13271085c7ddbdefb914d08af1c0342d16d8b528a8799fc5478dad1bdfbc6",
+    "benchmarks/seed_systems.py": "4712afc54cf21ea33ba95203cff7b6f71d865aeda8421ff1df3986dae5a738a3",
+    "benchmarks/api_source_corpus.py": "7fcdd213c1358365b30c5fea560dc2b7350c5a9951d46b25ed67a33d1972fc1b",
+    "benchmarks/hierarchy_plan.py": "1e300b7a37320691687787b66353234fa749727bae4c0b391cdb3bfc5784bb2c",
+    "benchmarks/source_archive.py": "2c24edb3321e3c8217d895bf60e462dd836774c07b7b973a409dc265fac1a968",
+    "benchmarks/cycle13_archive.py": "560d308f82dfe311b0b96d15e98ac6a76509f22702da45522300bf0bcfda3554",
+    "benchmarks/literal_answer_diagnostic.py": "aa99cc5fd5d6712f50e84c8e371b201b11b7e27d4d5e941a13fbe48b9128d718",
+    "benchmarks/identifier_spelling.py": "63d04d12326db8822ebdb8b31bce3e9f771c86e92d54f4d8ded6245557205c69",
+    "benchmarks/composed_tasks.py": "554788f91307f72e7b305e473a0a0fb089c18cd056f0920c57820e5f2501a920",
+    "benchmarks/cycle15_summary.py": "7699d8b55d0021c955a5a4b6c37593b955326be15661bc3caf3ffbd0325f39bb",
+    "benchmarks/local_budget_gate.py": "de5d2e5c562d261223df45671ccdd1937d6f76b338e20b74e163610f2f3cac34",
+    "benchmarks/cycle16_record.py": "cbbe8440b50bbe03f1ed4076a6eda60806217bf1ddf6bf17a2db4c1fdc656816",
+    "benchmarks/length_normalization.py": "27331ac10d8e494b0d89bfdbc43ea10caf7a207710c2affe6d750a1acb3300cc",
+    "benchmarks/api_source_eval.py": "bfa1e9f4bf36f97d6bebe604310772d36106f1fb93d7c22b2280a9e07dacf845",
+    "benchmarks/source_views_eval.py": "5c043ef0b0fd9ee4789aa254c5c9ae286d39a2a5d03379c7e9de1362958b4141",
+    "benchmarks/transport_oracles.py": "81c44f5139a9297e9d2e547d163c23cea145ef251977ff538f4721a080eb1075",
+    "benchmarks/identifier_tasks.py": "234459164cc9ffdd7fc62d38c85ffe3220989007448da562daa84096d303ea44",
+    "benchmarks/message_transform_attack.py": "82368068689fc54e2e963ab86300bfc4c56236cadbc21faa78d97c49e3725a67",
+    "benchmarks/seed_metadata_report.py": "e01ef3b1d43b2c87cfccded24634cd74074dcd1943dde7476961df684f16376f",
+    "benchmarks/answer_records.py": "430d22920d09666e70d983f6336055ef35744b231c38bb3c3933fe8237ff7990",
+    "benchmarks/unit_answer_report.py": "f124c2aad362fb37fcebca792bd3fbbe17a563ddaf80132c30b2fe7221134cde",
+    "benchmarks/cycle23_record.py": "45fdeb5648818eb2b5077a633ce19eaefd36de01328b7188cb4390ba5681aa9a",
+    "benchmarks/hierarchy_eval.py": "26b5ea9ac386908f2c5081c301e39ad0967977f4a80ce68bd35ec5db55da653b",
+    "benchmarks/update_batch_work.py": "79f6f0c282893873d5f0ecb636d8784b694ea4d29a2252da60a1276680c202e7",
+    "benchmarks/reconstruct_client_profile.py": "6b7579d1d4f9370ee35567edb7ac17161d09478928f97e268bc532a2664c4711",
+    "benchmarks/npkbench/diagnose.py": "1729760a591cd9ec4681a7280a46dc1db5d8ce529db129f952c4e0ae001eaa31",
+    "benchmarks/npkbench/report.py": "aa6719b42e70238be036530419cd9184a51baf776b8870a2b229101eba071072",
+    "benchmarks/npkbench/equivalence.py": "703d051b225ea3ccaee6724e81476180b3694ae3ab13325d738a258901bb12b6",
+    "benchmarks/npkbench/__init__.py": "74250d9969e82e792846a048b5c0269cf14acdfab322bae59c025009dbdf7604",
+    "benchmarks/npkbench/metrics.py": "2435a4b25f6c991e336be0ba4ce20d144c104a94b1ce075a351aadaf7f5d94af",
+    "benchmarks/npkbench/compile_timing.py": "374cbc45bb8a88f5ecb4056586511b7c9b587a368a71b39ea7273d6fadcefe61",
+    "benchmarks/npkbench/ltr.py": "249805e6ba95454fe286494af0efcd1964dc3043ce26d7f53a49b6ca0d4fd1b8",
+    "benchmarks/npkbench/data.py": "d23c81509c6aa5ef3244ed865ec5810ed7a2f809eb5eb0e7dca22eaa622e92de",
+    "benchmarks/npkbench/expdb.py": "5ff76c46ea147b8d51d5008ab120819e70991cfe3c4621adda7055d182f9ab11",
+    "benchmarks/npkbench/packs.py": "804bb678fd2c6b8dc151842edea7eeec40e65a85f2e12129c160af14e717b050",
+    "benchmarks/npkbench/memory.py": "205e807b2209b6ee2960fe00b421b6df4395a1a3344df63e2285c634cff44008",
+    "benchmarks/npkbench/rescore.py": "80d3e7bea431a894efcf99852cfedeed2e7d447fc2a328a721290fa29ab000e7",
+    "benchmarks/npkbench/run.py": "0bb923114b8142004341fc393dbc1ecd45aa1595f386ee5eb82e7ae8b1bcfbed",
+    "benchmarks/npkbench/alias.py": "31a63d4a914e6f5ad015d2e21172ed3517b9ede2d381a34c59cbbc10bfb1bcf6",
+    "benchmarks/npkbench/arms.py": "b56d4237de08d2142823cd4b3879474b61c01c33693fb6cab4090deb2c3f3d52",
+    "benchmarks/npkbench/repos.py": "3f2163be1a8510dc6e7fd62844d0a7f167615c618b21af30d523c4bb9349b402",
+    "benchmarks/npkbench/prototypes/params.py": "b4db541dd7cd78b8756c199faa40890bcee46f42ad472b0e50a3c869454aee3e",
+    "benchmarks/npkbench/prototypes/diversity.py": "77237ed00aaeb0764ee34ed8802f08810277ba40b857517f7bbb89a68f774159",
+    "benchmarks/npkbench/prototypes/testmate.py": "a48889cdb32dfea329d11665faede15a1201db788c670e178c8e7e071e6989cd",
+    "benchmarks/npkbench/prototypes/coarse_fine.py": "5dc44d8770cab873fd38ddf7306d998edf1d69292251fddc7a99967610e575d4",
+    "benchmarks/npkbench/prototypes/dense_channel.py": "b3981d99d84e97b5272b5bdda17cf660234943f42d86664d77bba41d28a89a09",
+    "benchmarks/npkbench/prototypes/density.py": "7086912145e96eec9be94537a3facb253eacaf838587192af890e67434b6b98b",
+    "benchmarks/npkbench/prototypes/__init__.py": "e3a90b3829e9b19a8025d8dac402cb584fcd63e38975a95437e7404f373289e0",
+    "benchmarks/npkbench/prototypes/entity_query.py": "9130697431c1e5ba1296f0137c37e7890ce768d66aba1e8c71b8251d9fa63509",
+    "benchmarks/npkbench/prototypes/temporal.py": "3056fe13a1c3172c697452521e837d363b88091e2e80a4cd62222475c1c56c67",
+    "benchmarks/npkbench/prototypes/portfolio.py": "5b7d484dad3a56956c8eeb4f478ffd8acc09b9378f203df8d914667d3035f843",
+    "benchmarks/npkbench/prototypes/entities.py": "3ea8b366ff46e8c225956147a6b40553c25c9aa473572bab62128f4a353b992f",
+    "benchmarks/npkbench/prototypes/dense.py": "09d9e4a5db4c5007ad583c4398badf17b98cb282466a317eda84ba2e563706fc",
+    "benchmarks/npkbench/prototypes/callee.py": "0a371574d7998385504205bcd71e26c988107cdf1d196e4a2b628efc98ea1966",
+    "benchmarks/npkbench/prototypes/df_prune.py": "4ffb2338770d61135620cbfed83cecac4efab083958390f56f573535cac74a5a",
+    "benchmarks/npkbench/prototypes/baselines.py": "dada5450bcfdfb408c7480228905a6578ee0190b04d443b0eb82d2d656483b71",
+    "benchmarks/npkbench/prototypes/hybrid.py": "d4b03ee3a611a387b730fd63342d0b20566800db3e5fe8ce5cb1e53028ec8ff9",
+    "benchmarks/npkbench/prototypes/context_map.py": "6597851e955c2d25d80735c075502b66c6bb226e550030809a7f16371fd0461c",
+    "benchmarks/npkbench/prototypes/segments.py": "1473828f6c7191f398205e69367b52bec846811c59c783c3e3ecba0e91e4d398",
+    "tests/test_literal_seed_contract.py": "ace1dcc9cbb9a611f6f6e695b11f0ce98fa41a648ebd78e3ec6779bfc9bebd30",
+    "tests/test_packing_challengers.py": "f44367af236c49535f947475b58f19fd5e4127c7246b89471803ef777e70b595",
+    "tests/test_lazy_count_index.py": "09127113a2b84f97ddb9688f15ba9b4728538a77918661f7c42ed1abbda940f5",
+    "tests/test_batched_file_inserts.py": "e58691e5f5d17e4e9a42122d95cf76bb942a3e6d20a924407feb2fa9e9c5eb7e",
+    "tests/test_secret_scan_errors.py": "494dd3246afc6520d1b5007d0bf0aa5a55d504b7b126af25e91add598321822a",
+    "tests/test_length_normalization.py": "c3fc79b6f5ede15bd768ce868ea62c6d8b118ce2768782f55e30adc6bc325e27",
+    "tests/test_source_archive.py": "fe259f70ce1432e7bd41e4e01c915e899d5d3953fb96d906b31effadf4738fb5",
+    "tests/test_compile_atomicity.py": "717b6be040d6d8b2e95efd3dc20286e22fe3a23b778b489b7f79005edb1af626",
+    "tests/test_unit_answer_evidence.py": "4186ed01ddece3f619c983e1fbbcf418cd2e89c91555548304b0d453deb01a46",
+    "tests/test_update_batch_audit.py": "0cfc0ad44148fcaad54a9638edfa52330e1a722df255cb71dcd7beb4f0d89a07",
+    "tests/test_pack.py": "bdf647f2da78c89a64c177c414ecf4f194077cd55261c4d12126ed129044b546",
+    "tests/test_definition_channel.py": "a89641ef90024fd31707de1b52575b8f0a75833caa1bc0aeaede662f511cba00",
+    "tests/test_holdout_and_msc.py": "20995657f1bb822f51514aeaf0e193b78f5d94b490ef74c50db715614a200eed",
+    "tests/test_build_source_directory.py": "ec4a4657d7e6a4da12f69b1dc36e0d605ff0de6fb02c070d1e849cc9ac77a889",
+    "tests/test_lean_boundary_tokenizer.py": "b7e5cb06cbd97688ceeb3968aecf43de0d6767fa3250f27517caead321c90731",
+    "tests/test_quick_update_fingerprint.py": "1d904747d92bbf5409055cbcf20dd4b397612ab1e10338c0bde5fd664bf30a20",
+    "tests/test_cost_and_metrics.py": "233b9c2df4a946aef820d21812714a4cd4954c001ad7726e3f0250cf45a1af50",
+    "tests/test_operation_seeds.py": "76c15a623c6dc5b379262f9406174a5022744f2ceef593a95ceb1bfce9065b92",
+    "tests/test_compiled_contracts.py": "98b5c3b4e2e6f5ea4b994c8a320352d8ad75674c4faf12c97e4b2da7619273a7",
+    "tests/test_legacy_seed_evidence.py": "b6b3b5f1dbd74fd95d7a1d276a4403b6a2531ac8bbd8d29ed806f0c499f975c1",
+    "tests/test_legacy_budget_contract.py": "0472bf30fb1e681250850e8aaa5f6458370c1727fc010003cb624b34c2b799cb",
+    "tests/test_provenance_render_audit.py": "ec49bb7ff0c404b188c1dab2518f4584cde22b84dd60347bb4c8812f29f9192c",
+    "tests/test_secrets.py": "b8e739c4e241bfab6d8552b2b264059a219a7df3c4d87a615d83de0591a5e7d5",
+    "tests/test_source_boundary.py": "1638feda29608160e87378b1d5ee11f3e95699ce0d7d9757a180896206ae0c4b",
+    "tests/test_prospective_eval.py": "0099e7dca76159130a5f42b52e30925474ca40b6cc7e5468d92d1fe3d7f5a8f1",
+    "tests/test_pack_manifest_values.py": "1281f6fab3c53bc03b3d30a6a8245446bd2e2f8eedfef0258883d3f665b0a7df",
+    "tests/test_replay_continuation.py": "d60fddfcb80da632e85148a050dc2a96ae9110bb15cd3de3bca0115192804ad4",
+    "tests/test_semantic_and_scaling.py": "01ab648384ca6025a921ca5f0bfbb18362b1dc7887b6909fc049715de86cc2be",
+    "tests/test_line_anchor_experiment.py": "1f92acc34a7faa8540fa50289628396ada4f970f5d5aba23b5cf70a864e82d29",
+    "tests/test_conflict_resolution.py": "b9dca6e1b228371970436d379238739964d58f341a1bc89ab8f367ff5a743450",
+    "tests/test_query_cache_isolation.py": "d0b90953da64298796f1806ca4ace0a2a9d8a6f0bf6109baaab3f58d0f3a0355",
+    "tests/test_corpus_comparisons.py": "59c21fbf4c553b57245e71963e12f4d491cd5120d8d67af46993b79fc8de4296",
+    "tests/test_source_views.py": "5801293d85748458af37b1f432d7643d87f237a5c4d3060c5b3bfe21d9aaf568",
+    "tests/test_message_transform_preservation.py": "b76567210f92ea2c6206076c777a9a1626b51f097b2ced3c604c2c465f480ea0",
+    "tests/test_pack_integrity.py": "13b07bb57b511b60a5d5e16da9e30f085c1d720e6a3a656ee432533d00cca79c",
+    "tests/test_repository_rerank.py": "3af9f770ab84575ec713fe413abba64c6d1405d7312c273519f334e30be2cb5b",
+    "tests/test_safety_invariants.py": "7ce45b1c6c6f390813c0c051d2944a1ef7a436c6e793edf90abea895fc80641a",
+    "tests/test_literal_answer_diagnostic.py": "430ec1f3d5a87111fbcaf543c013ae8b313cab9aba1bb79d9382d69ac83c39b1",
+    "tests/test_providers.py": "d120bcc4bf3aa36c1e613c2fc1a3c822a9768624beb21a75a2cb8f1ed9ddf6ab",
+    "tests/test_seed_rank_gate.py": "b984ccd0e09fbe139bdba4b15c20a04c13d3380ee43c2f40f36f545751836c28",
+    "tests/test_legacy_token_basis.py": "c4532b3fc593c379174a3872ed8ce75fb4ff6a92d08f520985a8a46b00149f63",
+    "tests/test_integrity_leaves_experiment.py": "3e92feb499ea86e27d05905461e3eec5781543fbae9561a2f9c5c7ed932e2b04",
+    "tests/test_identifier_report.py": "c263b3519538c5e639f7d878486daa53c6b4614c5e09491d3c10d06704d87e31",
+    "tests/test_fielded_relations.py": "74c31dd446482f725806397cbc6d1458e569914688e50c7a529cb470ebca9182",
+    "tests/test_economics_evidence.py": "f93f32c515c303c1a7cf88b340e78e788737890486da4cc623dfbe5222b2dd04",
+    "tests/test_spelling_index.py": "b76a04d3316d63fa27d78fdde79c8acb9db2b4cbdbb9d9d288a59f366a831463",
+    "tests/test_seed_metadata.py": "9bd36b751e05852383a8aa64dafd74136a7e2cfd388f20b0f8ef1e361e45004d",
+    "tests/test_library_failure_analysis.py": "7b9c6fe531b784c7d652965e6ed384f7d92f96f84fe726a3e8504116b7849c26",
+    "tests/test_reference_evidence.py": "5f71b2638fce3afec0649efc8dc6b7f0fead239581e291e430cdcdcfe013d6de",
+    "tests/test_context_map.py": "25e95e57b200023bb6f7dcc6cb1af9b77f39e150453c931a6981092dce82d231",
+    "tests/test_source_scan_failures.py": "44e18e9d9c4ff182a1e4270f65c5f2992e459e6f1bfdfd00074c7b6ab90d777f",
+    "tests/test_cache_runtime.py": "e9f010a7b1251946409ae345bb16cbd72de81aa67434c4f76b997db3d24daca5",
+    "tests/test_answer_record_provenance.py": "10c66c63466faa7fb8c2bb013a84390fe3c3f03fe82a6b1a18ba32d85e94877d",
+    "tests/test_library_selection_audit.py": "53abcbf5efe7796fac72c850c261a20c9f04bb14490a60d1f7d0acc39b60eeb6",
+    "tests/test_diagnostic_report.py": "1f84271005552f8819453e7444587de5a6f1bf1cd76a203c02af0c564b46f864",
+    "tests/test_clause_oracles.py": "93df8f673dc761008e2a888ca9d69b4ed9d8f31305facfaf5d4a61f40d569dd5",
+    "tests/test_zero_llm_guarantee.py": "31891f6b86106725d1d795da62e2d2e8f762afb6c69cfc2ff3b99e6995ed3cf6",
+    "tests/test_piece_tokenizer.py": "6987884f1ca2be9c476b5723c22d7b5fa48a6bc287c86cfd17ce2cf090da9e69",
+    "tests/test_request_pacing.py": "2a3cb6c7e92dc758591b9a1177fa9f18f014eb4f983f6069f7b054040b830b81",
+    "tests/test_library_answer_report.py": "14b314cf80c1ec10e9afbad42f3a447b00aff26b64928bf3d5ef110bc84882b8",
+    "tests/test_compiled_count_index.py": "0f1addbdce260af7086d8451f499bc00b87ec7b67463e36eaf5197cabc0360a7",
+    "tests/test_runtime_hardening.py": "d33d62f7552eb341ad906928815cf26683d215ed2925710f18218dd7161d06fd",
+    "tests/test_incremental_integrity.py": "49d9e973fbd6474b4241ef51afb0ea74973512d426b7757d48ccc67f6a46424f",
+    "tests/test_seed_report_contract.py": "38226cb08439f215481f7c74cd42b38af6238a694d0669193c4d8babd7666be1",
+    "tests/test_digit_boundary_tokenizer.py": "4022b4e0cf9c7c6c599c14e92cec470f786e4c04084f009e8bb205d42b3628fa",
+    "tests/test_late_lexical.py": "9144f9c9cf24de63fed29de99547b6ca9089a901973c07cd52bdaee5e9e3ccfb",
+    "tests/test_hierarchical_seeds.py": "1ed933e4318f70e5351fce8b3a363cd862efce0c34276117e8e7c128aba6fc1a",
+    "tests/test_qwen_baseline.py": "b9896579da09a1af89277959e9672f9e76f78187bf98ee42e10c1cb32c3051ba",
+    "tests/test_fielded_seeds.py": "ef37bfce60b3402c6785151d0fa6b3d6e4aceb2bb5ceaf5d3e23e84f89e46b06",
+    "tests/test_pack_encoder_contract.py": "f9ea5c22cf71d8704175534f8379e2e6b59adf8f085861284344898882745868",
+    "tests/test_query_caching_and_ordering.py": "17a384f7575b04d78f25c59e1a0e00df139a5c8f83419adf36b7c6c6016e3b9c",
+    "tests/test_top_block_trim.py": "d4d85d5bd7bb74d3f19e0a5f29e13e0eb8f0e02b1c13b72fb279990c804f467e",
+    "tests/test_packing_audit.py": "28c344f8cfe53e9f415d39b5ea94b10b72261fba3deff07cb0dcd45ae0d54ca3",
+    "tests/test_ascii_boundary_tokenizer.py": "0300cf0c4901dbe110603e82de19039feb9a8e70f90446e4b286299a7303a54f",
+    "tests/test_python_members.py": "656f1c66c4bf6bdbf373ad012ebd7217818ca3b3b132211c8e6b6926e49ab09d",
+    "tests/test_compiled_corpus.py": "9b97e862ef4e0b7532c234d1b9e0c59b932e18b4f7527cdf72611e2f36c12bde",
+    "tests/test_npkbench_metrics.py": "91081d734164a5e1c2bd81d87e058e42760f6f2db41fcb806b6cc4f001e1cc15",
+    "tests/test_clause_views.py": "afd0bf1917b116941a5729ba7466cc937dd8cf12fc19adf0f24fa93c12e6bde4",
+    "tests/test_compile_transactions.py": "ff1b1738da834c64f4239a43a624eecfc8c2b27f2a85d7bf3bba8616ba43792c",
+    "tests/test_search_metadata_enrichment.py": "4ba7a7a130bfcee4a05e020f5f0f9d6416f65cbf2bbcf76b009cfe8a5a055869",
+    "tests/test_structural_names.py": "0265f8ff3f11bccba380a791c1fe289466b8c408dbedee3b64bf00a16281e7ee",
+    "tests/test_test_mate.py": "5457b7318b1171d0412cc8a876fd252b39125bd5258b21f9283132adf0864354",
+    "tests/test_definition_units.py": "a980c6c5140ad299603753d2cb6ae66fae17acc5d4c27fe7f84f9ba61428f499",
+    "tests/test_pivot_runtime.py": "c36e782a8dbb66914064dfef6b4f76120a1d7e19c34df62654c5e5d5b26dbe5f",
+    "tests/test_batch_tokenizer.py": "49fb9664b45137e8860f95489f6409ddebbc4622348bf68a80c3447a89ec609a",
+    "tests/test_answer_recovery.py": "89f0999adcdfb3391e26997865fc4f58c8c6a0591371205e06e7fa746159e136",
+    "tests/test_source_screen_equivalence.py": "a2ef25b38bfb94e9305198669aefc67c0af03d488a5974fee5f35755ee4402f4",
+    "tests/test_library_baseline_budget.py": "a4c91460d91940b63008e8410cdb072439c1a08567fd79f49da3814b16de1091",
+    "tests/test_local_budget_experiment.py": "1a28b131ed965cc599e3eabc2a32173b79eb791f37a827d842705ac59fd7b4f3",
+    "tests/test_seed_metadata_report.py": "f606c8a0738650eee99571e46455108e2a45c78f972c7ab68e392458c4cbc88e",
+    "tests/test_composed_oracles.py": "028c6e59024de327e9c5d712477200c6498d80c8501babcfed025682bcbfc0f1",
+    "tests/test_retrieval_order.py": "8df04954e74df1261dc392f254350dc9290d217b7e52576efe84d4c3c4157ba7",
+    "tests/test_complete_program_controls.py": "d2124fdc4a1c0bebf5e49cd83c4d989a7f662c95e1d078035ecee99454c2e80a",
+    "tests/test_symbol_index_cleanliness.py": "117905eaf87c79974dc1507271aa6f8e4b9a008a0af1dab8a2fe70629afaf5b4",
+    "tests/test_stdlib_oracles.py": "160ef066d1fab979c4eb1afce83830f22520d8606dff80a33ab94ec43df23496",
+    "tests/test_local_token_budget.py": "2723781cedfe838804ef3efe7c56c6fcf7d3d23b4c2253e04ab5209d6c26e4bd",
+    "tests/test_pack_snapshots.py": "3127f0e8e151b67460a70e9771f0b528653a069d28371f9b42c2396a8e5a2769",
+    "tests/test_provenance_renderer.py": "61ca8163c19ed1f191c41713a2dbc1347f30b4a998af393f74c981b4b8519ae5",
+    "tests/test_rival_reproduction.py": "4d425ca62ae1b100dc41551375242bceb11f1bbfc61db4040d4b741a30487b00",
+    "tests/test_delimited_boundary_tokenizer.py": "7f10c2018d59e276aa630697eff74d3a90b04afd9c31ddf62329a600c54c294c",
+    "tests/test_incremental_policy.py": "1f62fb6d299a98b01c0664d11bebbb3513f6826dbf1864743e3297653d6fb6d3",
+    "tests/test_pack_paths.py": "58f16dcaf29470bef70fb98c6b044835e0eb21ebff6e5cb8d61c606a09538b19",
+    "tests/test_click_tasks.py": "c15e225070c371d95173a8c706ed363f96d7b6e1700329f68a94599f9913a18a",
+    "tests/test_structural_intent.py": "e19362ab0929afc7d4580d39fd7ed7d7a1fb473ab25eb10d7c49cd857ac2f1c6",
+    "tests/test_target_control_comparisons.py": "8f422cb15fe048785c5a5565020e0476fcaf7f706fbe20b1b3478d64a66b5834",
+    "tests/test_pricing_provenance.py": "21ba9f21079e9d8bac75be48fb8f1a2e4213918457062e3441db9270dde42563",
+    "tests/test_corpus.py": "6b8539fa1205d52f8b9de7f9904333c3a614c1859708bd8999c2cae1cf14cc16",
+    "tests/test_planner.py": "f83ba5562cb0a1e860c52f092ceadffd0fffac86f89092dd1c4a4a1054ab7c4a",
+    "tests/test_block_reuse_experiment.py": "90a77ed5e0fac675eec1a75b485ab8de4a793216f78565538e1dd609cc088cf9",
+    "tests/test_repository_tasks.py": "fdf6e39e828840d484ded7005d524cfccde57ceeb26aafd2df032bc60d190bf1",
+    "tests/test_compiled_cli.py": "436fdf8c41053c1fe6e7a59e432fe34bd836e7adc246816364b29b70e827e99c",
+    "tests/test_embedding_identity.py": "2ba082d4b86f35835c2a81daddd5eca2cebf84653afa20ca0817c5d1b7e7c44f",
+    "tests/test_boundary_tokenizer.py": "12724aa1f9285e1a4a5de5bd3711cdefd49ff06d5aa2624e84fa72ee785dd344",
+    "tests/test_embedding_reuse.py": "41f6a8608d23efad57d712fd985a0cbdeccfc18fb8b61d235c97e7f62fb24fda",
+    "tests/test_repository_eval.py": "ea6ebd4a7d81ee47fdf5f58f44b2c32d458ddfe9c943ee8a7806b10c97e57b63",
+    "tests/test_optional_client_encoders.py": "faa25c1f0c95376af37f986f503258f0284810da99e4e460447c3db3f5815903",
+    "tests/test_pack_storage_types.py": "b022ccc4db8f2abe5d0605e201b2072b607b25d6f14aa0872ba238302b2615a5",
+    "tests/test_update_batch.py": "2e001ce12101af772354d2f5a8dcd0214c152739bdc609592dc1595f06eed923",
+    "tests/test_prospective_report.py": "f1e7e2aca18a632fa4c73373438d3168c15b8f127e7a326ca49d0924b82a99cf",
+    "tests/test_message_boundary_invariants.py": "5c455529e7714e16a3c1f097c8c8d6f6604f67ea58ec7f1b58a54a7602461624",
+    "tests/test_evidence_diagnostics.py": "825805648b2abf939656153b12e42054b675cd071c78e999ee09c17cc0c96e14",
+    "tests/test_identifier_spelling.py": "736d3a3acd6bbc84fcad0410d4b0bbbebafa000b8cb2a697b850aababdec16ff",
+    "tests/test_source_lines.py": "035106a1263ff5ccfa2334f16a2a6ecd9815d6e398859d3a73a351d66fda3281",
+    "tests/test_auditor_contract.py": "bad81af66192b3700fa229955d273300055732e8b1a56636bf877373818fe18f",
+    "tests/test_unit_passages.py": "e6d0cc222a4ece00bbc05d16b7fbe1a80365605e8dab4913c6e4184ba1cbf3f2",
+    "tests/test_api_source_corpus.py": "763659877a73d6c82c64c6e5fe02bb562d40737c3ff1c38f08a75256da1cfeba"
+  },
+  "rows": [
+    {
+      "mutant": "query_cache_serves_stale_root",
+      "status": "KILLED",
+      "test": "tests/test_query_caching_and_ordering.py::test_update_invalidates_query_cache",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "canonical_ordering_unsorted",
+      "status": "KILLED",
+      "test": "tests/test_query_caching_and_ordering.py::test_selection_context_text_supports_canonical_ordering",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "quick_update_reads_untouched_files",
+      "status": "KILLED",
+      "test": "tests/test_quick_update_fingerprint.py::test_quick_update_skips_reading_untouched_files",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "write_file_blocks_drops_lexical_batch",
+      "status": "KILLED",
+      "test": "tests/test_batched_file_inserts.py::test_batched_insertion_preserves_all_blocks_lexical_and_symbols",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "symbols_include_language_keywords",
+      "status": "KILLED",
+      "test": "tests/test_symbol_index_cleanliness.py::test_keywords_and_stopwords_are_not_indexed_as_references",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "symbols_prose_references_unfiltered",
+      "status": "KILLED",
+      "test": "tests/test_symbol_index_cleanliness.py::test_prose_files_do_not_emit_bare_word_symbol_references",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "trusted_schema_allowed",
+      "status": "KILLED",
+      "test": "tests/test_runtime_hardening.py::test_connect_enforces_query_only_and_trusted_schema_defense",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "query_only_disabled",
+      "status": "KILLED",
+      "test": "tests/test_runtime_hardening.py::test_connect_enforces_query_only_and_trusted_schema_defense",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "available_tokens_zeroed",
+      "status": "KILLED",
+      "test": "tests/test_runtime_hardening.py::test_available_tokens_sql_aggregation_matches_python_loop_exactly",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "selector_context_manager_unclosed",
+      "status": "KILLED",
+      "test": "tests/test_runtime_hardening.py::test_pack_selector_context_manager_reuses_connection_and_releases_locks",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "update_audit_quadratic_cross_join",
+      "status": "KILLED",
+      "test": "tests/test_update_batch_audit.py::test_logical_audit_has_a_linear_scale_work_budget",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "batch_update_keeps_stale_postings",
+      "status": "KILLED",
+      "test": "tests/test_update_batch.py::test_mixed_updates_keep_index_identity[1]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "source_view_discards_omission_metadata",
+      "status": "KILLED",
+      "test": "tests/test_source_views.py::test_partial_block_has_exact_surviving_spans_and_marked_omissions",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "source_view_ignores_budget",
+      "status": "KILLED",
+      "test": "tests/test_source_views.py::test_exact_budget_includes_markers_and_all_separators",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "source_view_loses_query",
+      "status": "KILLED",
+      "test": "tests/test_source_views.py::test_exact_budget_includes_markers_and_all_separators",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "record_usage_type_coercion",
+      "status": "KILLED",
+      "test": "tests/test_answer_record_provenance.py::test_reported_usage_cannot_coerce_raw_json_types",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "record_replay_type_coercion",
+      "status": "KILLED",
+      "test": "tests/test_answer_record_provenance.py::test_replay_identity_preserves_json_types",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "recovery_plan_type_coercion",
+      "status": "KILLED",
+      "test": "tests/test_answer_recovery.py::test_recovery_attacks_cannot_change_the_frozen_experiment[answer_type]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "complete_program_json_type_coercion",
+      "status": "KILLED",
+      "test": "tests/test_complete_program_controls.py::test_complete_study_rejects_tampering_before_execution[boolean_answer_as_number]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "complete_program_validation_bypass",
+      "status": "KILLED",
+      "test": "tests/test_complete_program_controls.py::test_complete_study_rejects_tampering_before_execution[query]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "complete_program_invented_oracle",
+      "status": "KILLED",
+      "test": "tests/test_complete_program_controls.py::test_complete_oracle_refuses_missing_global_instead_of_creating_an_answer",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "reference_scope_shadowing_ignored",
+      "status": "KILLED",
+      "test": "tests/test_reference_evidence.py::test_module_bindings_respect_local_shadowing_and_import_aliases",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "reference_overload_last_pick",
+      "status": "KILLED",
+      "test": "tests/test_reference_evidence.py::test_overload_stubs_require_an_explicit_definition_line",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "reference_unicode_physical_lines",
+      "status": "KILLED",
+      "test": "tests/test_reference_evidence.py::test_reference_source_preserves_physical_lines_and_unicode",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "reference_empty_seed_success",
+      "status": "KILLED",
+      "test": "tests/test_reference_evidence.py::test_reference_empty_or_failed_seed_is_not_a_success",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "reference_budget_bypass",
+      "status": "KILLED",
+      "test": "tests/test_reference_evidence.py::test_reference_budget_counts_headers_and_the_whole_join",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "reference_evidence_validation_bypass",
+      "status": "KILLED",
+      "test": "tests/test_reference_evidence.py::test_reference_validator_rejects_changed_evidence_or_experiment",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "recovery_unknown_parent_attempt",
+      "status": "KILLED",
+      "test": "tests/test_answer_recovery.py::test_recovery_refuses_uncertain_or_unapproved_parent_outcomes[STARTED]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "recovery_arbitrary_failure_retry",
+      "status": "KILLED",
+      "test": "tests/test_answer_recovery.py::test_recovery_refuses_uncertain_or_unapproved_parent_outcomes[hidden_answer]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "recovery_lineage_bypass",
+      "status": "KILLED",
+      "test": "tests/test_answer_recovery.py::test_recovery_attacks_cannot_change_the_frozen_experiment",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "recovery_context_identity_bypass",
+      "status": "KILLED",
+      "test": "tests/test_answer_recovery.py::test_recovery_attacks_cannot_change_the_frozen_experiment[context]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "recovery_unbounded_execution",
+      "status": "KILLED",
+      "test": "tests/test_answer_recovery.py::test_recovery_execution_bounds_reject_unbounded_calls",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "answer_missing_transport_complete",
+      "status": "KILLED",
+      "test": "tests/test_answer_recovery.py::test_report_distinguishes_terminal_attempts_from_missing_answers",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "lazy_parent_identity_bypass",
+      "status": "KILLED",
+      "test": "tests/test_lazy_count_index.py::test_lazy_selector_rejects_stale_cache_after_source_update",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "lazy_hidden_source_compilation",
+      "status": "KILLED",
+      "test": "tests/test_lazy_count_index.py::test_lazy_load_hydrates_only_requested_records_without_compilation",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "lazy_hidden_all_record_scan",
+      "status": "KILLED",
+      "test": "tests/test_lazy_count_index.py::test_lazy_load_hydrates_only_requested_records_without_compilation",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "lazy_same_length_record_alias",
+      "status": "KILLED",
+      "test": "tests/test_lazy_count_index.py::test_lazy_source_hash_cannot_alias_same_length_text",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "lazy_unknown_engine_reuse",
+      "status": "KILLED",
+      "test": "tests/test_lazy_count_index.py::test_lazy_unknown_engine_never_reuses_regions",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "lazy_partial_hydration_on_error",
+      "status": "KILLED",
+      "test": "tests/test_lazy_count_index.py::test_lazy_record_error_does_not_partially_hydrate",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "lean_metadata_guard_bypass",
+      "status": "KILLED",
+      "test": "tests/test_lean_boundary_tokenizer.py::test_lean_preserves_every_loaded_metadata_guard",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "lean_hidden_vocabulary_roundtrip",
+      "status": "KILLED",
+      "test": "tests/test_lean_boundary_tokenizer.py::test_lean_initializer_avoids_whole_vocab_roundtrip",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "delimited_unicode_neighbor_guard_bypassed",
+      "status": "KILLED",
+      "test": "tests/test_delimited_boundary_tokenizer.py::test_adjacent_unicode_cannot_implicitly_widen_word_barrier_scope",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "compact_independent_block_summing",
+      "status": "KILLED",
+      "test": "tests/test_compiled_count_index.py::test_compact_count_records_preserve_whole_join_and_memory_limit",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "count_cache_receipt_bypassed",
+      "status": "KILLED",
+      "test": "tests/test_compiled_count_index.py::test_changed_bytes_cannot_reuse_a_trusted_old_receipt",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "count_cache_self_declared_trust",
+      "status": "KILLED",
+      "test": "tests/test_compiled_count_index.py::test_load_without_receipt_recomputes_instead_of_trusting_self_declared_data",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "count_cache_receipt_capture_race",
+      "status": "KILLED",
+      "test": "tests/test_compiled_count_index.py::test_receipt_is_captured_before_competing_writer_can_change_committed_bytes",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "count_cache_hidden_full_recompilation",
+      "status": "KILLED",
+      "test": "tests/test_compiled_count_index.py::test_real_incremental_update_reuses_unchanged_blocks_and_matches_rebuild",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "ascii_barriers_cut_inside_words",
+      "status": "KILLED",
+      "test": "tests/test_ascii_boundary_tokenizer.py::test_ascii_word_barriers_preserve_full_ids_and_counts",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "digit_barrier_widened_to_letters",
+      "status": "KILLED",
+      "test": "tests/test_digit_boundary_tokenizer.py::test_digit_boundaries_preserve_actual_joined_token_ids",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "verified_zero_token_acceptance",
+      "status": "KILLED",
+      "test": "tests/test_boundary_tokenizer.py::test_verified_counter_cannot_discard_all_nonempty_input",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "verified_partition_gate_bypass",
+      "status": "KILLED",
+      "test": "tests/test_boundary_tokenizer.py::test_wrong_proposed_partition_triggers_upstream_fallback",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "verified_compilation_on_query",
+      "status": "KILLED",
+      "test": "tests/test_boundary_tokenizer.py::test_verified_counter_never_compiles_missing_query_parts",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "boundary_naive_block_addition",
+      "status": "KILLED",
+      "test": "tests/test_boundary_tokenizer.py::test_prepared_interiors_preserve_join_ids_and_counts",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "boundary_compilation_on_query",
+      "status": "KILLED",
+      "test": "tests/test_boundary_tokenizer.py::test_unprepared_or_evicted_parts_use_full_encoder_without_compilation",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "encoder_default_revision_unpinned",
+      "status": "KILLED",
+      "test": "tests/test_embedding_identity.py::test_default_revision_is_passed_to_both_loaders",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "encoder_offline_flag_bypass",
+      "status": "KILLED",
+      "test": "tests/test_embedding_identity.py::test_runtime_loaders_are_explicitly_offline[0]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "length_normalization_ignored",
+      "status": "KILLED",
+      "test": "tests/test_length_normalization.py::test_independent_parameter_bindings_and_parallel_isolation",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "length_normalization_global_leak",
+      "status": "KILLED",
+      "test": "tests/test_length_normalization.py::test_independent_parameter_bindings_and_parallel_isolation",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "structural_intent_guard_bypassed",
+      "status": "KILLED",
+      "test": "tests/test_structural_intent.py::test_conservative_guard_abstains_on_ambiguous_surface",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "structural_intent_all_disabled",
+      "status": "KILLED",
+      "test": "tests/test_structural_intent.py::test_explicit_positive_relation_survives",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "packing_rejection_counted_as_admission",
+      "status": "KILLED",
+      "test": "tests/test_packing_challengers.py::test_grouping_reacts_only_to_real_admissions[leaf]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "packing_admission_feedback_ignored",
+      "status": "KILLED",
+      "test": "tests/test_packing_challengers.py::test_grouping_reacts_only_to_real_admissions[file]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "body_fusion_channel_ignored",
+      "status": "KILLED",
+      "test": "tests/test_packing_challengers.py::test_fusion_uses_both_channels_and_preserves_candidate_union",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "answer_plan_locale_corruption",
+      "status": "KILLED",
+      "test": "tests/test_prospective_eval.py::test_utf8_plan_survives_a_windows_locale_default",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "diagnostic_null_response_omission",
+      "status": "KILLED",
+      "test": "tests/test_library_failure_analysis.py::test_null_and_malformed_answers_are_responses_not_missing_transports",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "provenance_identity_erased",
+      "status": "KILLED",
+      "test": "tests/test_provenance_renderer.py::test_identical_bodies_from_different_scopes_keep_distinct_identity",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "provenance_header_count_ignored",
+      "status": "KILLED",
+      "test": "tests/test_provenance_renderer.py::test_public_counts_include_the_rendered_identity_for_every_cap[True]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "provenance_consumer_text_erased",
+      "status": "KILLED",
+      "test": "tests/test_provenance_renderer.py::test_public_counts_include_the_rendered_identity_for_every_cap[False]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "batch_prefetch_wrong_prefix",
+      "status": "KILLED",
+      "test": "tests/test_batch_tokenizer.py::test_prefetch_counts_whole_strings_and_never_reuses_a_different_prefix",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "batch_candidate_order_changed",
+      "status": "KILLED",
+      "test": "tests/test_batch_tokenizer.py::test_admission_order_matches_greedy_for_arbitrary_nonadditive_counts[8]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "piece_added_token_gate_bypass",
+      "status": "KILLED",
+      "test": "tests/test_piece_tokenizer.py::test_added_token_is_a_counterexample_to_naive_piece_summing",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "answer_ledger_snapshot_race",
+      "status": "KILLED",
+      "test": "tests/test_library_answer_report.py::test_changed_ledger_cannot_mix_old_counts_with_a_new_digest",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "request_spacing_bypass",
+      "status": "KILLED",
+      "test": "tests/test_prospective_eval.py::test_executor_spaces_dispatch_before_recording_a_new_attempt[False]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "retry_after_recording_bypass",
+      "status": "KILLED",
+      "test": "tests/test_prospective_eval.py::test_rate_limit_hint_is_recorded_without_retrying_the_request",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "explicit_literal_intent_erasure",
+      "status": "KILLED",
+      "test": "tests/test_literal_seed_contract.py::test_public_selector_retrieves_explicit_short_or_filtered_literal",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "local_budget_assumes_additivity",
+      "status": "KILLED",
+      "test": "tests/test_local_budget_experiment.py::test_additive_cost_can_discard_a_passage_that_fits_exactly",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "local_token_cache_changes_text",
+      "status": "KILLED",
+      "test": "tests/test_local_token_budget.py::test_count_cache_is_bounded_disabled_and_isolated_between_tokenizers",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "local_token_cache_bound_bypass",
+      "status": "KILLED",
+      "test": "tests/test_local_token_budget.py::test_count_cache_is_bounded_disabled_and_isolated_between_tokenizers",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "local_tokenizer_keeps_truncation",
+      "status": "KILLED",
+      "test": "tests/test_local_token_budget.py::test_tokenizer_disables_stored_truncation_and_padding",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "local_tokenizer_keeps_padding",
+      "status": "KILLED",
+      "test": "tests/test_local_token_budget.py::test_tokenizer_disables_stored_truncation_and_padding",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "local_tokenizer_allows_dropout",
+      "status": "KILLED",
+      "test": "tests/test_local_token_budget.py::test_stochastic_bpe_dropout_is_refused",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "local_budget_uses_estimate",
+      "status": "KILLED",
+      "test": "tests/test_local_token_budget.py::test_exact_budget_can_admit_a_passage_rejected_by_character_estimates",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "local_budget_final_guard_bypass",
+      "status": "KILLED",
+      "test": "tests/test_local_token_budget.py::test_final_guard_handles_nonadditive_counts_after_edits",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "rival_exact_cost_bypass",
+      "status": "KILLED",
+      "test": "tests/test_rival_reproduction.py::test_exact_pack_counts_full_assembly_and_skips_oversized",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "rival_broadening_erases_query",
+      "status": "KILLED",
+      "test": "tests/test_rival_reproduction.py::test_empty_primary_pool_widens_with_the_original_query",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "rival_source_attribution_bypass",
+      "status": "KILLED",
+      "test": "tests/test_rival_reproduction.py::test_foreign_or_disjoint_span_does_not_get_source_credit",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "isolated_rate_limit_pause_bypass",
+      "status": "KILLED",
+      "test": "tests/test_prospective_eval.py::test_one_rate_limit_pauses_even_when_its_batch_also_succeeds",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "ast_unicode_separator_as_newline",
+      "status": "KILLED",
+      "test": "tests/test_operation_seeds.py::test_unicode_line_separator_inside_a_string_is_not_a_python_newline",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "focused_seed_broadening_bypass",
+      "status": "KILLED",
+      "test": "tests/test_operation_seeds.py::test_empty_focused_seeds_retry_the_original_query",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "ast_byte_offset_as_character_offset",
+      "status": "KILLED",
+      "test": "tests/test_operation_seeds.py::test_static_names_use_byte_correct_literal_query_spans",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "side_index_ownership_read_before_lock",
+      "status": "KILLED",
+      "test": "tests/test_spelling_index.py::test_update_ownership_snapshot_is_taken_under_the_write_lock",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "side_index_parent_guard_bypassed",
+      "status": "KILLED",
+      "test": "tests/test_spelling_index.py::test_stale_index_is_rejected_until_updated",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "side_index_update_skipped",
+      "status": "KILLED",
+      "test": "tests/test_spelling_index.py::test_stale_index_is_rejected_until_updated",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "normalized_control_discarded_search",
+      "status": "KILLED",
+      "test": "tests/test_spelling_index.py::test_normalized_control_does_not_execute_a_discarded_baseline",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "camel_spelling_expansion_erased",
+      "status": "KILLED",
+      "test": "tests/test_identifier_spelling.py::test_compiled_runtime_recovers_an_absent_camel_alias_without_a_model",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "known_compound_vocabulary_guard_bypassed",
+      "status": "KILLED",
+      "test": "tests/test_identifier_spelling.py::test_compiled_runtime_keeps_a_known_compound_and_its_components",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "unit_evidence_reconstruction_bypass",
+      "status": "KILLED",
+      "test": "tests/test_unit_answer_evidence.py::test_live_gate_rejects_changed_evidence[source]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "build_source_erasure",
+      "status": "KILLED",
+      "test": "tests/test_build_source_directory.py::test_build_named_source_is_indexed_updated_and_retrievable[doc/build/orm/session_basics.rst]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "compiled_corpus_substitution",
+      "status": "KILLED",
+      "test": "tests/test_build_source_directory.py::test_valid_artifact_cannot_substitute_for_expected_corpus[True]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "passage_neighbor_disabled",
+      "status": "KILLED",
+      "test": "tests/test_unit_passages.py::test_neighbor_expansion_recovers_the_adjacent_exception",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "boundary_empty_payload",
+      "status": "KILLED",
+      "test": "tests/test_line_anchor_experiment.py::test_one_long_line_cannot_be_claimed_to_meet_a_small_block_cap",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "reuse_duplicate_old_payload",
+      "status": "KILLED",
+      "test": "tests/test_block_reuse_experiment.py::test_reused_rows_match_fresh_spans_indexes_and_queries[prepend]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "source_archive_omission",
+      "status": "KILLED",
+      "test": "tests/test_source_archive.py::test_manifest_files_cannot_be_dropped_by_extension",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "target_comparison_context_bypass",
+      "status": "KILLED",
+      "test": "tests/test_target_control_comparisons.py::test_changed_inputs_cannot_be_counted_as_target_configuration_gains[context_sha256-changed-source]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "target_transport_missing_reward",
+      "status": "KILLED",
+      "test": "tests/test_target_control_comparisons.py::test_missing_answers_cannot_be_reported_as_losses_or_gains",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "replay_counted_as_new_api",
+      "status": "KILLED",
+      "test": "tests/test_answer_record_provenance.py::test_exact_parent_attempts_are_reused_without_new_api_calls[True]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "replay_origin_bypass",
+      "status": "KILLED",
+      "test": "tests/test_answer_record_provenance.py::test_replay_tampering_is_detected[answer]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "raw_usage_authority_bypass",
+      "status": "KILLED",
+      "test": "tests/test_answer_record_provenance.py::test_raw_provider_usage_is_the_token_count_authority[changed_summary]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "whitespace_semantics_erasure",
+      "status": "KILLED",
+      "test": "tests/test_message_transform_preservation.py::test_default_preserves_semantically_significant_repetition_and_spacing[distinct_string_literals]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "message_history_reordering",
+      "status": "KILLED",
+      "test": "tests/test_message_transform_preservation.py::test_default_preserves_semantically_significant_repetition_and_spacing[message_order_and_tool_metadata]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "message_envelope_gate_bypass",
+      "status": "KILLED",
+      "test": "tests/test_message_transform_preservation.py::test_message_envelope_and_history_changes_are_rejected[tool_link]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "unmeasured_transform_claims_preservation",
+      "status": "KILLED",
+      "test": "tests/test_message_transform_preservation.py::test_missing_selection_measurements_do_not_imply_losslessness",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "dependency_identity",
+      "status": "KILLED",
+      "test": "tests/test_safety_invariants.py::test_dependency_expansion_reaches_transitively_connected_block",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "query_erasure",
+      "status": "KILLED",
+      "test": "tests/test_safety_invariants.py::test_planner_routes_the_current_question_to_retrieval",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "fallback_bypass",
+      "status": "KILLED",
+      "test": "tests/test_safety_invariants.py::test_planner_falls_back_when_a_stage_destroys_context",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "budget_override",
+      "status": "KILLED",
+      "test": "tests/test_compiled_contracts.py::test_escalation_does_not_override_explicit_budget",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "missing_query_tripwire",
+      "status": "KILLED",
+      "test": "tests/test_compiled_contracts.py::test_default_query_never_loads_optional_channels",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "integrity_bypass",
+      "status": "KILLED",
+      "test": "tests/test_pack_integrity.py::test_modified_contents_or_indexes_fail_verification[UPDATE manifest SET value='different-source' WHERE key='source_root']",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "class_member_erasure",
+      "status": "KILLED",
+      "test": "tests/test_python_members.py::test_nested_classes_decorators_and_context_keep_exact_source_spans",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "encoder_identity_bypass",
+      "status": "KILLED",
+      "test": "tests/test_pack_encoder_contract.py::test_same_dimensions_do_not_make_different_encoders_compatible",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "embedding_cache_alias",
+      "status": "KILLED",
+      "test": "tests/test_embedding_identity.py::test_text_separator_cannot_alias_a_different_batch",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "unchanged_vector_reuse_bypass",
+      "status": "KILLED",
+      "test": "tests/test_embedding_reuse.py::test_one_changed_method_only_submits_its_new_text",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "insertion_order_lexical_ties",
+      "status": "KILLED",
+      "test": "tests/test_retrieval_order.py::test_equal_scores_use_source_order_after_an_update[lexical]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "incomplete_directory_scan",
+      "status": "KILLED",
+      "test": "tests/test_source_scan_failures.py::test_incomplete_scan_preserves_prior_artifact[directory-update]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "dirty_journal_bypass",
+      "status": "KILLED",
+      "test": "tests/test_pack_encoder_contract.py::test_weights_available_after_unembedded_compile_indexes_all_files",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "cached_verification",
+      "status": "KILLED",
+      "test": "tests/test_incremental_integrity.py::test_full_verifier_does_not_trust_a_cleared_dirty_journal",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "reader_snapshot_bypass",
+      "status": "KILLED",
+      "test": "tests/test_pack_snapshots.py::test_query_cannot_mix_old_candidate_ids_with_a_concurrently_committed_update",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "schema_transaction_bypass",
+      "status": "KILLED",
+      "test": "tests/test_compile_transactions.py::test_all_schema_and_tracking_creation_share_the_build_transaction",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "definition_channel_disabled",
+      "status": "KILLED",
+      "test": "tests/test_definition_channel.py::test_named_definition_outranks_documentation_that_repeats_the_prose",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "definition_ambiguity_cap_ignored",
+      "status": "KILLED",
+      "test": "tests/test_definition_channel.py::test_ambiguous_names_cast_no_vote",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "top_block_trim_disabled",
+      "status": "KILLED",
+      "test": "tests/test_top_block_trim.py::test_top_block_that_cannot_fit_emits_its_best_member",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "test_mate_disabled",
+      "status": "KILLED",
+      "test": "tests/test_test_mate.py::test_mate_follows_top_implementation_block",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "test_mate_deep_ranking_misread",
+      "status": "KILLED",
+      "test": "tests/test_test_mate.py::test_reused_ranking_matches_a_dedicated_query",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "test_mate_paths_never_refreshed",
+      "status": "KILLED",
+      "test": "tests/test_test_mate.py::test_mate_sees_test_files_added_by_an_update",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "credential_screen_bypass",
+      "status": "KILLED",
+      "test": "tests/test_source_boundary.py::test_credential_shaped_source_is_never_published[nvidia-compile]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "credential_update_bypass",
+      "status": "KILLED",
+      "test": "tests/test_source_boundary.py::test_credential_shaped_source_is_never_published[nvidia-update]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "indexed_unsupported_silently_skipped",
+      "status": "KILLED",
+      "test": "tests/test_source_scan_failures.py::test_invalid_utf8_cannot_silently_change_source_meaning",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "unsupported_source_not_reported",
+      "status": "KILLED",
+      "test": "tests/test_source_scan_failures.py::test_initial_compile_reports_and_skips_unindexable_source[nul]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "literal_artifact_uri_bypass",
+      "status": "KILLED",
+      "test": "tests/test_pack_paths.py::test_artifact_path_is_literal_across_compile_query_update_and_verify",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "missing_pack_creation",
+      "status": "KILLED",
+      "test": "tests/test_source_boundary.py::test_missing_pack_update_must_not_create_an_empty_artifact",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "unicode_source_rewrite",
+      "status": "KILLED",
+      "test": "tests/test_source_lines.py::test_compile_update_and_query_preserve_unicode_source_content",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "source_span_verifier_bypass",
+      "status": "KILLED",
+      "test": "tests/test_source_lines.py::test_self_consistent_hashes_do_not_validate_an_impossible_source_span",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "during_read_metadata_bypass",
+      "status": "KILLED",
+      "test": "tests/test_source_boundary.py::test_same_size_change_during_read_cannot_publish_stale_text",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "stored_type_verifier_bypass",
+      "status": "KILLED",
+      "test": "tests/test_pack_storage_types.py::test_blob_block_text_returns_invalid_instead_of_crashing_verification",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "manifest_type_bypass",
+      "status": "KILLED",
+      "test": "tests/test_pack_storage_types.py::test_blob_manifest_is_rejected_before_query_or_verification",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "update_manifest_bypass",
+      "status": "KILLED",
+      "test": "tests/test_pack_storage_types.py::test_blob_manifest_is_rejected_before_query_or_verification",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "connection_setup_leak",
+      "status": "KILLED",
+      "test": "tests/test_pack_storage_types.py::test_writable_setup_error_closes_connection_and_returns_product_error",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "ambiguous_answer_acceptance",
+      "status": "KILLED",
+      "test": "tests/test_repository_eval.py::test_ambiguous_keys_and_non_json_constants_cannot_pass_strict_grading",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "manifest_policy_bypass",
+      "status": "KILLED",
+      "test": "tests/test_pack_manifest_values.py::test_unknown_mode_cannot_silently_enter_a_product_operation",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "manifest_content_bypass",
+      "status": "KILLED",
+      "test": "tests/test_pack_manifest_values.py::test_resealed_invalid_metadata_is_rejected[file_count-99]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "secret_scan_read_failure_bypass",
+      "status": "KILLED",
+      "test": "tests/test_secret_scan_errors.py::test_scan_read_failures_are_visible_without_echoing_values",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "audit_undefined_retention",
+      "status": "KILLED",
+      "test": "tests/test_auditor_contract.py::test_zero_baseline_cannot_report_full_retention[wrong]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "audit_duplicate_identity",
+      "status": "KILLED",
+      "test": "tests/test_auditor_contract.py::test_incomplete_or_ambiguous_evidence_is_rejected[duplicate_usage]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "audit_usage_validation_bypass",
+      "status": "KILLED",
+      "test": "tests/test_auditor_contract.py::test_incomplete_or_ambiguous_evidence_is_rejected[negative_tokens]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "report_observation_bypass",
+      "status": "KILLED",
+      "test": "tests/test_seed_report_contract.py::test_report_rejects_observation_or_answer_forgery",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "unknown_price_fallback",
+      "status": "KILLED",
+      "test": "tests/test_pricing_provenance.py::test_unknown_or_mock_prices_are_absent",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "price_provider_identity",
+      "status": "KILLED",
+      "test": "tests/test_pricing_provenance.py::test_provider_identity_precision_and_signed_savings",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "price_count_validation",
+      "status": "KILLED",
+      "test": "tests/test_pricing_provenance.py::test_invalid_usage_is_rejected_even_without_a_price",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "price_provenance_validation",
+      "status": "KILLED",
+      "test": "tests/test_pricing_provenance.py::test_placeholder_provenance_cannot_be_verified",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "legacy_trace_cost_acceptance",
+      "status": "KILLED",
+      "test": "tests/test_pricing_provenance.py::test_legacy_trace_cost_claims_are_not_accepted_as_evidence",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "runtime_risk_threshold_inversion",
+      "status": "KILLED",
+      "test": "tests/test_pricing_provenance.py::test_runtime_risk_limit_is_not_inverted",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "legacy_default_encoder_probe",
+      "status": "KILLED",
+      "test": "tests/test_optional_client_encoders.py::test_default_client_does_not_probe_an_encoder[selector]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "client_encoder_optin_ignored",
+      "status": "KILLED",
+      "test": "tests/test_optional_client_encoders.py::test_explicit_client_encoder_is_wired_and_isolated[client]",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "legacy_seed_budget_override",
+      "status": "KILLED",
+      "test": "tests/test_legacy_budget_contract.py::test_oversized_seed_requires_fallback_instead_of_budget_override",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "legacy_fallback_misclassified",
+      "status": "KILLED",
+      "test": "tests/test_legacy_budget_contract.py::test_dependency_join_overflow_requires_explicit_fallback",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "legacy_selection_report_bypass",
+      "status": "KILLED",
+      "test": "tests/test_legacy_seed_evidence.py::test_local_selection_report_rejects_tampering",
+      "exit_code": 1,
+      "failure_types": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mutant": "current_query_counted_as_evidence",
+      "status": "KILLED",
+      "test": "tests/test_message_boundary_invariants.py::test_long_separate_query_does_not_hide_deleted_context",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    },
+    {
+      "mutant": "long_query_prefix_erasure",
+      "status": "KILLED",
+      "test": "tests/test_message_boundary_invariants.py::test_mult_paragraph_query_keeps_earlier_constraints",
+      "exit_code": 1,
+      "failure_types": [
+        null
+      ]
+    }
+  ]
+}
