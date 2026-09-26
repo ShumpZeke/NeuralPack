@@ -6,6 +6,7 @@ Do not edit by hand.
 | ID | Date | Title | Status | Reason |
 |---|---|---|---|---|
 | B001 | 2026-09-26 | Standard-RAG baseline: Okapi BM25 over fixed 60-line chunks (whole and split identifiers) | **kept** | Kept as a permanent baseline arm. Held-out (407 issues), fix recall: product 0.230/0.309/0.399/0.475/0.575 vs chunk BM25 0.102/0.146/0.190/0.227/0.262 (+12.8 to +31.4 points) and identifier-split chunk BM25 0.101/0.149/0.217/0.267/0.321 (+12.9 to +25.5); every CI excludes zero. Even the pre-loop product (0.136/0.206/0.302/0.393/0.490) beat both. Tests: split baseline equal at 1-2K, product ahead from 8K (+5.7, +6.6 significant). Docs (33 issues): baseline ahead at 2K (+14.6 split, +21.4 whole; significant), equal from 8K. Dev-fast agrees on fix (+19 to +30 points). Memory-dev at 256-1K is not a fair comparison for 60-line chunks of long chat lines; B002 uses the common ~1,000-character chunker instead. |
+| B002 | 2026-09-26 | Standard-RAG baseline with the common ~1,000-character chunker (identifier-split BM25) | **kept** | Kept as a baseline arm. Code (dev-fast): product fix +23.1/+24.6/+21.8/+19.7/+15.9 points at 1K-16K (all significant); tests within noise (baseline slightly ahead at 1-4K, product at 8-16K); docs (13 tasks) baseline far ahead (0.423 vs 0.000 at 2K). Memory (memory-dev): product +20.6 [+10.6,+30.3] at 256 and +13.9 [+5.0,+23.0] at 512, then 1K-4K within +-1 point and -3.8 (n.s.) at 8K; the semantic/hybrid mode leads at every budget (+25.1/+15.3/+6.0/+3.5/+3.4/+3.3). Documentation retrieval is NeuralPack's main open weakness: small prose units match issue text well, and code-first ranking (definition channel) gives docs up. |
 | E000 | 2026-09-26 | Baseline: product as received on NPK-Bench dev-fast | **kept** | Reference point. Ranking (not packing) is the dominant loss; ~45% of selected tokens are docs/tests; 46/103 snapshots need blocker removal to compile. |
 | E001 | 2026-09-26 | Compile speed: parse Python once, statement-only raise walk, memoized term analysis | **kept** | 1.49x faster (not the >=2x expected: cProfile overstated pure-Python call overhead) with logically identical packs on real Django; kept. |
 | E001b | 2026-09-26 | Cache joined per-word analysis strings in analyzed_text | **rejected** | No measurable gain without the profiler (within noise). Reverted to keep the simpler code. Lesson: confirm profiler-guided micro-optimizations with uninstrumented paired timing. |
@@ -120,6 +121,14 @@ Do not edit by hand.
 ```
 
 - **Decision:** Kept as a permanent baseline arm. Held-out (407 issues), fix recall: product 0.230/0.309/0.399/0.475/0.575 vs chunk BM25 0.102/0.146/0.190/0.227/0.262 (+12.8 to +31.4 points) and identifier-split chunk BM25 0.101/0.149/0.217/0.267/0.321 (+12.9 to +25.5); every CI excludes zero. Even the pre-loop product (0.136/0.206/0.302/0.393/0.490) beat both. Tests: split baseline equal at 1-2K, product ahead from 8K (+5.7, +6.6 significant). Docs (33 issues): baseline ahead at 2K (+14.6 split, +21.4 whole; significant), equal from 8K. Dev-fast agrees on fix (+19 to +30 points). Memory-dev at 256-1K is not a fair comparison for 60-line chunks of long chat lines; B002 uses the common ~1,000-character chunker instead.
+
+## B002 — Standard-RAG baseline with the common ~1,000-character chunker (identifier-split BM25)
+
+- **Status:** kept
+- **Hypothesis:** A fairer baseline for chat text (60-line chunks of long chat lines rarely fit small budgets) and a second code baseline.
+- **Run:** experiments/npkbench/runs/B002-rag-chars-devfast, experiments/npkbench/runs/B002-rag-chars-memory-dev
+- **Decision:** Kept as a baseline arm. Code (dev-fast): product fix +23.1/+24.6/+21.8/+19.7/+15.9 points at 1K-16K (all significant); tests within noise (baseline slightly ahead at 1-4K, product at 8-16K); docs (13 tasks) baseline far ahead (0.423 vs 0.000 at 2K). Memory (memory-dev): product +20.6 [+10.6,+30.3] at 256 and +13.9 [+5.0,+23.0] at 512, then 1K-4K within +-1 point and -3.8 (n.s.) at 8K; the semantic/hybrid mode leads at every budget (+25.1/+15.3/+6.0/+3.5/+3.4/+3.3). Documentation retrieval is NeuralPack's main open weakness: small prose units match issue text well, and code-first ranking (definition channel) gives docs up.
+- **Follow-ups:** Documentation units sized like prose chunks (about 250 tokens) without changing code ranking; must not repeat E018b's code cost
 
 ## E000 — Baseline: product as received on NPK-Bench dev-fast
 

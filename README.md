@@ -31,8 +31,9 @@ Lite and confirmed once on a **held-out** split (SWE-bench Verified minus Lite,
 - **Against a standard RAG pipeline** (same files, budgets and gold; BM25 over fixed
   60-line chunks, filled in score order): NeuralPack finds 1.6-2.1x as many fix sites
   on held-out, and every gap is significant. Regression-test recall is equal at 1-2K and
-  higher from 4K. The baseline finds more documentation at 2K (documentation edits
-  occur in 33 of 407 held-out issues).
+  higher from 4K. The baseline finds more documentation (at 2K: 0.31 vs 0.17 on
+  held-out, where 33 of 407 issues edit docs): NeuralPack ranks code first, and
+  small prose chunks match issue text well. This is the main open weakness.
 - **Definition channel** (default): code identifiers named in the query
   (`Signal.send_robust()`, `django.core.exceptions.ValidationError`) resolve to their
   defining blocks. On the held-out split it adds +5.7 to +10.3 points at every
@@ -66,7 +67,9 @@ Lite and confirmed once on a **held-out** split (SWE-bench Verified minus Lite,
   1K-16K over the default's full text, and regression-test sites +5 to +8 (all
   significant). It is not the default because full-text recall drops 3-5 points.
 - **Conversation memory** (LongMemEval-S, about 120K-token chat histories): 1K tokens of
-  selected context keep 69% of evidence turns and 87% of evidence sessions. For chat
+  selected context keep 69% of evidence turns and 87% of evidence sessions. Against a
+  standard RAG baseline (BM25 over ~1,000-character chunks), turn-level blocks lead by 21
+  and 14 points at 256 and 512 tokens and tie from 1K to 4K. For chat
   histories, compile with `--mode semantic` and query with `--retrieval hybrid` (local
   MiniLM encoder): evidence recall rises from 0.795 to 0.839 at 4K tokens and from 0.838
   to 0.909 at 8K (significant). The biggest gains are on preferences and multi-session
