@@ -43,27 +43,32 @@ have ~20 GB free. Record every experiment with `benchmarks.npkbench.expdb.append
 
 ## Strongest remaining hypotheses (ranked)
 
-State at the time of writing. A single queue runner (`~/npk-data/queue_runner.sh` reading
-`~/npk-data/queue.txt`, one line `WORKDIR|ENV|ARGS` per run) executes runs in order and
-skips any whose `--out` already has `summary.json`. Worktree branches `exp/*` are local
-only; each rejected experiment's patch is saved in its run directory.
+State at the time of writing. The queue runner (`~/npk-data/queue_runner_v2.sh`, reading
+`~/npk-data/queue.txt`, one `WORKDIR|ENV|ARGS` line per run) executes runs in order;
+runs stage into `<out>.partial` (git-ignored) and appear only when complete. Failure
+markers live in `~/npk-data/failed/`. Worktree branches `exp/*` are local only; each
+rejected experiment's patch is saved in its run directory.
 
-1. **Promote E016b (test mate) if H001 confirms it.** H001 is queued last: held-out (407),
-   targets fix/tests/docs, arms `npk_default` (mate on), `npk_nomate`, `npk_notrim`, run
-   from `exp/e016b-test-mate` (it also confirms E005c trimming). Dev-fast: tests +7.0
-   points at 2K, fix change not significant, utility positive at every budget. Merge the
-   worktree branch, add `--no-test-mate` CLI parity, mutation-test the placement.
-2. **Dense for conversation memory.** M004: bge-small pool fusion +6 to +8 points at 2-8K
-   (significant). M006 (queued) measures the shipped `mode="semantic"` +
-   `retrieval="hybrid"` MiniLM path. If it matches, document it as the recommended memory
-   configuration; otherwise add bge pool fusion as an opt-in selector mode for prose/chat packs.
-   E012b (queued) tests dense as one channel for code, where equal-weight fusion hurt (E012).
-3. **Query understanding for the fix target** (queued): E022 prose/code segment channels,
-   E023 import-aware entity extraction (import module paths in reproduction code gave strong
-   definition votes to unrelated `translation()`/`TestCase`; django-11964).
-4. **Memory time windows** (M005, queued; small ceiling: only 3 of 17 parsable questions
-   get a selective window because histories span 10-90 days).
-5. **Held-out confirmation of E017's located gain** (context map).
+Where the product stands (held-out, 407 issues): fix-site recall 0.230/0.309/0.399/0.475/0.575
+at 1K-16K, 1.6-2.1x a standard BM25-over-chunks RAG baseline (B001/B002), confirmed on six
+unseen repositories (O001). Opt-in modes: context map (E017), test mate (E016b), semantic/
+hybrid for chat histories (M006).
+
+1. **Documentation retrieval is the main weakness.** Chunk-BM25 baselines find far more of
+   the documentation maintainers edit (dev-fast 0.42 vs 0.00 at 2K; held-out 0.31 vs 0.17).
+   Code-first ranking (definition channel) gives docs up, and E018b showed that adding docs
+   votes costs code recall. Candidate: prose units sized like chunks (about 250 tokens,
+   paragraph-aligned) for documentation files only, so docs cost less budget without
+   gaining votes; judge with the declared utility, which weights docs 0.087.
+2. **HB01 (running): budget-gated test mate (E016c) and a replication of E002+E005c on
+   `heldout-b`,** with criteria declared in this file before the run.
+3. **MH01 (queued): the semantic/hybrid memory configuration on memory-heldout (370).**
+4. **bge-small as the semantic encoder** (M004 pool fusion was +3.3 points over MiniLM hybrid
+   at 4K on memory-dev): needs CLS pooling and a query prefix in `npk/context/embedding.py`
+   and a new encoder identity; for code it passed the rule only barely (E012b) at a large
+   compile cost.
+5. **Held-out split hygiene:** `heldout` has been used for E002, E005c, E016b and E017
+   confirmations; use `heldout-b` for future confirmations.
 
 Measured non-opportunities (do not re-run without a new idea): a traceback-frame channel
 (the 7 dev-fast tasks whose traceback names a gold file already score 0.86-0.93 from 1K);
