@@ -26,6 +26,7 @@ Do not edit by hand.
 | M001 | 2026-09-26 | Source-diverse packing (per-file score decay) for multi-session memory questions | **rejected** | Turn recall falls 10-16 points: fused RRF scores are nearly flat (1/60..1/120), so any per-file decay reorders almost the whole ranking toward weakly matching fresh sessions. Session coverage rises but evidence turns are lost. |
 | M002 | 2026-09-26 | Relevance-density ordering (fused score / tokens^alpha) before greedy fill | **rejected** | Aggregate gain is a disguised role prior: it comes from LongMemEval's composition (842/896 evidence turns are user turns) and collapses the question type whose evidence is in long assistant turns (1K: 0.833 -> 0.333). Not a default. Pursue finer units for long turns instead. |
 | M003 | 2026-09-26 | Paragraph-level units for long conversation turns (data-level layout test) | **rejected** | Mixed: +1.1/+3.6 at 2K/4K and better session coverage, but -8.9/-1.1/-2.1 at 256/512/1K. Turn-level units stay; no compiler change. |
+| M004 | 2026-09-26 | Dense similarity on conversation memory (pool fusion, bge-small / MiniLM) | **running** | Significant gains on memory-dev (100 questions): bge-small +4.1/+3.4/+4.3/+7.0/+7.7/+5.8 points at 256-8K (CI excludes zero at 2K, 4K, 8K); MiniLM +4.4/+1.4/+1.7/+4.7/+4.4/+4.1 (significant at 4K, 8K). By type (bge): multi-session +8 to +13, single-session-preference +17 to +22, temporal +5 to +13; knowledge-update -3 to -13 at 256-1K. The same fusion hurts code at small budgets (E012), so it cannot be a global default. Productization pending: M006 measures the shipped optional semantic/hybrid mode (MiniLM, whole-corpus channel) on the same questions; E012b tests the one-channel form on code. |
 
 ## E000 — Baseline: product as received on NPK-Bench dev-fast
 
@@ -1137,3 +1138,70 @@ Do not edit by hand.
 ```
 
 - **Decision:** Mixed: +1.1/+3.6 at 2K/4K and better session coverage, but -8.9/-1.1/-2.1 at 256/512/1K. Turn-level units stay; no compiler change.
+
+## M004 — Dense similarity on conversation memory (pool fusion, bge-small / MiniLM)
+
+- **Status:** running
+- **Hypothesis:** Conversation-memory questions are natural-language and paraphrase their evidence (21 of 191 evidence turns at 2K are never retrieved lexically); dense similarity fused with the lexical pool order recovers evidence.
+- **Run:** experiments/npkbench/runs/M004-dense-memory-dev
+- **Results:**
+
+```json
+{
+ "bge_minus_default_ci95": {
+  "1024": [
+   -0.015,
+   0.102
+  ],
+  "2048": [
+   0.028,
+   0.116
+  ],
+  "256": [
+   -0.009,
+   0.095
+  ],
+  "4096": [
+   0.028,
+   0.13
+  ],
+  "512": [
+   -0.044,
+   0.109
+  ],
+  "8192": [
+   0.021,
+   0.101
+  ]
+ },
+ "hunk_recall_256_8K": {
+  "e012_bge": [
+   0.571,
+   0.646,
+   0.73,
+   0.819,
+   0.872,
+   0.895
+  ],
+  "e012_minilm": [
+   0.574,
+   0.626,
+   0.705,
+   0.796,
+   0.839,
+   0.879
+  ],
+  "npk_default": [
+   0.529,
+   0.612,
+   0.688,
+   0.749,
+   0.795,
+   0.838
+  ]
+ }
+}
+```
+
+- **Decision:** Significant gains on memory-dev (100 questions): bge-small +4.1/+3.4/+4.3/+7.0/+7.7/+5.8 points at 256-8K (CI excludes zero at 2K, 4K, 8K); MiniLM +4.4/+1.4/+1.7/+4.7/+4.4/+4.1 (significant at 4K, 8K). By type (bge): multi-session +8 to +13, single-session-preference +17 to +22, temporal +5 to +13; knowledge-update -3 to -13 at 256-1K. The same fusion hurts code at small budgets (E012), so it cannot be a global default. Productization pending: M006 measures the shipped optional semantic/hybrid mode (MiniLM, whole-corpus channel) on the same questions; E012b tests the one-channel form on code.
+- **Follow-ups:** M006: shipped hybrid mode on memory-dev; If a dense form wins memory without hurting code, make it the recommended mode for conversation/prose packs
