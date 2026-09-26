@@ -247,6 +247,9 @@ def split(name: str) -> List[Task]:
     Task membership is decided on the fix target, so both views of a split
     contain the same issues (minus any whose test patch only adds files).
     """
+    if name.startswith("memory"):
+        from . import memory
+        return memory.split(name)
     base, _, target = name.partition(":")
     if target:
         wanted = {t.instance_id for t in split(base)}

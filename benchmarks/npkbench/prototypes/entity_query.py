@@ -213,7 +213,8 @@ def role_adjusted(con, scored: Sequence[Tuple[int, int, float]], factor: float) 
 def select_ranked(con, query: str, *, limit: int = 60, weight: int = 1, defs: bool = False,
                   paths: bool = False, relations: bool = True, max_defs: int = 10,
                   agg_alpha: float = 0.0, agg_k: int = 3, agg_pool: int = 200,
-                  role_factor: float = 1.0, strict: bool = False, qualified: bool = False) -> List[int]:
+                  role_factor: float = 1.0, strict: bool = False, qualified: bool = False,
+                  def_limit: Optional[int] = None, def_k: int = RRF_K) -> List[int]:
     ents = extract_entities(query, strict=strict, qualified=qualified)
     names = ents["names"] if weight > 1 else []
     if agg_alpha > 0 or role_factor != 1.0:
@@ -236,7 +237,7 @@ def select_ranked(con, query: str, *, limit: int = 60, weight: int = 1, defs: bo
         if rel:
             ranks["relation"] = rel
     if defs:
-        d = definition_channel(con, ents["names"], limit, max_defs, lexical_rank)
+        d = definition_channel(con, ents["names"], def_limit or limit, max_defs, lexical_rank)
         if d:
             ranks["definition"] = d
     if paths:
@@ -244,9 +245,10 @@ def select_ranked(con, query: str, *, limit: int = 60, weight: int = 1, defs: bo
         if p:
             ranks["path"] = p
     fused: Dict[int, float] = {}
-    for ordered in ranks.values():
+    for channel, ordered in ranks.items():
+        k = def_k if channel == "definition" else RRF_K
         for rank, block_id in enumerate(ordered):
-            fused[block_id] = fused.get(block_id, 0.0) + 1.0 / (RRF_K + rank)
+            fused[block_id] = fused.get(block_id, 0.0) + 1.0 / (k + rank)
     return sorted(fused, key=lambda b: -fused[b])
 
 
@@ -299,3 +301,9 @@ make_arm("e002_defs_role05", defs=True, role_factor=0.5)
 make_arm("e002_defs_role07", defs=True, role_factor=0.7)
 make_arm("e002_defs_members_role05", compile_options={"python_members": True}, defs=True, role_factor=0.5)
 make_arm("e006_role05_members", compile_options={"python_members": True}, role_factor=0.5)
+
+# --- E002c: reduce displacement of other evidence (both gold targets) ---
+for _n in (3, 5, 10, 20):
+    make_arm(f"e002_deflim{_n}", defs=True, def_limit=_n)
+make_arm("e002_defk120", defs=True, def_k=120)
+make_arm("e002_deflim5_k120", defs=True, def_limit=5, def_k=120)

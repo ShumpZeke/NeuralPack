@@ -109,7 +109,9 @@ def make(name: str, *, threshold: int = 400, keep: int = 2, references: bool = F
                 ranking.append((p, lo, hi, max(1, chars // 4) if i == 0 else 0))
         return ranking
 
-    return register(Arm(name, runner=runner, ranker=ranker))
+    # No tokens-to-find ranker: scoring children for 1,000 candidates per task
+    # costs minutes; budgeted selections are what this prototype must decide.
+    return register(Arm(name, runner=runner))
 
 
 make("e005_cf_k1", keep=1)
@@ -155,12 +157,18 @@ def _python_children(text: str, first_line: int):
 def single_pack_units(task: Task, pack: Path, *, threshold: int, keep: int, limit: int = 60):
     with PackSelector(str(pack), enable_cache=False, candidate_limit=limit) as selector:
         ranked = selector.select(task.query, budget_tokens=10**9, allow_escalation=False).evidence
-    with open_pack(pack) as con:
+    import sqlite3 as _sqlite3
+    # The product reader sets query_only, which forbids temp vocab tables; a
+    # plain read-only URI connection is enough for document frequencies.
+    con = _sqlite3.connect(Path(pack).absolute().as_uri() + "?mode=ro", uri=True)
+    try:
         terms = _lexical_terms(con, task.query)
         total = con.execute("SELECT COUNT(*) FROM blocks").fetchone()[0]
         con.execute("CREATE VIRTUAL TABLE IF NOT EXISTS temp.npk_vocab USING fts5vocab(main, lexical, 'row')")
         marks = ",".join("?" * len(terms)) or "''"
         df = dict(con.execute(f"SELECT term, doc FROM temp.npk_vocab WHERE term IN ({marks})", terms))
+    finally:
+        con.close()
     idf = {t: max(0.0, _math.log((total - df.get(t, 0) + 0.5) / (df.get(t, 0) + 0.5))) for t in terms}
     units = []
     for ev in ranked:
@@ -210,3 +218,59 @@ def make_single(name: str, *, threshold: int = 400, keep: int = 2) -> Arm:
 make_single("e005s_k1", keep=1)
 make_single("e005s_k2", keep=2)
 make_single("e005s_k3", keep=3)
+
+
+
+# ---------------------------------------------------------------------------
+# E005c fit-or-trim: identical ranking and greedy fill, except that a block
+# which no longer fits is replaced by its best-matching children that do fit
+# (instead of being skipped). Whole blocks are never trimmed when they fit.
+# ---------------------------------------------------------------------------
+def make_fit_or_trim(name: str, *, min_block: int = 200, reference: bool = False) -> Arm:
+    def runner(pack: Path, task: Task, budgets: Sequence[int]) -> Dict[int, ArmResult]:
+        fine_pack = packs_mod.pack_path(task, MEMBERS)
+        packs_mod.ensure_pack(task, MEMBERS)
+        started = time.perf_counter()
+        with PackSelector(str(pack), enable_cache=False) as selector:
+            ranked = selector.select(task.query, budget_tokens=10**9, allow_escalation=False).evidence
+        children_cache: Dict[int, list] = {}
+        out = {}
+        with open_pack(fine_pack) as fine:
+            def children(ev, lo, hi):
+                if ev.block_id not in children_cache:
+                    kids = _children(fine, ev.path, lo, hi)
+                    scores = _child_scores(fine, task.query, [k[0] for k in kids])
+                    children_cache[ev.block_id] = sorted(
+                        kids, key=lambda k: (-scores.get(k[0], float("-inf")), k[1]))
+                return children_cache[ev.block_id]
+            for budget in budgets:
+                spans, used, n = [], 0, 0
+                for ev in ranked:
+                    lo, hi = map(int, ev.span.rsplit(":", 1)[1].split("-"))
+                    total = used + len(ev.text) + (2 if n else 0)
+                    if max(1, total // 4) <= budget:
+                        used, n = total, n + 1
+                        spans.append((ev.path, lo, hi))
+                        continue
+                    if len(ev.text) // 4 < min_block:
+                        continue
+                    kids = children(ev, lo, hi)
+                    if len(kids) <= 1:
+                        continue
+                    for kid in kids:  # best first; add each child that still fits
+                        extra = kid[5] + (2 if n else 0)
+                        if reference:
+                            extra += 40  # a one-line pointer to the elided remainder
+                        if max(1, (used + extra) // 4) <= budget:
+                            used, n = used + extra, n + 1
+                            spans.append((ev.path, kid[1], kid[2]))
+                out[budget] = ArmResult(spans, max(1, used // 4) if n else 0,
+                                        (time.perf_counter() - started) * 1000,
+                                        "selected" if n else "fallback_required", n)
+        return out
+
+    return register(Arm(name, runner=runner))
+
+
+make_fit_or_trim("e005c_fit_or_trim")
+make_fit_or_trim("e005c_fit_or_trim_ref", reference=True)

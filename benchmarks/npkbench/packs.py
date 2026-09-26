@@ -41,6 +41,20 @@ def ensure_pack(task: Task, options: Optional[Dict[str, Any]] = None) -> Dict[st
         return json.loads(meta_path.read_text())
     path.parent.mkdir(parents=True, exist_ok=True)
     started = time.perf_counter()
+    if task.repo.startswith("longmemeval/"):
+        # Conversation histories are materialized once and never deleted.
+        from . import memory
+        from npk.pack import compile_pack as _compile
+        t0 = time.perf_counter()
+        stats = _compile(memory.tree(task), path, **(options or {}))
+        meta = {"instance_id": task.instance_id, "fingerprint": compiler_fingerprint(options),
+                "options": options or {}, "export_s": 0.0,
+                "compile_s": round(time.perf_counter() - t0, 3), "pack_bytes": path.stat().st_size,
+                "blockers_removed": {}, "stats": stats.as_dict()}
+        tmp = meta_path.with_suffix(".tmp")
+        tmp.write_text(json.dumps(meta, indent=1, sort_keys=True))
+        tmp.replace(meta_path)
+        return meta
     tree = repos.scratch_tree(task.repo, task.base_commit)
     try:
         export_s = time.perf_counter() - started

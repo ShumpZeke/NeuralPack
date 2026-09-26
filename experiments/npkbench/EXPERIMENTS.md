@@ -10,6 +10,8 @@ Do not edit by hand.
 | E001b | 2026-09-26 | Cache joined per-word analysis strings in analyzed_text | **rejected** | No measurable gain without the profiler (within noise). Reverted to keep the simpler code. Lesson: confirm profiler-guided micro-optimizations with uninstrumented paired timing. |
 | E003 | 2026-09-26 | File-level evidence aggregation (block score + alpha * file top-3 sum) | **rejected** | No significant gain at any budget; alpha 1.0 hurts at 16K. Discarded. File recall even drops at 4K+ (0.524 vs 0.592). |
 | E004 | 2026-09-26 | Skip and report never-indexed unindexable files instead of aborting the build | **kept** | Product can now compile every dev-fast snapshot, with explicit per-file reports and identical retrieval. |
+| E005 | 2026-09-26 | Rank coarse blocks, emit only the best-matching K method-level children of large blocks | **rejected** | Helps only at 1K; loses 5-10 pts at 2K-16K on the fix target: trimming blocks that would have fit drops gold lines (non-top children, class-level lines, class-end insertions) more often than the freed budget recovers. Follow-up E005c trims only blocks that no longer fit. |
+| E006 | 2026-09-26 | Implementation-first role prior (demote tests/docs/examples by a BM25 factor) | **rejected** | Benchmark gaming, confirmed by attack: the fix-target gain is bought by nearly eliminating recall of where maintainers put regression tests (4K: 0.141 -> 0.034). Not a default. Could only return as an explicit caller-declared intent. |
 | E013 | 2026-09-26 | Sibling/near-duplicate collapse (measured before building) | **rejected** | At most 3.1% of selected tokens could be reclaimed on this workload; not worth a new representation now. Revisit for repetitive/vendored corpora or conversation logs. |
 
 ## E000 — Baseline: product as received on NPK-Bench dev-fast
@@ -167,6 +169,130 @@ Do not edit by hand.
 
 - **Tradeoffs:** A file that is already indexed and becomes unindexable still aborts an update (no silent evidence loss). strict=True/--strict restores fail-closed builds. Credential text never reaches the artifact or the report.
 - **Decision:** Product can now compile every dev-fast snapshot, with explicit per-file reports and identical retrieval.
+
+## E005 — Rank coarse blocks, emit only the best-matching K method-level children of large blocks
+
+- **Status:** rejected
+- **Hypothesis:** Gold edits sit in large blocks (median 875 tokens); the gold method is the top-2 lexical child 82% of the time, so emitting children frees budget for more candidates.
+- **Run:** experiments/npkbench/runs/E005-cf-role-devfast-{fix,tests}
+- **Results:**
+
+```json
+{
+ "fix_target_hunk_recall": {
+  "k1": [
+   0.257,
+   0.306,
+   0.34,
+   0.379,
+   0.45
+  ],
+  "k2": [
+   0.299,
+   0.337,
+   0.377,
+   0.426,
+   0.511
+  ],
+  "k2_refs": [
+   0.299,
+   0.333,
+   0.382,
+   0.435,
+   0.502
+  ],
+  "k3": [
+   0.333,
+   0.387,
+   0.416,
+   0.46,
+   0.526
+  ],
+  "product(defs)": [
+   0.285,
+   0.44,
+   0.479,
+   0.523,
+   0.607
+  ]
+ },
+ "prototype_latency_ms_2K": 800,
+ "tests_target_hunk_recall": {
+  "k3": [
+   0.04,
+   0.079,
+   0.155,
+   0.233,
+   0.321
+  ],
+  "product(defs)": [
+   0.035,
+   0.064,
+   0.141,
+   0.24,
+   0.309
+  ]
+ }
+}
+```
+
+- **Decision:** Helps only at 1K; loses 5-10 pts at 2K-16K on the fix target: trimming blocks that would have fit drops gold lines (non-top children, class-level lines, class-end insertions) more often than the freed budget recovers. Follow-up E005c trims only blocks that no longer fit.
+- **Follow-ups:** E005c fit-or-trim (graceful degradation instead of skipping)
+
+## E006 — Implementation-first role prior (demote tests/docs/examples by a BM25 factor)
+
+- **Status:** rejected
+- **Hypothesis:** 57% of baseline tokens go to tests/docs while every fix edits implementation; a soft prior improves localization without dropping anything.
+- **Run:** experiments/npkbench/runs/E005-cf-role-devfast-{fix,tests}
+- **Results:**
+
+```json
+{
+ "budgets": "1K/2K/4K/8K/16K, dev-fast",
+ "fix_target_hunk_recall": {
+  "defs+role0.5": [
+   0.314,
+   0.463,
+   0.552,
+   0.591,
+   0.691
+  ],
+  "no_prior": [
+   0.285,
+   0.44,
+   0.479,
+   0.523,
+   0.607
+  ]
+ },
+ "tests_target_hunk_recall": {
+  "defs+role0.5": [
+   0.015,
+   0.019,
+   0.034,
+   0.044,
+   0.104
+  ],
+  "no_prior": [
+   0.035,
+   0.064,
+   0.141,
+   0.24,
+   0.309
+  ],
+  "role0.5_without_defs": [
+   0.015,
+   0.019,
+   0.029,
+   0.053,
+   0.111
+  ]
+ }
+}
+```
+
+- **Decision:** Benchmark gaming, confirmed by attack: the fix-target gain is bought by nearly eliminating recall of where maintainers put regression tests (4K: 0.141 -> 0.034). Not a default. Could only return as an explicit caller-declared intent.
+- **Follow-ups:** If revisited: caller-declared intent (implementation vs tests), never a silent default
 
 ## E013 — Sibling/near-duplicate collapse (measured before building)
 
