@@ -226,7 +226,8 @@ make_single("e005s_k3", keep=3)
 # which no longer fits is replaced by its best-matching children that do fit
 # (instead of being skipped). Whole blocks are never trimmed when they fit.
 # ---------------------------------------------------------------------------
-def make_fit_or_trim(name: str, *, min_block: int = 200, reference: bool = False) -> Arm:
+def make_fit_or_trim(name: str, *, min_block: int = 200, reference: bool = False,
+                     max_rank: int = 10**9) -> Arm:
     def runner(pack: Path, task: Task, budgets: Sequence[int]) -> Dict[int, ArmResult]:
         fine_pack = packs_mod.pack_path(task, MEMBERS)
         packs_mod.ensure_pack(task, MEMBERS)
@@ -245,14 +246,14 @@ def make_fit_or_trim(name: str, *, min_block: int = 200, reference: bool = False
                 return children_cache[ev.block_id]
             for budget in budgets:
                 spans, used, n = [], 0, 0
-                for ev in ranked:
+                for rank, ev in enumerate(ranked):
                     lo, hi = map(int, ev.span.rsplit(":", 1)[1].split("-"))
                     total = used + len(ev.text) + (2 if n else 0)
                     if max(1, total // 4) <= budget:
                         used, n = total, n + 1
                         spans.append((ev.path, lo, hi))
                         continue
-                    if len(ev.text) // 4 < min_block:
+                    if len(ev.text) // 4 < min_block or rank >= max_rank:
                         continue
                     kids = children(ev, lo, hi)
                     if len(kids) <= 1:
@@ -274,3 +275,76 @@ def make_fit_or_trim(name: str, *, min_block: int = 200, reference: bool = False
 
 make_fit_or_trim("e005c_fit_or_trim")
 make_fit_or_trim("e005c_fit_or_trim_ref", reference=True)
+
+make_fit_or_trim("e005c_fot_r1", max_rank=1)
+make_fit_or_trim("e005c_fot_r3", max_rank=3)
+make_fit_or_trim("e005c_fot_r5", max_rank=5)
+
+
+# Single-pack fit-or-trim: children come from parsing the block itself (what
+# a product version can do without the members pack), scored like e005s.
+def make_fit_or_trim_single(name: str, *, min_block: int = 200, max_rank: int = 10**9) -> Arm:
+    def runner(pack: Path, task: Task, budgets: Sequence[int]) -> Dict[int, ArmResult]:
+        import sqlite3 as _sqlite3
+        started = time.perf_counter()
+        with PackSelector(str(pack), enable_cache=False) as selector:
+            ranked = selector.select(task.query, budget_tokens=10**9, allow_escalation=False).evidence
+        con = _sqlite3.connect(Path(pack).absolute().as_uri() + "?mode=ro", uri=True)
+        try:
+            terms = _lexical_terms(con, task.query)
+            total = con.execute("SELECT COUNT(*) FROM blocks").fetchone()[0]
+            con.execute("CREATE VIRTUAL TABLE IF NOT EXISTS temp.v USING fts5vocab(main, lexical, 'row')")
+            marks = ",".join("?" * len(terms)) or "''"
+            df = dict(con.execute(f"SELECT term, doc FROM temp.v WHERE term IN ({marks})", terms))
+        finally:
+            con.close()
+        idf = {t: max(0.0, _math.log((total - df.get(t, 0) + 0.5) / (df.get(t, 0) + 0.5))) for t in terms}
+        cache: Dict[int, list] = {}
+
+        def children(ev, lo):
+            if ev.block_id not in cache:
+                kids = _python_children(ev.text, lo) if ev.path.endswith(".py") else []
+                lines = ev.text.split("\n")
+                scored = []
+                for k in kids:
+                    body = "\n".join(lines[k[0] - lo:k[1] - lo + 1])
+                    counts: Dict[str, int] = {}
+                    for term in _analyzed_terms(body):
+                        counts[term] = counts.get(term, 0) + 1
+                    n_terms = sum(counts.values()) or 1
+                    score = sum(idf[t] * counts[t] * 2.2 / (counts[t] + 1.2 * (0.25 + 0.75 * n_terms / 200))
+                                for t in terms if t in counts)
+                    scored.append((score, k, len(body)))
+                cache[ev.block_id] = sorted(scored, key=lambda x: (-x[0], x[1][0]))
+            return cache[ev.block_id]
+
+        out = {}
+        for budget in budgets:
+            spans, used, n = [], 0, 0
+            for rank, ev in enumerate(ranked):
+                lo, hi = map(int, ev.span.rsplit(":", 1)[1].split("-"))
+                total_chars = used + len(ev.text) + (2 if n else 0)
+                if max(1, total_chars // 4) <= budget:
+                    used, n = total_chars, n + 1
+                    spans.append((ev.path, lo, hi))
+                    continue
+                if len(ev.text) // 4 < min_block or rank >= max_rank:
+                    continue
+                kids = children(ev, lo)
+                if len(kids) <= 1:
+                    continue
+                for _score, kid, chars in kids:
+                    extra = chars + (2 if n else 0)
+                    if max(1, (used + extra) // 4) <= budget:
+                        used, n = used + extra, n + 1
+                        spans.append((ev.path, kid[0], kid[1]))
+            out[budget] = ArmResult(spans, max(1, used // 4) if n else 0,
+                                    (time.perf_counter() - started) * 1000,
+                                    "selected" if n else "fallback_required", n)
+        return out
+
+    return register(Arm(name, runner=runner))
+
+
+make_fit_or_trim_single("e005d_fots")
+make_fit_or_trim_single("e005d_fots_r3", max_rank=3)

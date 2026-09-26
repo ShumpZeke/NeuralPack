@@ -14,6 +14,7 @@ Do not edit by hand.
 | E006 | 2026-09-26 | Implementation-first role prior (demote tests/docs/examples by a BM25 factor) | **rejected** | Benchmark gaming, confirmed by attack: the fix-target gain is bought by nearly eliminating recall of where maintainers put regression tests (4K: 0.141 -> 0.034). Not a default. Could only return as an explicit caller-declared intent. |
 | E013 | 2026-09-26 | Sibling/near-duplicate collapse (measured before building) | **rejected** | At most 3.1% of selected tokens could be reclaimed on this workload; not worth a new representation now. Revisit for repetitive/vendored corpora or conversation logs. |
 | M000 | 2026-09-26 | Baseline: conversation memory (LongMemEval-S dev, 100 questions) | **kept** | Reference point for the second workload family. Weak spots: multi-session aggregation and implicit preferences. |
+| M001 | 2026-09-26 | Source-diverse packing (per-file score decay) for multi-session memory questions | **rejected** | Turn recall falls 10-16 points: fused RRF scores are nearly flat (1/60..1/120), so any per-file decay reorders almost the whole ranking toward weakly matching fresh sessions. Session coverage rises but evidence turns are lost. |
 
 ## E000 — Baseline: product as received on NPK-Bench dev-fast
 
@@ -359,3 +360,52 @@ Do not edit by hand.
 
 - **Decision:** Reference point for the second workload family. Weak spots: multi-session aggregation and implicit preferences.
 - **Follow-ups:** session-diverse packing for multi-session questions; sub-turn granularity for long assistant turns
+
+## M001 — Source-diverse packing (per-file score decay) for multi-session memory questions
+
+- **Status:** rejected
+- **Hypothesis:** Multi-session questions need evidence from several sessions; decaying a candidate's score by the number of already-selected blocks from its file spreads the budget and raises evidence recall.
+- **Run:** experiments/npkbench/runs/M001-diversity-memory-dev
+- **Results:**
+
+```json
+{
+ "budgets": "256/512/1K/2K/4K/8K",
+ "evidence_structure": "evidence turns adjacent in 6/714 cases; multi-evidence questions span >1 session in 283/297; 842 user vs 54 assistant evidence turns",
+ "session_recall": {
+  "control_1K": 0.868,
+  "control_8K": 0.959,
+  "penalty_0.5_1K": 0.883,
+  "penalty_0.5_8K": 0.995
+ },
+ "turn_recall": {
+  "control": [
+   0.529,
+   0.612,
+   0.688,
+   0.749,
+   0.795,
+   0.838
+  ],
+  "penalty_0.5": [
+   0.509,
+   0.542,
+   0.53,
+   0.583,
+   0.629,
+   0.719
+  ],
+  "penalty_1": [
+   0.509,
+   0.532,
+   0.52,
+   0.555,
+   0.591,
+   0.658
+  ]
+ }
+}
+```
+
+- **Decision:** Turn recall falls 10-16 points: fused RRF scores are nearly flat (1/60..1/120), so any per-file decay reorders almost the whole ranking toward weakly matching fresh sessions. Session coverage rises but evidence turns are lost.
+- **Follow-ups:** If diversity is revisited, apply it on raw BM25 scores with a relevance floor, not on RRF ranks
