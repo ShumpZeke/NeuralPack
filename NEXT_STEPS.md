@@ -43,28 +43,40 @@ have ~20 GB free. Record every experiment with `benchmarks.npkbench.expdb.append
 
 ## Strongest remaining hypotheses (ranked)
 
-In flight at the time of writing (run directories under `experiments/npkbench/runs/`;
-worktree branches `exp/e019-rst-text`, `exp/e018-doc-entities` are local only):
+State at the time of writing. A single queue runner (`~/npk-data/queue_runner.sh` reading
+`~/npk-data/queue.txt`, one line `WORKDIR|ENV|ARGS` per run) executes runs in order and
+skips any whose `--out` already has `summary.json`. Worktree branches `exp/*` are local
+only; each rejected experiment's patch is saved in its run directory.
 
-1. **E012 dense re-ranking** of the product's top-100 pool (MiniLM, bge-small), all targets,
-   and **M004** the same on conversation memory (21 of 191 memory evidence turns at 2K are
-   never retrieved lexically: vocabulary mismatch). If dense wins, the product path is
-   compile-time vectors reused by block hash, not query-time encoding.
-2. **E019 reST in `.txt`:** Django writes its documentation as reST in `.txt`, which the
-   compiler cut into 60-line windows. Splitting by sections gives named, topical blocks
-   (settings.txt: 223 sections instead of 60 windows). Judge on docs *and* code targets.
-3. **E018 documentation channel:** reST object directives (`.. method::`, `.. setting::`,
-   `.. class::` ...) become `documents` symbols; a second definition-style channel resolves
-   named entities to the prose that documents them. Aims to recover the definition
-   channel's docs cost (E015: -9 points at 1K) without demoting anything.
-4. **E016 test-mate** (tests-target recovery by path convention) and **E017 context map**
-   (budget share for a location map; scored by `~loc` rows).
-5. **Held-out confirmation of E005c** (`E005h-trim-heldout`, queued last).
-6. **Update latency on large repositories:** the global digest still rehashes FTS storage.
+1. **Promote E016b (test mate) if H001 confirms it.** H001 is queued last: held-out (407),
+   targets fix/tests/docs, arms `npk_default` (mate on), `npk_nomate`, `npk_notrim`, run
+   from `exp/e016b-test-mate` (it also confirms E005c trimming). Dev-fast: tests +7.0
+   points at 2K, fix change not significant, utility positive at every budget. Merge the
+   worktree branch, add `--no-test-mate` CLI parity, mutation-test the placement.
+2. **Dense for conversation memory.** M004: bge-small pool fusion +6 to +8 points at 2-8K
+   (significant). M006 (queued) measures the shipped `mode="semantic"` +
+   `retrieval="hybrid"` MiniLM path. If it matches, document it as the recommended memory
+   configuration; otherwise add bge pool fusion as an opt-in selector mode for prose/chat packs.
+   E012b (queued) tests dense as one channel for code, where equal-weight fusion hurt (E012).
+3. **Query understanding for the fix target** (queued): E022 prose/code segment channels,
+   E023 import-aware entity extraction (import module paths in reproduction code gave strong
+   definition votes to unrelated `translation()`/`TestCase`; django-11964).
+4. **Memory time windows** (M005, queued; small ceiling: only 3 of 17 parsable questions
+   get a selective window because histories span 10-90 days).
+5. **Held-out confirmation of E017's located gain** (context map).
+
+Measured non-opportunities (do not re-run without a new idea): a traceback-frame channel
+(the 7 dev-fast tasks whose traceback names a gold file already score 0.86-0.93 from 1K);
+module-path mentions (the product already selects the named gold file at 2K in 15 of 20
+cases); an error-message phrase channel (3 of 103 issues quote a message found verbatim in
+a gold file); skipping per-file `realpath` in scans (a test pins resolution-before-read,
+which matters for Windows reparse points; saving ~0.3 s per Django update).
 
 ## Things that were tried and must not be repeated without a new idea
 
-See the rejected entries in EXPERIMENTS.md: file aggregation (E003), coarse→fine
-emission for every large block (E005), role priors (E006), portfolios (E008), callee
-expansion (E009), learned re-ranking over existing channels (E011), sibling collapse
-(E013), diversity/density/paragraph units for conversations (M001-M003).
+See the rejected entries in EXPERIMENTS.md: file aggregation (E003), coarse->fine
+emission for every large block (E005), role priors (E006; docs-3 shows -14 to -40 docs
+points), portfolios (E008), callee expansion (E009), learned re-ranking over existing
+channels (E011), equal-weight dense fusion for code (E012), sibling collapse (E013),
+reST sectioning of `.txt` docs (E019), a documentation channel (E018/E018b: trades code
+for docs), diversity/density/paragraph units for conversations (M001-M003).
