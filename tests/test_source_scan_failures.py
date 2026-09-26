@@ -60,8 +60,10 @@ def test_invalid_utf8_cannot_silently_change_source_meaning(source_pack):
     root,path,pack=source_pack
     before=pack.read_bytes()
     path.write_bytes(b'ACCOUNT = "adm\xffin"\n')
-    with pytest.raises(PackError,match="UTF-8"):
-        update_pack(pack,root)
+    try:update_pack(pack,root)
+    except PackError as error:message=str(error)
+    else:message=None
+    assert message is not None and "UTF-8" in message,"indexed evidence was silently dropped"
     assert pack.read_bytes()==before
 
 
@@ -116,7 +118,9 @@ def test_initial_compile_reports_and_skips_unindexable_source(tmp_path,monkeypat
     assert not strict.exists()
     # The default build indexes everything else and names what it left out.
     pack=tmp_path/"project.npk"
-    stats=compile_pack(root,pack)
+    try:stats=compile_pack(root,pack)
+    except PackError:stats=None
+    assert stats is not None,"one unindexable file aborted the whole build"
     assert stats.skipped_sources==[{"path":"settings.py","reason":reason}]
     assert stats.files_indexed==1 and verify(pack)["ok"]
     import json

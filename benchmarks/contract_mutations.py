@@ -339,8 +339,14 @@ MUTANTS = [
      "tests/test_pack_snapshots.py::test_query_cannot_mix_old_candidate_ids_with_a_concurrently_committed_update"),
     ("schema_transaction_bypass", "npk/pack/compile.py", None, None,
      "tests/test_compile_transactions.py::test_all_schema_and_tracking_creation_share_the_build_transaction"),
-    ("credential_screen_bypass", "npk/pack/source_policy.py", "check_source", "return None",
-     "tests/test_source_boundary.py::test_credential_shaped_source_aborts_without_publication"),
+    ("credential_screen_bypass", "npk/pack/source_policy.py", "credential_kind", "return None",
+     "tests/test_source_boundary.py::test_credential_shaped_source_is_never_published[nvidia-compile]"),
+    ("credential_update_bypass", "npk/pack/source_policy.py", "credential_kind", "return None",
+     "tests/test_source_boundary.py::test_credential_shaped_source_is_never_published[nvidia-update]"),
+    ("indexed_unsupported_silently_skipped", "npk/pack/compile.py", "scan_source", "indexed = set()",
+     "tests/test_source_scan_failures.py::test_invalid_utf8_cannot_silently_change_source_meaning"),
+    ("unsupported_source_not_reported", "npk/pack/compile.py", "scan_source", "skipped = None",
+     "tests/test_source_scan_failures.py::test_initial_compile_reports_and_skips_unindexable_source[nul]"),
     ("literal_artifact_uri_bypass", "npk/pack/format.py", None, None,
      "tests/test_pack_paths.py::test_artifact_path_is_literal_across_compile_query_update_and_verify"),
     ("missing_pack_creation", "npk/pack/format.py", "connect", "create = True",
@@ -564,7 +570,7 @@ def main():
             basetemp = root / "basetemp" / name
             basetemp.mkdir(parents=True, exist_ok=True)
             env = dict(os.environ)
-            env["PYTHONPATH"] = f"{snapshot};{repo / '.venv/Lib/site-packages'}"
+            env["PYTHONPATH"] = os.pathsep.join([str(snapshot), str(repo / '.venv/Lib/site-packages')])
             try:
                 proc = subprocess.run([sys.executable, "-B", "-m", "pytest", test, "-q",
                                        "-p", "no:cacheprovider", f"--basetemp={basetemp}",

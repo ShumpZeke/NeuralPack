@@ -38,9 +38,11 @@ def test_credential_shaped_source_is_never_published(existing,kind,operation):
         assert not pack.with_name('strict.npk').exists()
     else:
         # An indexed file that becomes unindexable must not lose evidence silently.
-        with pytest.raises(PackError,match='credential') as error:
-            update_pack(pack,source)
-        assert value not in str(error.value)
+        try:update_pack(pack,source)
+        except PackError as error:message=str(error)
+        else:message=None
+        assert message is not None and 'credential' in message,'indexed evidence was silently dropped'
+        assert value not in message
         assert pack.read_bytes()==before and verify(pack)['ok']
     assert file.read_text()=='VALUE = '+repr(value)+'\n'
 
