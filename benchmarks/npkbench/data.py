@@ -211,9 +211,54 @@ def _refine(tasks: List[Task], name: str) -> None:
 
 #: Gold targets. ``fix``: lines the reference fix edits (implementation).
 #: ``tests``: lines of existing test files the reference test patch edits,
-#: i.e. where maintainers put the regression test. The same query and pack
-#: serve both, so a selector cannot win one target by ignoring the other.
-TARGETS = ("fix", "tests")
+#: i.e. where maintainers put the regression test. ``docs``: lines of topical
+#: documentation (not release notes) that the maintainers' upstream fix
+#: commit edited. The same query and pack serve every target, so a selector
+#: cannot win one by ignoring another.
+TARGETS = ("fix", "tests", "docs")
+
+RELEASE_NOTES = re.compile(r"(^|/)(releases?|changes?|changelog|whats_?new|news|upcoming_changes)(/|\.|$)"
+                           r"|CHANGES|CHANGELOG|HISTORY", re.I)
+DOC_FILE = re.compile(r"(^|/)(docs?|doc_src)/|\.(rst|md|txt)$")
+
+
+def _git(clone, *args) -> str:
+    import subprocess
+    return subprocess.run(["git", "-C", str(clone), *args], capture_output=True, text=True,
+                          check=True).stdout
+
+
+def _docs_patch(task: "Task") -> Tuple[str, Dict]:
+    """Topical-docs part of the upstream fix commit, valid in base coordinates.
+
+    The upstream commit is the first commit after ``base_commit`` that touches
+    every file of the reference fix. Only documentation files that are
+    unchanged between ``base_commit`` and that commit's parent are kept, so
+    hunk coordinates are exact for the compiled base snapshot.
+    """
+    from .repos import ensure_clone
+
+    clone = ensure_clone(task.repo)
+    head = _git(clone, "rev-parse", "--abbrev-ref", "origin/HEAD").strip() or "origin/main"
+    commits = _git(clone, "log", "--format=%H", "--reverse", f"{task.base_commit}..{head}",
+                   "--", *task.files).split()
+    meta: Dict = {"commit": None, "docs_files": [], "dropped_changed_since_base": []}
+    for commit in commits[:1]:
+        touched = set(_git(clone, "show", "--name-only", "--format=", commit).split())
+        if not set(task.files) <= touched:
+            break
+        meta["commit"] = commit
+        docs = sorted(f for f in touched if DOC_FILE.search(f) and not RELEASE_NOTES.search(f)
+                      and not re.search(r"(^|/)tests?/", f))
+        parent = f"{commit}^"
+        kept = []
+        for f in docs:
+            unchanged = not _git(clone, "diff", "--name-only", task.base_commit, parent, "--", f).strip()
+            (kept if unchanged else meta["dropped_changed_since_base"]).append(f)
+        meta["docs_files"] = kept
+        if kept:
+            return _git(clone, "show", "--format=", commit, "--", *kept), meta
+    return "", meta
 
 
 def load(name: str, target: str = "fix") -> List[Task]:
@@ -223,8 +268,21 @@ def load(name: str, target: str = "fix") -> List[Task]:
         raise ValueError(f"unknown target {target!r}")
     rows = pq.read_table(download(name)).to_pylist()
     tasks = []
+    docs_cache: Dict[str, list] = {}
+    docs_cache_path = HOME / "gold" / f"{name}-docs-patches-{BENCH_VERSION}.json"
+    if target == "docs" and docs_cache_path.exists():
+        import json
+        docs_cache = json.loads(docs_cache_path.read_text())
     for row in rows:
-        hunks, new_files = parse_patch(row["patch" if target == "fix" else "test_patch"])
+        if target == "docs":
+            fix_hunks, _ = parse_patch(row["patch"])
+            probe = Task(row["instance_id"], row["repo"], row["base_commit"], "", fix_hunks)
+            if row["instance_id"] not in docs_cache:
+                patch, meta = _docs_patch(probe)
+                docs_cache[row["instance_id"]] = [patch, meta]
+            hunks, new_files = parse_patch(docs_cache[row["instance_id"]][0])
+        else:
+            hunks, new_files = parse_patch(row["patch" if target == "fix" else "test_patch"])
         if not hunks:
             continue  # e.g. a test patch that only adds new files
         tasks.append(Task(
@@ -232,6 +290,10 @@ def load(name: str, target: str = "fix") -> List[Task]:
             query=row["problem_statement"], hunks=hunks, created_at=row["created_at"],
             source=name, new_files=new_files,
         ))
+    if target == "docs":
+        import json
+        docs_cache_path.parent.mkdir(parents=True, exist_ok=True)
+        docs_cache_path.write_text(json.dumps(docs_cache, sort_keys=True))
     _refine(tasks, name if target == "fix" else f"{name}-{target}")
     return tasks
 

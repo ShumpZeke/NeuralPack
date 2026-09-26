@@ -8,6 +8,7 @@ Do not edit by hand.
 | E000 | 2026-09-26 | Baseline: product as received on NPK-Bench dev-fast | **kept** | Reference point. Ranking (not packing) is the dominant loss; ~45% of selected tokens are docs/tests; 46/103 snapshots need blocker removal to compile. |
 | E001 | 2026-09-26 | Compile speed: parse Python once, statement-only raise walk, memoized term analysis | **kept** | 1.49x faster (not the >=2x expected: cProfile overstated pure-Python call overhead) with logically identical packs on real Django; kept. |
 | E001b | 2026-09-26 | Cache joined per-word analysis strings in analyzed_text | **rejected** | No measurable gain without the profiler (within noise). Reverted to keep the simpler code. Lesson: confirm profiler-guided micro-optimizations with uninstrumented paired timing. |
+| E002 | 2026-09-26 | Definition channel: identifiers a query names resolve to their defining blocks (held-out confirmed) | **kept** | Largest confirmed improvement: +5.7 to +10.3 points of held-out fix-target recall at every budget and +18.8 points of file recall at 2K, about 3x the tests-target cost; the two-target mean improves at every budget. Kept as default with the tradeoff documented. |
 | E003 | 2026-09-26 | File-level evidence aggregation (block score + alpha * file top-3 sum) | **rejected** | No significant gain at any budget; alpha 1.0 hurts at 16K. Discarded. File recall even drops at 4K+ (0.524 vs 0.592). |
 | E004 | 2026-09-26 | Skip and report never-indexed unindexable files instead of aborting the build | **kept** | Product can now compile every dev-fast snapshot, with explicit per-file reports and identical retrieval. |
 | E005 | 2026-09-26 | Rank coarse blocks, emit only the best-matching K method-level children of large blocks | **rejected** | Helps only at 1K; loses 5-10 pts at 2K-16K on the fix target: trimming blocks that would have fit drops gold lines (non-top children, class-level lines, class-end insertions) more often than the freed budget recovers. Follow-up E005c trims only blocks that no longer fit. |
@@ -112,6 +113,85 @@ Do not edit by hand.
 ```
 
 - **Decision:** No measurable gain without the profiler (within noise). Reverted to keep the simpler code. Lesson: confirm profiler-guided micro-optimizations with uninstrumented paired timing.
+
+## E002 — Definition channel: identifiers a query names resolve to their defining blocks (held-out confirmed)
+
+- **Status:** kept
+- **Hypothesis:** Issue text names the code it concerns; resolving code-like identifiers against the definition-only symbol index and fusing their defining blocks into RRF ranks the definition above documentation and tests that repeat the prose.
+- **Run:** experiments/npkbench/runs/E002H-heldout (heldout, 407 tasks); dev-fast runs E000b/E002b/E005
+- **Commit:** b9f4732
+- **Files changed:** `npk/pack/select.py`, `tests/test_definition_channel.py`, `tests/test_compiled_contracts.py`
+- **Results:**
+
+```json
+{
+ "dev_fast_fix": {
+  "defs": [
+   0.285,
+   0.44,
+   0.479,
+   0.523,
+   0.607
+  ],
+  "no_defs": [
+   0.209,
+   0.301,
+   0.408,
+   0.474,
+   0.544
+  ]
+ },
+ "heldout_fix_file_recall_2K": {
+  "defs": 0.538,
+  "no_defs": 0.35
+ },
+ "heldout_fix_hunk_recall_1K_2K_4K_8K_16K": {
+  "defs": [
+   0.193,
+   0.309,
+   0.399,
+   0.475,
+   0.575
+  ],
+  "no_defs": [
+   0.136,
+   0.206,
+   0.302,
+   0.393,
+   0.49
+  ]
+ },
+ "heldout_fix_paired": {
+  "16K": "+0.086 CI [+0.059,+0.115] wins 51 losses 11",
+  "2K": "+0.103 CI [+0.071,+0.136] wins 66 losses 13"
+ },
+ "heldout_tests_hunk_recall": {
+  "defs": [
+   0.058,
+   0.105,
+   0.149,
+   0.22,
+   0.287
+  ],
+  "no_defs": [
+   0.082,
+   0.138,
+   0.183,
+   0.265,
+   0.324
+  ]
+ },
+ "heldout_tests_paired": {
+  "2K": "-0.033 CI [-0.055,-0.012] wins 9 losses 32"
+ },
+ "note": "The held-out run straddled the output-identical E014 scanner change (two fingerprints; equality verified), so fingerprints_stable=false is expected.",
+ "parameter_sweep": "ambiguity cap 3-25, strict/qualified extraction, channel length caps and half weight: within noise or pure fix->tests transfer"
+}
+```
+
+- **Tradeoffs:** Significant loss on the tests target (-2.4 to -4.5 points held-out): definition blocks displace test blocks. enable_definitions=False restores the old ranking.
+- **Decision:** Largest confirmed improvement: +5.7 to +10.3 points of held-out fix-target recall at every budget and +18.8 points of file recall at 2K, about 3x the tests-target cost; the two-target mean improves at every budget. Kept as default with the tradeoff documented.
+- **Follow-ups:** E016: recover the tests-target loss structurally (test-mate of the top implementation file)
 
 ## E003 — File-level evidence aggregation (block score + alpha * file top-3 sum)
 
