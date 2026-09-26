@@ -25,7 +25,7 @@ Lite and confirmed once on a **held-out** split (SWE-bench Verified minus Lite,
 | Held-out, fix locations found (hunk recall) | 1K | 2K | 4K | 8K | 16K |
 |---|---:|---:|---:|---:|---:|
 | Before this loop's retrieval changes | 0.136 | 0.206 | 0.302 | 0.393 | 0.490 |
-| **Current default** (definition channel) | **0.193** | **0.309** | **0.399** | **0.475** | **0.575** |
+| **Current default** (definition channel + top-block trimming) | **0.230** | **0.309** | **0.399** | **0.475** | **0.575** |
 
 - **Definition channel** (default): code identifiers named in the query
   (`Signal.send_robust()`, `django.core.exceptions.ValidationError`) resolve to their
@@ -35,8 +35,15 @@ Lite and confirmed once on a **held-out** split (SWE-bench Verified minus Lite,
   to 4.5 points. Pass `enable_definitions=False` to disable it.
 - **Top-block trimming** (default): if the best candidate alone exceeds the budget,
   NeuralPack emits its most relevant methods (exact source lines with their own spans)
-  instead of dropping it. On dev this adds +13.9 / +7.3 points at 512 / 1K tokens, and
-  selections are identical at 2K and above. Pass `enable_trim=False` to disable it.
+  instead of dropping it. On dev this adds +13.9 / +7.3 points at 512 / 1K tokens;
+  held-out confirms +3.8 points at 1K, and selections are identical at 2K and above.
+  Pass `enable_trim=False` to disable it.
+- **Test mate** (opt-in, `enable_test_mate=True` / `--test-mate`): places the best
+  query-matching block of the test file that mirrors the top implementation file
+  (`pkg/mod.py` -> `tests/.../test_mod.py`) right after it. On held-out, recall of where
+  maintainers put the regression test rises +1.1 / +3.8 / +4.5 / +3.6 / +1.7 points at
+  1K-16K (all significant). Fix-site recall falls 0.3-1.4 points, which is why it is
+  opt-in: at 1K the trade is exactly even.
 - **Robust ingestion:** as received, 46 of 103 benchmark snapshots failed to compile
   because a single binary, non-UTF-8, or credential-like file aborted the build (for
   example, every Django snapshot). Files that were never indexed are now skipped and
@@ -47,8 +54,9 @@ Lite and confirmed once on a **held-out** split (SWE-bench Verified minus Lite,
 - **Context map** (opt-in, `select(map_share=0.25)` / `--map-share 0.25`): a quarter of
   the budget lists further ranked places (`path:start-end kind name`) without their text.
   For callers that can open files, a 25% map at 2K locates as many fix sites as full text
-  does at 4K (dev: +4 to +11 points of located recall at every budget). It is not the
-  default because full-text recall drops 3-6 points.
+  does at 4K. Held-out: located fix recall +9.6 / +12.3 / +13.0 / +11.4 / +7.2 points at
+  1K-16K over the default's full text, and regression-test sites +5 to +8 (all
+  significant). It is not the default because full-text recall drops 3-5 points.
 - **Conversation memory** (LongMemEval-S, about 120K-token chat histories): 1K tokens of
   selected context keep 69% of evidence turns and 87% of evidence sessions. For chat
   histories, compile with `--mode semantic` and query with `--retrieval hybrid` (local
