@@ -11,10 +11,16 @@ Do not edit by hand.
 | E003 | 2026-09-26 | File-level evidence aggregation (block score + alpha * file top-3 sum) | **rejected** | No significant gain at any budget; alpha 1.0 hurts at 16K. Discarded. File recall even drops at 4K+ (0.524 vs 0.592). |
 | E004 | 2026-09-26 | Skip and report never-indexed unindexable files instead of aborting the build | **kept** | Product can now compile every dev-fast snapshot, with explicit per-file reports and identical retrieval. |
 | E005 | 2026-09-26 | Rank coarse blocks, emit only the best-matching K method-level children of large blocks | **rejected** | Helps only at 1K; loses 5-10 pts at 2K-16K on the fix target: trimming blocks that would have fit drops gold lines (non-top children, class-level lines, class-end insertions) more often than the freed budget recovers. Follow-up E005c trims only blocks that no longer fit. |
+| E005c | 2026-09-26 | Fit-or-trim for the top-ranked block only (emit its best member spans when the whole block does not fit) | **inconclusive** | Strict improvement in the prototype (+8.2 points at 1K on the fix target, identical selections at 2K-16K), but it needs member spans that match the python_members splitter; re-parsing at query time is much weaker (0.298). Worth productizing with compile-time member spans (metadata only, no text duplication). |
 | E006 | 2026-09-26 | Implementation-first role prior (demote tests/docs/examples by a BM25 factor) | **rejected** | Benchmark gaming, confirmed by attack: the fix-target gain is bought by nearly eliminating recall of where maintainers put regression tests (4K: 0.141 -> 0.034). Not a default. Could only return as an explicit caller-declared intent. |
+| E008 | 2026-09-26 | Role portfolio: per-role budget shares (impl/tests/docs), soft shares, pure test reservation | **rejected** | Attack by decomposition: the arms that improve both targets do so by demoting documentation, which NPK-Bench cannot falsify (it has no documentation target); giving docs 10-20% removes most of the gain, and a pure test reservation only transfers recall from fix to tests (two-target mean within noise). Hard shares also lose 10 points at 1K. Not promoted. |
+| E009 | 2026-09-26 | Callee expansion from named-definition seeds | **rejected** | Fix-target changes stay within +/-2 points (noise at n=103) and the tests target loses up to 5.5 points. Precise seeds do not rescue graph expansion here; gold is mostly named or lexically matched directly. |
+| E010 | 2026-09-26 | Drop very-high-document-frequency terms from long queries | **inconclusive** | ~3x faster lexical stage for long queries with fix-target recall within noise, but up to -3 points on the tests target at 16K. Latency is not a bottleneck at this scale (~30 ms uncontended); not promoted. Revisit for interactive/agent loops on very large repositories. |
 | E013 | 2026-09-26 | Sibling/near-duplicate collapse (measured before building) | **rejected** | At most 3.1% of selected tokens could be reclaimed on this workload; not worth a new representation now. Revisit for repetitive/vendored corpora or conversation logs. |
 | M000 | 2026-09-26 | Baseline: conversation memory (LongMemEval-S dev, 100 questions) | **kept** | Reference point for the second workload family. Weak spots: multi-session aggregation and implicit preferences. |
 | M001 | 2026-09-26 | Source-diverse packing (per-file score decay) for multi-session memory questions | **rejected** | Turn recall falls 10-16 points: fused RRF scores are nearly flat (1/60..1/120), so any per-file decay reorders almost the whole ranking toward weakly matching fresh sessions. Session coverage rises but evidence turns are lost. |
+| M002 | 2026-09-26 | Relevance-density ordering (fused score / tokens^alpha) before greedy fill | **rejected** | Aggregate gain is a disguised role prior: it comes from LongMemEval's composition (842/896 evidence turns are user turns) and collapses the question type whose evidence is in long assistant turns (1K: 0.833 -> 0.333). Not a default. Pursue finer units for long turns instead. |
+| M003 | 2026-09-26 | Paragraph-level units for long conversation turns (data-level layout test) | **rejected** | Mixed: +1.1/+3.6 at 2K/4K and better session coverage, but -8.9/-1.1/-2.1 at 256/512/1K. Turn-level units stay; no compiler change. |
 
 ## E000 — Baseline: product as received on NPK-Bench dev-fast
 
@@ -241,6 +247,67 @@ Do not edit by hand.
 - **Decision:** Helps only at 1K; loses 5-10 pts at 2K-16K on the fix target: trimming blocks that would have fit drops gold lines (non-top children, class-level lines, class-end insertions) more often than the freed budget recovers. Follow-up E005c trims only blocks that no longer fit.
 - **Follow-ups:** E005c fit-or-trim (graceful degradation instead of skipping)
 
+## E005c — Fit-or-trim for the top-ranked block only (emit its best member spans when the whole block does not fit)
+
+- **Status:** inconclusive
+- **Hypothesis:** Trimming hurts when a block would have fit; restricting it to a top-ranked block that cannot fit at all is graceful degradation with no downside.
+- **Run:** experiments/npkbench/runs/E005d-fit-or-trim-devfast-{fix,tests}
+- **Results:**
+
+```json
+{
+ "fix": {
+  "fot_all_ranks": [
+   0.341,
+   0.409,
+   0.464,
+   0.527,
+   0.597
+  ],
+  "fot_rank1": [
+   0.367,
+   0.44,
+   0.479,
+   0.523,
+   0.607
+  ],
+  "product": [
+   0.285,
+   0.44,
+   0.479,
+   0.523,
+   0.607
+  ],
+  "single_pack_rank3": [
+   0.298,
+   0.414,
+   0.479,
+   0.523,
+   0.607
+  ]
+ },
+ "tests": {
+  "fot_rank1": [
+   0.04,
+   0.064,
+   0.141,
+   0.24,
+   0.309
+  ],
+  "product": [
+   0.035,
+   0.064,
+   0.141,
+   0.24,
+   0.309
+  ]
+ }
+}
+```
+
+- **Decision:** Strict improvement in the prototype (+8.2 points at 1K on the fix target, identical selections at 2K-16K), but it needs member spans that match the python_members splitter; re-parsing at query time is much weaker (0.298). Worth productizing with compile-time member spans (metadata only, no text duplication).
+- **Follow-ups:** Store member spans per large Python block at compile time; trim only the top-ranked non-fitting block
+
 ## E006 — Implementation-first role prior (demote tests/docs/examples by a BM25 factor)
 
 - **Status:** rejected
@@ -295,6 +362,197 @@ Do not edit by hand.
 
 - **Decision:** Benchmark gaming, confirmed by attack: the fix-target gain is bought by nearly eliminating recall of where maintainers put regression tests (4K: 0.141 -> 0.034). Not a default. Could only return as an explicit caller-declared intent.
 - **Follow-ups:** If revisited: caller-declared intent (implementation vs tests), never a silent default
+
+## E008 — Role portfolio: per-role budget shares (impl/tests/docs), soft shares, pure test reservation
+
+- **Status:** rejected
+- **Hypothesis:** Baseline role mix is lexical accident; explicit shares filled in fused rank order improve both the fix and the tests target.
+- **Run:** experiments/npkbench/runs/E008-portfolio-*, E008b-soft-portfolio-*, E008c-test-reservation-devfast
+- **Results:**
+
+```json
+{
+ "hard_shares_i70_t30_d0_fix_1K": 0.184,
+ "product_fix": [
+  0.285,
+  0.44,
+  0.479,
+  0.523,
+  0.607
+ ],
+ "product_tests": [
+  0.035,
+  0.064,
+  0.141,
+  0.24,
+  0.309
+ ],
+ "pure_test_reservation_40": {
+  "fix": [
+   0.278,
+   0.396,
+   0.453,
+   0.508,
+   0.568
+  ],
+  "tests": [
+   0.055,
+   0.146,
+   0.216,
+   0.287,
+   0.363
+  ]
+ },
+ "soft_i60_t30_d10": {
+  "fix": [
+   0.278,
+   0.392,
+   0.472,
+   0.534,
+   0.596
+  ],
+  "tests": [
+   0.044,
+   0.119,
+   0.172,
+   0.273,
+   0.34
+  ]
+ },
+ "soft_i60_t40_d0": {
+  "fix": [
+   0.288,
+   0.396,
+   0.492,
+   0.544,
+   0.6
+  ],
+  "tests": [
+   0.061,
+   0.156,
+   0.216,
+   0.289,
+   0.363
+  ]
+ }
+}
+```
+
+- **Decision:** Attack by decomposition: the arms that improve both targets do so by demoting documentation, which NPK-Bench cannot falsify (it has no documentation target); giving docs 10-20% removes most of the gain, and a pure test reservation only transfers recall from fix to tests (two-target mean within noise). Hard shares also lose 10 points at 1K. Not promoted.
+- **Follow-ups:** A documentation-target workload is needed before any docs demotion can be evaluated honestly
+
+## E009 — Callee expansion from named-definition seeds
+
+- **Status:** rejected
+- **Hypothesis:** Bugs often live one call away from the API an issue names; a channel of unambiguous definitions called by the top definition-channel seeds ranks gold that lexical and definition channels miss.
+- **Run:** experiments/npkbench/runs/E009-callee-devfast-{fix,tests}
+- **Results:**
+
+```json
+{
+ "fix": {
+  "product": [
+   0.285,
+   0.44,
+   0.479,
+   0.523,
+   0.607
+  ],
+  "seeds3": [
+   0.275,
+   0.43,
+   0.484,
+   0.532,
+   0.617
+  ],
+  "seeds5_k120": [
+   0.275,
+   0.43,
+   0.479,
+   0.542,
+   0.617
+  ]
+ },
+ "tests": {
+  "product": [
+   0.035,
+   0.064,
+   0.141,
+   0.24,
+   0.309
+  ],
+  "seeds3": [
+   0.035,
+   0.059,
+   0.134,
+   0.185,
+   0.274
+  ]
+ }
+}
+```
+
+- **Decision:** Fix-target changes stay within +/-2 points (noise at n=103) and the tests target loses up to 5.5 points. Precise seeds do not rescue graph expansion here; gold is mostly named or lexically matched directly.
+
+## E010 — Drop very-high-document-frequency terms from long queries
+
+- **Status:** inconclusive
+- **Hypothesis:** Common OR-terms make most blocks match (58% on Django) while contributing near-zero IDF; pruning them speeds up long queries without changing rankings much.
+- **Run:** experiments/npkbench/runs/E010-dfprune-devfast-{fix,tests}
+- **Results:**
+
+```json
+{
+ "fix": {
+  "all": [
+   0.285,
+   0.44,
+   0.479,
+   0.523,
+   0.607
+  ],
+  "df5": [
+   0.285,
+   0.426,
+   0.479,
+   0.524,
+   0.605
+  ]
+ },
+ "lexical_stage_ms_p50_p95_under_load": {
+  "all_terms": [
+   62.0,
+   230.0
+  ],
+  "df<=10%": [
+   29.8,
+   131.8
+  ],
+  "df<=5%": [
+   21.1,
+   80.0
+  ]
+ },
+ "tests": {
+  "all": [
+   0.035,
+   0.064,
+   0.141,
+   0.24,
+   0.309
+  ],
+  "df5": [
+   0.041,
+   0.055,
+   0.128,
+   0.244,
+   0.279
+  ]
+ }
+}
+```
+
+- **Decision:** ~3x faster lexical stage for long queries with fix-target recall within noise, but up to -3 points on the tests target at 16K. Latency is not a bottleneck at this scale (~30 ms uncontended); not promoted. Revisit for interactive/agent loops on very large repositories.
 
 ## E013 — Sibling/near-duplicate collapse (measured before building)
 
@@ -409,3 +667,100 @@ Do not edit by hand.
 
 - **Decision:** Turn recall falls 10-16 points: fused RRF scores are nearly flat (1/60..1/120), so any per-file decay reorders almost the whole ranking toward weakly matching fresh sessions. Session coverage rises but evidence turns are lost.
 - **Follow-ups:** If diversity is revisited, apply it on raw BM25 scores with a relevance floor, not on RRF ranks
+
+## M002 — Relevance-density ordering (fused score / tokens^alpha) before greedy fill
+
+- **Status:** rejected
+- **Hypothesis:** Conversation evidence sits in short user turns (median 80 tokens) while long assistant turns (p90 632) consume small budgets; preferring compact candidates raises evidence recall.
+- **Run:** experiments/npkbench/runs/M002-density-memory-dev
+- **Results:**
+
+```json
+{
+ "budgets": "256/512/1K/2K/4K/8K",
+ "single_session_assistant_turn_recall": {
+  "alpha_0.25": [
+   0.083,
+   0.083,
+   0.333,
+   0.667,
+   0.75,
+   0.917
+  ],
+  "control": [
+   0.083,
+   0.5,
+   0.833,
+   0.833,
+   0.917,
+   0.917
+  ]
+ },
+ "turn_recall": {
+  "alpha_0.25": [
+   0.495,
+   0.661,
+   0.763,
+   0.842,
+   0.864,
+   0.884
+  ],
+  "alpha_0.5": [
+   0.413,
+   0.607,
+   0.726,
+   0.804,
+   0.864,
+   0.884
+  ],
+  "control": [
+   0.529,
+   0.612,
+   0.688,
+   0.749,
+   0.795,
+   0.838
+  ]
+ }
+}
+```
+
+- **Decision:** Aggregate gain is a disguised role prior: it comes from LongMemEval's composition (842/896 evidence turns are user turns) and collapses the question type whose evidence is in long assistant turns (1K: 0.833 -> 0.333). Not a default. Pursue finer units for long turns instead.
+- **Follow-ups:** paragraph-level splitting of long sections (keeps assistant evidence retrievable)
+
+## M003 — Paragraph-level units for long conversation turns (data-level layout test)
+
+- **Status:** rejected
+- **Hypothesis:** Long assistant turns waste small budgets; one block per paragraph (turns > 1,200 chars) keeps assistant evidence retrievable without a length prior.
+- **Run:** experiments/npkbench/runs/M003-paragraph-units-memory-dev
+- **Results:**
+
+```json
+{
+ "budgets": "256/512/1K/2K/4K/8K",
+ "session_recall_1K": {
+  "paragraph_units": 0.901,
+  "turn_units": 0.868
+ },
+ "turn_recall": {
+  "paragraph_units": [
+   0.44,
+   0.601,
+   0.667,
+   0.76,
+   0.831,
+   0.838
+  ],
+  "turn_units": [
+   0.529,
+   0.612,
+   0.688,
+   0.749,
+   0.795,
+   0.838
+  ]
+ }
+}
+```
+
+- **Decision:** Mixed: +1.1/+3.6 at 2K/4K and better session coverage, but -8.9/-1.1/-2.1 at 256/512/1K. Turn-level units stay; no compiler change.

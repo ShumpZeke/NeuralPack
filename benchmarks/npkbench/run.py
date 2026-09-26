@@ -36,36 +36,49 @@ def _job(args) -> Dict[str, Any]:
     import warnings
     # Repository source can contain invalid escapes; ast.parse warns per file.
     warnings.simplefilter("ignore", SyntaxWarning)
-    task, arm_names, budgets, extra_modules = args
+    task, arm_names, budgets, extra_modules, extra_targets, ephemeral = args
     _load_experimental_arms(extra_modules)
     out: Dict[str, Any] = {"instance_id": task.instance_id, "rows": [], "ranks": [], "builds": [], "errors": []}
+    created: List[Any] = []
+    # Selection never sees gold, so one selection is scored against every
+    # target: rows for an extra target carry the arm name "<arm>@<target>".
+    scored = [("", task)] + [(f"@{name}", t) for name, t in extra_targets]
     for name in arm_names:
         arm = arms_mod.get(name)
         try:
+            pack = packs.pack_path(task, arm.compile_options)
+            existed = pack.exists()
             meta = packs.ensure_pack(task, arm.compile_options)
+            if not existed:
+                created.append(pack)
             if meta not in out["builds"]:
                 out["builds"].append(meta)
-            pack = packs.pack_path(task, arm.compile_options)
             results = arm.run(pack, task, budgets)
-            for budget, res in results.items():
-                row = {"instance_id": task.instance_id, "repo": task.repo, "arm": name,
-                       "budget": budget, "tokens": res.tokens, "latency_ms": round(res.latency_ms, 3),
-                       "status": res.status, "n_blocks": res.n_blocks}
-                row.update(metrics.score(task, res.spans))
-                row["spans"] = [list(x) for x in res.spans]
-                if res.extra:
-                    row["extra"] = res.extra
-                out["rows"].append(row)
+            for suffix, target in scored:
+                for budget, res in results.items():
+                    row = {"instance_id": task.instance_id, "repo": task.repo, "arm": name + suffix,
+                           "budget": budget, "tokens": res.tokens, "latency_ms": round(res.latency_ms, 3),
+                           "status": res.status, "n_blocks": res.n_blocks}
+                    row.update(metrics.score(target, res.spans))
+                    row["spans"] = [list(x) for x in res.spans]
+                    if res.extra:
+                        row["extra"] = res.extra
+                    out["rows"].append(row)
             ranking = arm.ranking(pack, task)
             if ranking is not None:
-                rank = {"instance_id": task.instance_id, "repo": task.repo, "arm": name,
-                        "candidates": len(ranking)}
-                rank.update(metrics.tokens_to_find(task, ranking))
-                out["ranks"].append(rank)
+                for suffix, target in scored:
+                    rank = {"instance_id": task.instance_id, "repo": task.repo, "arm": name + suffix,
+                            "candidates": len(ranking)}
+                    rank.update(metrics.tokens_to_find(target, ranking))
+                    out["ranks"].append(rank)
         except Exception as exc:  # recorded per task; never silently dropped
             out["errors"].append({"instance_id": task.instance_id, "arm": name,
                                   "error": f"{type(exc).__name__}: {exc}",
                                   "traceback": traceback.format_exc(limit=6)})
+    if ephemeral:
+        for pack in created:
+            pack.unlink(missing_ok=True)
+            pack.with_suffix(".json").unlink(missing_ok=True)
     return out
 
 
@@ -89,6 +102,9 @@ def main(argv: List[str] | None = None) -> int:
     parser.add_argument("--limit", type=int, default=0, help="first N tasks only (smoke tests)")
     parser.add_argument("--repos", default="", help="comma-separated repo filter")
     parser.add_argument("--load", default="", help="comma-separated modules that register arms")
+    parser.add_argument("--targets", default="", help="extra gold targets scored on the same selections, e.g. tests")
+    parser.add_argument("--ephemeral-packs", action="store_true",
+                        help="delete packs this run builds once their task is scored (large held-out runs)")
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args(argv)
 
@@ -117,6 +133,8 @@ def main(argv: List[str] | None = None) -> int:
     args.out.mkdir(parents=True, exist_ok=True)
     started = time.time()
     config = {"split": args.split, "arms": arm_names, "budgets": list(budgets), "tasks": len(tasks),
+              "targets": ["fix", *[x for x in args.targets.split(",") if x]],
+              "ephemeral_packs": args.ephemeral_packs,
               "load": extra, "environment": environment(), "started_unix": started,
               "compiler_fingerprints": {n: packs.compiler_fingerprint(arms_mod.get(n).compile_options)
                                         for n in arm_names}}
@@ -124,7 +142,13 @@ def main(argv: List[str] | None = None) -> int:
     files = {k: (args.out / f"{k}.jsonl").open("w") for k in ("rows", "ranks", "builds", "errors")}
     done = 0
     try:
-        jobs = [(t, arm_names, budgets, extra) for t in tasks]
+        target_names = [x for x in args.targets.split(",") if x]
+        target_maps = {name: {t.instance_id: t for t in data.split(f"{args.split}:{name}")}
+                       for name in target_names}
+        jobs = [(t, arm_names, budgets, extra,
+                 [(name, target_maps[name][t.instance_id]) for name in target_names
+                  if t.instance_id in target_maps[name]],
+                 args.ephemeral_packs) for t in tasks]
         ctx = multiprocessing.get_context("fork")
         with ctx.Pool(args.workers, maxtasksperchild=8) as pool:
             for result in pool.imap_unordered(_job, jobs):

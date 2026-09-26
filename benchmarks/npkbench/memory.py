@@ -30,6 +30,12 @@ SOURCE = ("xiaowu0162/longmemeval", "2ec2a557f339b6c0369619b1ed5793734cc87533", 
 ROOT = HOME / "memory"
 TREES = ROOT / "trees"
 INDEX = ROOT / "index-v1.json"
+#: Data-level layout variants used to test representation hypotheses before
+#: changing the compiler. ``turn``: one section per turn (default).
+#: ``para``: turns longer than PARA_CHARS also get one ``###`` section per
+#: paragraph, so the unchanged markdown splitter emits paragraph blocks.
+LAYOUTS = ("turn", "para")
+PARA_CHARS = 1200
 
 
 def download() -> Path:
@@ -63,10 +69,14 @@ def _one_line(text: str) -> str:
     return " ".join(text.split())
 
 
-def _materialize(item: Dict) -> Dict:
+def _trees(layout: str) -> Path:
+    return TREES if layout == "turn" else ROOT / f"trees-{layout}"
+
+
+def _materialize(item: Dict, layout: str = "turn") -> Dict:
     """Write one history; return gold spans and metadata. Deterministic."""
     qid = item["question_id"]
-    base = TREES / qid / "sessions"
+    base = _trees(layout) / qid / "sessions"
     base.mkdir(parents=True, exist_ok=True)
     gold_turns: List[Tuple[str, int, int]] = []
     answer_files: List[Tuple[str, int]] = []
@@ -79,13 +89,23 @@ def _materialize(item: Dict) -> Dict:
         for number, turn in enumerate(turns):
             lines.append(f"## {turn['role']} · turn {number} · {date}")
             start = len(lines) + 1
-            body = turn["content"].replace("\r\n", "\n").replace("\r", "\n").split("\n")
-            lines.extend(body)
+            content = turn["content"].replace("\r\n", "\n").replace("\r", "\n")
+            body = content.split("\n")
+            if layout == "para" and len(content) > PARA_CHARS:
+                part = 0
+                for index_line, line in enumerate(body):
+                    starts_paragraph = index_line == 0 or (not body[index_line - 1].strip() and line.strip())
+                    if starts_paragraph and index_line > 0:
+                        part += 1
+                        lines.append(f"### {turn['role']} · turn {number} · part {part}")
+                    lines.append(line)
+            else:
+                lines.extend(body)
             end = len(lines)
             lines.append("")
             if turn.get("has_answer"):
                 gold_turns.append((rel, start - 1, end))  # heading line through body
-        (TREES / qid / rel).write_text("\n".join(lines) + "\n", encoding="utf-8")
+        (_trees(layout) / qid / rel).write_text("\n".join(lines) + "\n", encoding="utf-8")
         if sid in answer_ids:
             answer_files.append((rel, len(lines)))
     return {"question_id": qid, "question_type": item["question_type"], "question": item["question"],
@@ -93,13 +113,14 @@ def _materialize(item: Dict) -> Dict:
             "gold_turns": gold_turns, "answer_files": answer_files}
 
 
-def build_index() -> List[Dict]:
-    if INDEX.exists():
-        return json.loads(INDEX.read_text())
+def build_index(layout: str = "turn") -> List[Dict]:
+    path = INDEX if layout == "turn" else ROOT / f"index-v1-{layout}.json"
+    if path.exists():
+        return json.loads(path.read_text())
     items = json.loads(download().read_text())
-    index = [_materialize(item) for item in items]
+    index = [dict(_materialize(item, layout), layout=layout) for item in items]
     ROOT.mkdir(parents=True, exist_ok=True)
-    INDEX.write_text(json.dumps(index))
+    path.write_text(json.dumps(index))
     return index
 
 
@@ -108,18 +129,25 @@ def _task(entry: Dict) -> Task:
         hunks = [Hunk(p, tuple(range(lo, hi + 1)), ()) for p, lo, hi in entry["gold_turns"]]
     else:
         hunks = [Hunk(p, tuple(range(1, n + 1)), ()) for p, n in entry["answer_files"]]
-    return Task(instance_id=entry["question_id"], repo=f"longmemeval/{entry['question_type']}",
+    layout = entry.get("layout", "turn")
+    suffix = "" if layout == "turn" else f"@{layout}"
+    return Task(instance_id=entry["question_id"] + suffix, repo=f"longmemeval/{entry['question_type']}",
                 base_commit="", query=entry["question"], hunks=hunks,
                 created_at=entry["question_date"], source="longmemeval_s")
 
 
 def tree(task: Task) -> Path:
-    return TREES / task.instance_id
+    qid, _, layout = task.instance_id.partition("@")
+    return _trees(layout or "turn") / qid
 
 
 def split(name: str) -> List[Task]:
-    """``memory-dev``: 100 questions stratified by type; ``memory-heldout``: the rest."""
-    entries = [e for e in build_index() if not e["question_id"].endswith("_abs")]
+    """``memory-dev``: 100 questions stratified by type; ``memory-heldout``: the rest.
+
+    ``<split>@<layout>`` selects a data-level layout variant (same questions).
+    """
+    name, _, layout = name.partition("@")
+    entries = [e for e in build_index(layout or "turn") if not e["question_id"].endswith("_abs")]
     by_type: Dict[str, List[Dict]] = {}
     for entry in entries:
         by_type.setdefault(entry["question_type"], []).append(entry)
