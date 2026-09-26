@@ -18,6 +18,7 @@ Do not edit by hand.
 | E009 | 2026-09-26 | Callee expansion from named-definition seeds | **rejected** | Fix-target changes stay within +/-2 points (noise at n=103) and the tests target loses up to 5.5 points. Precise seeds do not rescue graph expansion here; gold is mostly named or lexically matched directly. |
 | E010 | 2026-09-26 | Drop very-high-document-frequency terms from long queries | **inconclusive** | ~3x faster lexical stage for long queries with fix-target recall within noise, but up to -3 points on the tests target at 16K. Latency is not a bottleneck at this scale (~30 ms uncontended); not promoted. Revisit for interactive/agent loops on very large repositories. |
 | E011 | 2026-09-26 | Learned pairwise re-ranker over the product's candidate pool | **rejected** | With role features the model relearns documentation demotion and a fix->tests transfer (largest weights are role and doc-like kind proxies). Role-blind models do not beat the product's fused ranking (fix within +/-3 points). The remaining ranking headroom needs new evidence (semantic similarity, structure), not reweighting of existing channels. |
+| E012 | 2026-09-26 | Dense similarity (MiniLM, bge-small) fused with the product's top-100 pool order | **rejected** | Budget-dependent trade-off that fails the declared rule. bge-small vs product (dev-fast, paired): fix -9.2 [-17.5,-1.0] at 1K and -10.8 [-18.1,-3.9] at 2K, +2.6/+3.1 (n.s.) at 8K/16K; tests +5.3 [+1.6,+9.6] at 1K, +7.5 at 2K, +5.6 at 16K; docs (docs-3 rescored, 13 tasks) 0.000->0.154 at 1K, 0.538->0.692 at 16K. Utility U = -2.7/-2.1/+3.5/+7.6/+9.9 points at 1K-16K: negative at small budgets. Fusing at equal weight with the whole pool order halves every product channel's influence; MiniLM and a sharper dense weight (k=30) are worse on fix. Query-time encoding of 100 blocks costs seconds per query on CPU (37 s p50 cold). |
 | E013 | 2026-09-26 | Sibling/near-duplicate collapse (measured before building) | **rejected** | At most 3.1% of selected tokens could be reclaimed on this workload; not worth a new representation now. Revisit for repetitive/vendored corpora or conversation logs. |
 | E014 | 2026-09-26 | Source scan without pathlib relative_to/is_relative_to (update latency) | **kept** | 1.5-2.5x faster updates on a large repository with identical artifacts. Remaining one-file update cost is the global digest over FTS storage (future: incremental global integrity). |
 | E015 | 2026-09-26 | Documentation target for NPK-Bench (docs-1) and first docs-cost measurement | **inconclusive** | Superseded by E015b. Inspection of the docs-1 gold found construction errors: the upstream-commit rule (first commit after base touching every fix file) picked a mass-reformat commit for pytest-5103 (19 doc example files) and a deprecation sweep for matplotlib-24265, and counted CONTRIBUTORS.txt and doc/users/prev_whats_new as topical docs. Directionally, documentation demotion collapsed docs recall (e006_role05: 0.000/0.000/0.000/0.011/0.063 at 1K-16K vs npk_default 0.000/0.092/0.236/0.276/0.425), and definitions+trim cost -9.2 points at 1K (CI [-19.5,-1.1], 0 wins/4 losses) and -6.9 at 8K. docs-3 (patch-overlap commit identification, widening only to the introducing PR merge, prose-only) is the corrected target; docs-2 was built but found to swallow branch-integration merges before any use. |
@@ -722,6 +723,100 @@ Do not edit by hand.
 
 - **Decision:** With role features the model relearns documentation demotion and a fix->tests transfer (largest weights are role and doc-like kind proxies). Role-blind models do not beat the product's fused ranking (fix within +/-3 points). The remaining ranking headroom needs new evidence (semantic similarity, structure), not reweighting of existing channels.
 - **Follow-ups:** H11: dense embeddings as a new evidence source, with content-addressed vector reuse across snapshots
+
+## E012 — Dense similarity (MiniLM, bge-small) fused with the product's top-100 pool order
+
+- **Status:** rejected
+- **Hypothesis:** Dense query-block similarity is evidence the lexical/definition/relation channels lack; fusing it into the pool order recovers gold that ranks in the pool but below the budget.
+- **Baseline run:** experiments/npkbench/runs/E012-dense-devfast (npk_default, e012_pool_control arms)
+- **Run:** experiments/npkbench/runs/E012-dense-devfast
+- **Bench version:** npkbench-1.1 + docs-3 (rescored)
+- **Results:**
+
+```json
+{
+ "docs3_hunk_recall_1K_16K_13_tasks": {
+  "e012_bge": [
+   0.154,
+   0.154,
+   0.385,
+   0.538,
+   0.692
+  ],
+  "npk_default": [
+   0.0,
+   0.0,
+   0.231,
+   0.308,
+   0.538
+  ]
+ },
+ "fix_hunk_recall_1K_16K": {
+  "e012_bge": [
+   0.265,
+   0.332,
+   0.463,
+   0.548,
+   0.637
+  ],
+  "e012_minilm": [
+   0.215,
+   0.303,
+   0.38,
+   0.498,
+   0.657
+  ],
+  "e012_pool_control": [
+   0.28,
+   0.45,
+   0.489,
+   0.532,
+   0.613
+  ],
+  "npk_default": [
+   0.358,
+   0.44,
+   0.479,
+   0.523,
+   0.607
+  ]
+ },
+ "tests_hunk_recall_1K_16K": {
+  "e012_bge": [
+   0.093,
+   0.139,
+   0.179,
+   0.27,
+   0.365
+  ],
+  "e012_minilm": [
+   0.079,
+   0.128,
+   0.216,
+   0.267,
+   0.352
+  ],
+  "npk_default": [
+   0.04,
+   0.064,
+   0.141,
+   0.24,
+   0.309
+  ]
+ },
+ "utility_bge_vs_product_1K_16K": [
+  -0.027,
+  -0.021,
+  0.035,
+  0.076,
+  0.099
+ ]
+}
+```
+
+- **Tradeoffs:** Dense favors natural-language blocks (tests, docs) over code; helps at >=4K, hurts at <=2K.
+- **Decision:** Budget-dependent trade-off that fails the declared rule. bge-small vs product (dev-fast, paired): fix -9.2 [-17.5,-1.0] at 1K and -10.8 [-18.1,-3.9] at 2K, +2.6/+3.1 (n.s.) at 8K/16K; tests +5.3 [+1.6,+9.6] at 1K, +7.5 at 2K, +5.6 at 16K; docs (docs-3 rescored, 13 tasks) 0.000->0.154 at 1K, 0.538->0.692 at 16K. Utility U = -2.7/-2.1/+3.5/+7.6/+9.9 points at 1K-16K: negative at small budgets. Fusing at equal weight with the whole pool order halves every product channel's influence; MiniLM and a sharper dense weight (k=30) are worse on fix. Query-time encoding of 100 blocks costs seconds per query on CPU (37 s p50 cold).
+- **Follow-ups:** E012b: dense as one more channel inside the product's RRF (one of four), with the product's fill and trimming
 
 ## E013 — Sibling/near-duplicate collapse (measured before building)
 
