@@ -206,3 +206,16 @@ subset passes has its combination measured in the same run.
 (9.99); failing: E035 (significant fix loss at 4K) and E036 (significant tests loss at 2K).
 The two passing candidates are alternatives with no arm combining them, so by the rule
 above only E039 (higher mean utility) is promoted.
+
+## Pre-declared criteria for HE01 (heldout-e; written 2026-09-27 before E042's dev run)
+
+E042 re-tests the top-file header (E036) on top of the E039 default in two forms: placed
+only from 4K (`e042_header_from4k`; on heldout-d E036's fix gains at 4K-16K came without a
+tests loss there) and placed at every budget with a tighter cap of `budget // 16`
+(`e042_header_cap16`). On the full dev split (`E042-header-dev`), a variant is a candidate if
+it passes the declared dev rule (utility >= 0 at every budget, a significant fix or tests
+gain, no significant loss); if both are candidates, the one with the higher mean utility over
+the five budgets goes to heldout-e. HE01 runs `npk_default` and that candidate on `heldout-e`
+(384 unused issues), targets fix and tests, and promotes it only if utility
+`d_fix + 0.99 d_tests` >= 0 at every budget, fix or tests gains significantly at one or more
+budgets, and no target loses significantly at any budget (unrounded bootstrap bounds).

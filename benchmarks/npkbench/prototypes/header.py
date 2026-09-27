@@ -27,6 +27,8 @@ sel = importlib.import_module("npk.pack.select")
 
 class HeaderSelector(PackSelector):
     files = 1
+    min_budget = 0      # E042: place the header only from this budget
+    divisor = 8         # header placed only if it costs at most budget // divisor
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, enable_test_mate=True, **kwargs)
@@ -40,6 +42,8 @@ class HeaderSelector(PackSelector):
         if self._budget >= sel.TEST_MATE_MIN_BUDGET:
             ordered_ids = super()._place_test_mate(con, manifest, query, ordered_ids, fused,
                                                    channels_of, deep)
+        if self._budget < self.min_budget:
+            return ordered_ids
         return self._place_headers(con, ordered_ids, fused, channels_of)
 
     def _place_headers(self, con, ordered_ids: List[int], fused, channels_of) -> List[int]:
@@ -61,7 +65,7 @@ class HeaderSelector(PackSelector):
             header = con.execute(
                 "SELECT b.id, b.tokens FROM blocks b JOIN files f ON f.id=b.file_id "
                 "WHERE f.path=? AND b.kind='module' AND b.start_line=1", (path,)).fetchone()
-            if (header is None or header[0] == block_id or header[1] > self._budget // 8
+            if (header is None or header[0] == block_id or header[1] > self._budget // self.divisor
                     or header[0] in out[:out.index(block_id)]):
                 continue
             out = [b for b in out if b != header[0]]
@@ -71,8 +75,9 @@ class HeaderSelector(PackSelector):
         return out
 
 
-def make(name: str, files: int) -> Arm:
-    cls = type(f"Header{files}", (HeaderSelector,), {"files": files})
+def make(name: str, files: int, min_budget: int = 0, divisor: int = 8) -> Arm:
+    cls = type(f"Header{files}_{min_budget}_{divisor}", (HeaderSelector,),
+               {"files": files, "min_budget": min_budget, "divisor": divisor})
 
     def runner(pack: Path, task: Task, budgets: Sequence[int]) -> Dict[int, ArmResult]:
         out: Dict[int, ArmResult] = {}
@@ -93,3 +98,6 @@ def make(name: str, files: int) -> Arm:
 make("e036_control", 0)   # no headers: must equal npk_default
 make("e036_header", 1)
 make("e036_header2", 2)
+# E042 (on the E039 product): keep E036's fix gain without its 2K tests loss.
+make("e042_header_from4k", 1, min_budget=4096)
+make("e042_header_cap16", 1, divisor=16)
