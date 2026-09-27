@@ -45,7 +45,8 @@ Do not edit by hand.
 | M003 | 2026-09-26 | Paragraph-level units for long conversation turns (data-level layout test) | **rejected** | Mixed: +1.1/+3.6 at 2K/4K and better session coverage, but -8.9/-1.1/-2.1 at 256/512/1K. Turn-level units stay; no compiler change. |
 | M004 | 2026-09-26 | Dense similarity on conversation memory (pool fusion, bge-small / MiniLM) | **kept** | Significant gains on memory-dev (100 questions): bge-small +4.1/+3.4/+4.3/+7.0/+7.7/+5.8 points at 256-8K (CI excludes zero at 2K, 4K, 8K); MiniLM +4.4/+1.4/+1.7/+4.7/+4.4/+4.1 (significant at 4K, 8K). By type (bge): multi-session +8 to +13, single-session-preference +17 to +22, temporal +5 to +13; knowledge-update -3 to -13 at 256-1K. The same fusion hurts code at small budgets (E012), so it cannot be a global default. Productized as the documented semantic/hybrid configuration for chat histories (M006: most of the gain with the shipped MiniLM path). |
 | M005 | 2026-09-26 | Time-window channel for dated conversation memory | **rejected** | No effect: identical to the product except one win at 4K (+0.5 points; temporal-reasoning 0.732 -> 0.751 at 4K). Pre-run analysis predicted a small ceiling: LongMemEval-S histories span 10-90 days, so period expressions cover every session (reporting lag makes the window run to the question date), and only 3 of 17 parsable memory-dev questions get a selective point window. |
-| M006 | 2026-09-26 | The shipped semantic/hybrid mode on conversation memory | **kept** | Kept as the documented configuration for conversation memory (no code change). vs lexical default on memory-dev: +4.5 [+0.4,+9.0] / +1.4 / +0.3 / +3.5 / +4.4 [+0.2,+9.2] / +7.1 [+2.8,+12.2] points at 256-8K; largest on preferences (0.67 -> 1.00 at 8K) and multi-session (0.74 -> 0.83 at 8K). Within about 3 points of M004's bge-small pool fusion (-3.3 at 4K, +1.3 at 8K) and indistinguishable from MiniLM pool fusion. Cost: 48.9 s compile per history (one CPU thread) vs 0.25 s; query p50 5.9 ms vs 1.9 ms. |
+| M006 | 2026-09-26 | The shipped semantic/hybrid mode on conversation memory | **kept** | Kept as the documented configuration for conversation memory (no code change). vs lexical default on memory-dev: +4.5 [+0.4,+9.0] / +1.4 / +0.3 / +3.5 / +4.4 [+0.2,+9.2] / +7.1 [+2.8,+12.2] points at 256-8K; largest on preferences (0.67 -> 1.00 at 8K) and multi-session (0.74 -> 0.83 at 8K). Within about 3 points of M004's bge-small pool fusion (-3.3 at 4K, +1.3 at 8K) and indistinguishable from MiniLM pool fusion. Cost: 48.9 s compile per history (one CPU thread) vs 0.25 s; query p50 5.9 ms vs 1.9 ms. Held-out (MH01, 370 questions): confirmed at 4K (+4.2) and 8K (+6.0), neutral at 2K and below; the recommendation is scoped to 4K+ budgets. |
+| MH01 | 2026-09-27 | Held-out confirmation of the semantic/hybrid chat-memory configuration (M006) | **kept** | Confirmed at 4K and above only. Hybrid vs lexical: +0.7/-0.7/+1.1/+2.2 (none significant) at 256-2K; +4.2 [+2.2,+6.4] at 4K (38 wins/6 losses) and +6.0 [+4.2,+8.1] at 8K (42/0). The 256-token gain seen on dev did not replicate. By type at 8K: preferences 0.71 -> 0.92, multi-session 0.78 -> 0.85, temporal 0.87 -> 0.92; knowledge-update is lower at 512-1K. README now recommends the mode for chat histories read with 4K tokens or more. Compile cost 44.6 s vs 0.22 s per history. |
 | O001 | 2026-09-26 | Out-of-distribution check on six never-used repositories (SWE-bench Lite dev) | **kept** | Generalizes on the fix target (23 issues: sqlfluff, pvlib, astroid, pydicom, marshmallow, pyvista). Definition channel + trimming vs neither: fix +19.6 [+4.3,+37.0] / +13.8 / +8.7 / +2.2 / +0.7 points at 1K-16K; tests -5/-10/-7.5/-7.5/-2.5 (not significant, same direction as held-out). Trimming alone: fix +15.2 [+2.2,+30.4] at 1K, identical beyond. Test mate (opt-in): tests +5/+15/+10/+5/+5 with no fix loss (20 tasks, lower CI bounds at zero). |
 
 ## B001 — Standard-RAG baseline: Okapi BM25 over fixed 60-line chunks (whole and split identifiers)
@@ -1796,8 +1797,40 @@ Do not edit by hand.
 }
 ```
 
-- **Decision:** Kept as the documented configuration for conversation memory (no code change). vs lexical default on memory-dev: +4.5 [+0.4,+9.0] / +1.4 / +0.3 / +3.5 / +4.4 [+0.2,+9.2] / +7.1 [+2.8,+12.2] points at 256-8K; largest on preferences (0.67 -> 1.00 at 8K) and multi-session (0.74 -> 0.83 at 8K). Within about 3 points of M004's bge-small pool fusion (-3.3 at 4K, +1.3 at 8K) and indistinguishable from MiniLM pool fusion. Cost: 48.9 s compile per history (one CPU thread) vs 0.25 s; query p50 5.9 ms vs 1.9 ms.
+- **Decision:** Kept as the documented configuration for conversation memory (no code change). vs lexical default on memory-dev: +4.5 [+0.4,+9.0] / +1.4 / +0.3 / +3.5 / +4.4 [+0.2,+9.2] / +7.1 [+2.8,+12.2] points at 256-8K; largest on preferences (0.67 -> 1.00 at 8K) and multi-session (0.74 -> 0.83 at 8K). Within about 3 points of M004's bge-small pool fusion (-3.3 at 4K, +1.3 at 8K) and indistinguishable from MiniLM pool fusion. Cost: 48.9 s compile per history (one CPU thread) vs 0.25 s; query p50 5.9 ms vs 1.9 ms. Held-out (MH01, 370 questions): confirmed at 4K (+4.2) and 8K (+6.0), neutral at 2K and below; the recommendation is scoped to 4K+ budgets.
 - **Follow-ups:** Swap the semantic encoder to bge-small if its pool-fusion edge (+3.3 at 4K) survives memory-heldout
+
+## MH01 — Held-out confirmation of the semantic/hybrid chat-memory configuration (M006)
+
+- **Status:** kept
+- **Hypothesis:** M006's gains on memory-dev (+4.5*/+1.4/+0.3/+3.5/+4.4*/+7.1* points at 256-8K) hold on the 370 memory-heldout questions.
+- **Run:** experiments/npkbench/runs/MH01-hybrid-memory-heldout
+- **Results:**
+
+```json
+{
+ "hunk_recall_256_8K": {
+  "npk_default": [
+   0.562,
+   0.685,
+   0.748,
+   0.805,
+   0.84,
+   0.871
+  ],
+  "npk_hybrid": [
+   0.569,
+   0.678,
+   0.76,
+   0.827,
+   0.881,
+   0.931
+  ]
+ }
+}
+```
+
+- **Decision:** Confirmed at 4K and above only. Hybrid vs lexical: +0.7/-0.7/+1.1/+2.2 (none significant) at 256-2K; +4.2 [+2.2,+6.4] at 4K (38 wins/6 losses) and +6.0 [+4.2,+8.1] at 8K (42/0). The 256-token gain seen on dev did not replicate. By type at 8K: preferences 0.71 -> 0.92, multi-session 0.78 -> 0.85, temporal 0.87 -> 0.92; knowledge-update is lower at 512-1K. README now recommends the mode for chat histories read with 4K tokens or more. Compile cost 44.6 s vs 0.22 s per history.
 
 ## O001 — Out-of-distribution check on six never-used repositories (SWE-bench Lite dev)
 

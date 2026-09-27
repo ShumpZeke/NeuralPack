@@ -73,10 +73,11 @@ Lite and confirmed once on a **held-out** split (SWE-bench Verified minus Lite,
   selected context keep 69% of evidence turns and 87% of evidence sessions. Against a
   standard RAG baseline (BM25 over ~1,000-character chunks), turn-level blocks lead by 21
   and 14 points at 256 and 512 tokens and tie from 1K to 4K. For chat
-  histories, compile with `--mode semantic` and query with `--retrieval hybrid` (local
-  MiniLM encoder): evidence recall rises from 0.795 to 0.839 at 4K tokens and from 0.838
-  to 0.909 at 8K (significant). The biggest gains are on preferences and multi-session
-  questions. Compiles become much slower (~50 s instead of 0.25 s per history on one CPU
+  histories read with 4K tokens or more, compile with `--mode semantic` and query with
+  `--retrieval hybrid` (local MiniLM encoder). On 370 held-out questions, evidence
+  recall rises from 0.840 to 0.881 at 4K and from 0.871 to 0.931 at 8K (significant;
+  preferences and multi-session questions gain most). At 2K and below it is neutral.
+  Compiles become much slower (about 45 s instead of 0.2 s per history on one CPU
   thread). The same dense signal does not pay off for code at small budgets.
 - Rejected with recorded evidence: path/role priors (they win only by ignoring tests
   or documentation; demoting documentation costs 14-40 points of documentation recall),
