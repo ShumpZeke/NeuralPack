@@ -367,6 +367,12 @@ MUTANTS = [
      "tests/test_title_weight.py::test_title_terms_outweigh_the_body"),
     ("query_cleaning_disabled", "npk/pack/select.py", "_strip_issue_template", "return query",
      "tests/test_query_cleaning.py::test_template_words_no_longer_pull_the_contributing_guide"),
+    ("environment_dump_kept", "npk/pack/select.py", "_strip_environment", "return lines",
+     "tests/test_query_cleaning.py::test_environment_dump_is_removed"),
+    ("environment_dump_ranks_version_module", "npk/pack/select.py", "_strip_environment", "return lines",
+     "tests/test_query_cleaning.py::test_version_listing_no_longer_pulls_the_version_module"),
+    ("environment_booleans_counted", "npk/pack/select.py", None, None,
+     "tests/test_query_cleaning.py::test_configuration_and_code_are_kept"),
     ("query_cleaning_drops_title", "npk/pack/select.py", None, None,
      "tests/test_query_cleaning.py::test_first_line_and_long_headings_are_kept"),
     ("query_cleaning_reports_cleaned_query", "npk/pack/select.py", None, None,
@@ -501,6 +507,11 @@ def main():
                 if source.count(target) != 1:
                     raise ValueError(f"{name} target is no longer unique")
                 changed = source.replace(target, replacement)
+            elif name == "environment_booleans_counted":
+                target = 'r"\\d+\\.\\d+|^(None|not installed)$"'
+                if source.count(target) != 1:
+                    raise ValueError("environment value rule is no longer unique")
+                changed = source.replace(target, 'r"\\d+\\.\\d+|^(None|not installed|True|False)$"')
             elif name == "test_mate_gate_ignored":
                 target = "budget >= TEST_MATE_MIN_BUDGET if self.enable_test_mate is None"
                 if source.count(target) != 1:

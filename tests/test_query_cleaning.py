@@ -108,3 +108,70 @@ def test_cli_raw_query_matches_the_selector(pack):
     assert raw != cleaned
     assert cli("--raw-query") == raw
     assert cli() == cleaned
+
+
+# --- E052: environment dumps ------------------------------------------------------------
+
+ENV_QUERY = """Interval merge drops the closed side
+Merging two intervals loses the closed flag of the right interval.
+
+INSTALLED VERSIONS
+------------------
+commit           : 37ea63d540fd27274cad6585082c91b1283f963d
+python           : 3.10.6.final.0
+python-bits      : 64
+OS               : Linux
+LC_ALL           : None
+
+pandas           : 1.5.0
+numpy            : 1.23.3
+pytz             : 2022.2.1
+dateutil         : 2.8.2
+setuptools       : 65.3.0
+"""
+
+
+def test_environment_dump_is_removed():
+    cleaned = _strip_issue_template(ENV_QUERY)
+    assert cleaned.split("\n")[:2] == ["Interval merge drops the closed side",
+                                       "Merging two intervals loses the closed flag of the right interval."]
+    # The key-value block goes; a header line before it (INSTALLED VERSIONS) stays, as evaluated.
+    for word in ("numpy", "pytz", "setuptools", "python-bits", "LC_ALL", "commit"):
+        assert word not in cleaned
+
+
+def test_configuration_and_code_are_kept():
+    config = ("Enum member flagged twice\n[mypy]\npython_version = 3.7\nshow_error_codes = True\n"
+              "warn_return_any = True\nwarn_unused_configs = True\n")
+    assert _strip_issue_template(config) == config
+    code = ('Locale grouping ignored\n    fmt::print("X = {:19.3Lf}", -119.921);\n'
+            '    fmt::print("Y = {:19.3Lf}", 2.1);\n    fmt::print("Z = {:19.3Lf}", 3.2);\n')
+    assert _strip_issue_template(code) == code
+
+
+DUMPED = ["pandas", "numpy", "pytz", "dateutil", "setuptools", "pip", "Cython", "pytest", "hypothesis",
+          "sphinx", "blosc", "feather", "xlsxwriter", "lxml", "html5lib", "pymysql", "psycopg2", "jinja2",
+          "IPython", "bottleneck", "fsspec", "matplotlib", "numba", "numexpr", "openpyxl", "pyarrow",
+          "scipy", "sqlalchemy", "tables", "tabulate", "xarray", "xlrd", "zstandard", "tzdata"]
+
+
+def test_version_listing_no_longer_pulls_the_version_module(tmp_path):
+    query = ("Merge loses the closed flag\nMerging two intervals loses the closed flag.\n\n"
+             "INSTALLED VERSIONS\n------------------\n"
+             + "".join(f"{name:<17}: {i % 3 + 1}.{i}.{i % 5}\n" for i, name in enumerate(DUMPED)))
+    src = tmp_path / "src"
+    (src / "pkg" / "util").mkdir(parents=True)
+    (src / "pkg" / "interval.py").write_text(
+        "def merge(left, right):\n    '''Merge two intervals; keep the closed flag.'''\n"
+        "    return (left, right)\n")
+    (src / "pkg" / "util" / "print_versions.py").write_text(
+        "DEPENDENCIES = [\n" + "".join(f"    '{name}',\n" for name in DUMPED) + "]\n\n\n"
+        "def show_versions():\n    '''Print installed versions.'''\n"
+        "    return {name: None for name in DEPENDENCIES}\n")
+    for i in range(10):
+        (src / "pkg" / f"mod{i}.py").write_text(f"def helper_{i}(value):\n    return value + {i}\n")
+    pack = tmp_path / "p.npk"
+    compile_pack(src, pack)
+    with PackSelector(str(pack), enable_cache=False) as selector:
+        top = selector.select(query, budget_tokens=10**6, allow_escalation=False).evidence[0]
+    assert top.path == "pkg/interval.py"   # without E052 the version module ranks first

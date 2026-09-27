@@ -253,6 +253,44 @@ _TEMPLATE_COMMENT = re.compile(r"<!--.*?(?:-->|\Z)", re.S)
 _TEMPLATE_CHECKLIST = re.compile(r"^\s*[-*+]\s*\[[ xX]\]")
 _TEMPLATE_HEADING = re.compile(r"^\s*(?:#{1,6}\s+(?P<h>.+?)\s*#*|\*\*(?P<b>[^*]+)\*\*\s*:?)\s*$")
 TEMPLATE_HEADING_MAX_WORDS = 6
+#: Environment dumps (E052): ``pd.show_versions()``, ``sklearn.show_versions()``,
+#: ``pydantic.version.version_info()`` or ``dvc doctor`` output lists dozens of
+#: ``package: version`` lines whose names match a project's version-printing
+#: module better than the code an issue is about. A block of ``key: value`` lines
+#: (blank and bare ``Header:`` lines may sit inside it) is dropped when at least
+#: ``ENV_DUMP_MIN_LINES`` values are version numbers or ``None`` and such values
+#: make up at least half of its key-value lines; booleans do not count, so
+#: configuration snippets (``warn_return_any = True``) stay.
+ENV_DUMP_MIN_LINES = 3
+_ENV_KV = re.compile(r"^\s*[A-Za-z_][\w .()/#\-]{0,40}?\s*(?:(?<!:):(?!:)|==?)\s*"
+                     r"(?P<value>[^\s;{].{0,100}?)\s*,?\s*$")
+_ENV_VERSION = re.compile(r"\d+\.\d+|^(None|not installed)$", re.IGNORECASE)
+_ENV_NEUTRAL = re.compile(r"^\s*$|^\s*[A-Za-z][\w .()\-]{0,40}:\s*$|^\s*(INSTALLED VERSIONS|[-=]{3,})\s*$",
+                          re.IGNORECASE)
+_ENV_CODE_END = re.compile(r"[;{}]\s*$")
+
+
+def _strip_environment(lines: List[str]) -> List[str]:
+    """*lines* without environment-dump blocks (the first line is always kept)."""
+    out: List[str] = lines[:1]
+    block: List[str] = []
+    versions = pairs = 0
+    for line in lines[1:] + [None]:
+        match = (_ENV_KV.match(line) if line is not None and not _ENV_CODE_END.search(line) else None)
+        if match:
+            pairs += 1
+            versions += bool(_ENV_VERSION.search(match.group("value")))
+            block.append(line)
+            continue
+        if line is not None and block and _ENV_NEUTRAL.match(line):
+            block.append(line)
+            continue
+        if not (versions >= ENV_DUMP_MIN_LINES and 2 * versions >= pairs):
+            out.extend(block)
+        block, versions, pairs = [], 0, 0
+        if line is not None:
+            out.append(line)
+    return out
 
 
 def _strip_issue_template(query: str) -> str:
@@ -264,8 +302,9 @@ def _strip_issue_template(query: str) -> str:
     code but common in CONTRIBUTING.md, READMEs and changelogs, which then
     outrank the code. HTML comments, checklist lines and heading lines of at
     most ``TEMPLATE_HEADING_MAX_WORDS`` words (markdown ``#`` headings or
-    bold-only lines) are removed; the first line, an issue's title, is always
-    kept, and a query that would become empty is used unchanged.
+    bold-only lines) are removed, then environment dumps (E052); the first
+    line, an issue's title, is always kept, and a query that would become
+    empty is used unchanged.
     """
     text = _TEMPLATE_COMMENT.sub(" ", query)
     lines = text.split("\n")
@@ -277,7 +316,7 @@ def _strip_issue_template(query: str) -> str:
         if heading and len((heading.group("h") or heading.group("b") or "").split()) <= TEMPLATE_HEADING_MAX_WORDS:
             continue
         kept.append(line)
-    cleaned = "\n".join(kept)
+    cleaned = "\n".join(_strip_environment(kept))
     return cleaned if cleaned.strip() else query
 
 
