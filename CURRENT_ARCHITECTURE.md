@@ -184,3 +184,10 @@ query ──strip issue-form scaffolding (E031)
   Django lexical ranking goes from about 51 to 107 ms (matching alone 8 -> 18 ms) and median
   selection time rises about 55%. Per-phrase weights inside FTS5 would remove this but need a
   C auxiliary function.
+- **Query-term cap and deterministic analysis (E043):** a query keeps its first 512 distinct
+  lexical terms (`MAX_QUERY_TERMS`, first-occurrence order; backticked literals always kept),
+  since `bm25()` cost grows with every term and matching row. Queries under the cap are
+  unchanged; on Django, 20,000 pasted identifiers now take about 4 s instead of 114 s, and
+  the ten benchmark issues above the cap show no significant recall change. Backticked
+  literals are appended in query order instead of a set's order, which depended on the
+  process's string-hash seed.

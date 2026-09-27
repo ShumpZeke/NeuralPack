@@ -292,6 +292,14 @@ def _explicit_literals(query: str) -> List[str]:
                              for part in (literal, *literal.split("."))))
 
 
+#: Most distinct lexical terms a query keeps, in first-occurrence order (E043).
+#: ``bm25()`` works per term and matching row, so a pasted log or dump with
+#: thousands of distinct words costs seconds per query; issues rarely exceed a
+#: few hundred (p99 300-470 on the benchmark splits). Backticked literals are
+#: always kept.
+MAX_QUERY_TERMS = 512
+
+
 def _lexical_terms(_con: sqlite3.Connection, query: str) -> List[str]:
     """Analyze query words exactly as format-v8 search fields are analyzed.
 
@@ -304,8 +312,12 @@ def _lexical_terms(_con: sqlite3.Connection, query: str) -> List[str]:
         term for term in analyzed_terms(query)
         if (term not in FUNCTION_WORDS and len(term) > 1) or term in explicit
     ]
-    terms.extend(term for term in explicit if term not in terms)
-    return list(dict.fromkeys(terms))
+    terms.extend(term for term in _explicit_literals(query) if term not in terms)
+    unique = list(dict.fromkeys(terms))
+    if len(unique) <= MAX_QUERY_TERMS:
+        return unique
+    kept = unique[:MAX_QUERY_TERMS]
+    return kept + [term for term in unique[MAX_QUERY_TERMS:] if term in explicit]
 
 
 def _whole_lexical_terms(query: str) -> List[str]:
@@ -316,7 +328,7 @@ def _whole_lexical_terms(query: str) -> List[str]:
         if (term.lower() not in FUNCTION_WORDS and len(term) > 1)
         or term.lower() in explicit
     ]
-    terms.extend(term for term in explicit if term not in terms)
+    terms.extend(term for term in _explicit_literals(query) if term not in terms)
     return list(dict.fromkeys(terms))
 
 

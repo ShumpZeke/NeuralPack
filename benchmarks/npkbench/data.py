@@ -401,6 +401,14 @@ def split(name: str) -> List[Task]:
         from . import memory
         return memory.split(name)
     base, _, target = name.partition(":")
+    if target and base == "long-queries":
+        wanted = {t.instance_id for t in split(base)}
+        chosen: Dict[str, Task] = {}
+        for ds in ("swe_lite_test", "swe_full_test", "swe_multi_test"):   # dev issues are also in full
+            for t in load(ds, target):
+                if t.instance_id in wanted:
+                    chosen.setdefault(t.instance_id, t)
+        return sorted(chosen.values(), key=lambda t: t.instance_id)
     if target:
         wanted = {t.instance_id for t in split(base)}
         dataset = {"dev": "swe_lite_test", "dev-fast": "swe_lite_test",
@@ -466,6 +474,18 @@ def split(name: str) -> List[Task]:
             items.sort(key=lambda t: _stable_hash("heldout-c:" + t.instance_id))
             chosen_c.extend(items[:max(2, round(400 * len(items) / len(rest)))])
         return sorted(chosen_c, key=lambda t: t.instance_id)
+    if name == "long-queries":
+        # Diagnostic split (declared 2026-09-27 for E043, the query-term cap): the issues of
+        # dev, ood-multi-dev and the spent heldout-b/c/d whose cleaned query has more than
+        # 512 distinct lexical terms (heldout-e is left untouched). Frozen by ID.
+        wanted = {"pydata__xarray-5662", "fastlane__fastlane-19207", "pydata__xarray-3637",
+                  "scikit-learn__scikit-learn-11346", "matplotlib__matplotlib-21550",
+                  "prometheus__prometheus-11859", "matplotlib__matplotlib-26020",
+                  "sphinx-doc__sphinx-9104", "pylint-dev__pylint-7080",
+                  "scikit-learn__scikit-learn-25308"}
+        pool = {t.instance_id: t for s in ("dev", "heldout-b", "heldout-c", "heldout-d", "ood-multi-dev")
+                for t in split(s)}
+        return sorted((pool[i] for i in wanted), key=lambda t: t.instance_id)
     if name == "heldout-e":
         # Fifth confirmation split (declared 2026-09-27, before any result on it, after
         # heldout-d was spent on E039/HD01): every issue of heldout-b-all not in

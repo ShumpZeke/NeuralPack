@@ -23,12 +23,12 @@ have ~20 GB free. Record every experiment with `benchmarks.npkbench.expdb.append
 
 ## Evidence discipline that must not be relaxed
 
-- Contract mutations: 176 mutants. The 168 at 3b5f9f5 (159 at the base commit plus 9 added
+- Contract mutations: 178 mutants. The 168 at 3b5f9f5 (159 at the base commit plus 9 added
   in this loop for source-policy skips, the definition channel, top-block trimming and the
   test mate) are all killed (`experiments/npkbench/contract-mutations-3b5f9f5.json`; commit
   8eb6b27 misstates the added count as 13); `test_mate_gate_ignored` (E016c), the three
-  query-cleaning mutants (E031) and the four weighting mutants (E039) were killed when added
-  (176 in total). Add a mutant for every new guard or ranking rule.
+  query-cleaning mutants (E031), the four weighting mutants (E039) and the two query-term
+  mutants (E043) were killed when added (178 in total). Add a mutant for every new guard or ranking rule.
 
 - Decide on `dev`/`dev-fast`; confirm once on `heldout`; never tune on `heldout`.
 - Judge significance from unrounded bootstrap bounds (`report.paired` now returns a
@@ -88,15 +88,13 @@ read with 4K tokens or more (M006, MH01).
    confirmed E016c (HB01); `heldout-c` is spent on E031 (HC01, passed). `heldout-d` (401 issues, a fixed
    stratified sample of the 785 unused issues of `heldout-b-all`) was declared on
    2026-09-27 before any result on it; declare the criteria in this file before running it.
-8. **Open engineering item: very long queries.** Distinct lexical terms per issue: median
-   62-82, p99 300-466, but up to 4,164 (pydata__xarray-5662, 57K characters) and 1,506 on the
-   multilingual split. `bm25()` cost grows with terms and matching rows, and E039's repeats
-   multiply it: synthetic Django queries of 1,000 / 20,000 random identifiers take 3.2 / 34 s
-   unweighted and 8.4 / 114 s weighted (4K budget); the real 4,164-term xarray issue takes
-   1.5 s unweighted and 2.0 s weighted. A cap of about 512 distinct terms (keeping title terms
-   and terms by first occurrence) would bound the worst case and changes only 2 dev, 0
-   held-out, 7 heldout-b-all and 2 multilingual queries; evaluate it as a robustness change
-   (identical selections below the cap, recall on the capped queries, latency bound).
+8. **Done: very long queries are capped (E043).** Distinct lexical terms per issue: median
+   62-82, p99 300-466, up to 4,164. A query now keeps its first 512 distinct terms (backticked
+   literals always kept): synthetic Django queries of 1,000 / 20,000 identifiers take 2.2 / 4.1
+   s instead of 8.4 / 114 s; on the ten benchmark issues above the cap (split `long-queries`,
+   heldout-e excluded) latency falls from 1.2 s to 0.74 s median and recall does not change
+   significantly (43 of 50 issue-budgets identical). The remaining growth is in the
+   definition channel and text analysis.
 7. **Where ranking still fails (E039 default, dev-fast, full fused ranking):** the first gold
    block is ranked first in 38 of 103 issues, in the top 3 in 45, top 10 in 59, top 50 in 78;
    in 24 issues no candidate covers a gold hunk at all (the gold block is outside every

@@ -353,6 +353,10 @@ MUTANTS = [
      "tests/test_test_mate.py::test_reused_ranking_matches_a_dedicated_query"),
     ("test_mate_gate_ignored", "npk/pack/select.py", None, None,
      "tests/test_test_mate.py::test_default_mate_is_budget_gated"),
+    ("query_term_cap_ignored", "npk/pack/select.py", None, None,
+     "tests/test_query_term_determinism.py::test_long_queries_keep_the_first_distinct_terms_and_explicit_literals"),
+    ("explicit_literals_in_hash_order", "npk/pack/select.py", None, None,
+     "tests/test_query_term_determinism.py::test_explicit_literal_order_is_independent_of_hash_seed"),
     ("title_weight_ignored", "npk/pack/select.py", None, None,
      "tests/test_title_weight.py::test_title_terms_outweigh_the_body"),
     ("query_tf_ignored", "npk/pack/select.py", None, None,
@@ -487,6 +491,16 @@ def main():
                 if source.count(target) != 1:
                     raise ValueError("test-mate budget gate is no longer unique")
                 changed = source.replace(target, "True if self.enable_test_mate is None")
+            elif name in ("query_term_cap_ignored", "explicit_literals_in_hash_order"):
+                target, replacement, count = {
+                    "query_term_cap_ignored": ("if len(unique) <= MAX_QUERY_TERMS:", "if True:", 1),
+                    "explicit_literals_in_hash_order": (
+                        "terms.extend(term for term in _explicit_literals(query) if term not in terms)",
+                        "terms.extend(term for term in explicit if term not in terms)", 2),
+                }[name]
+                if source.count(target) != count:
+                    raise ValueError(f"{name} target changed")
+                changed = source.replace(target, replacement)
             elif name in ("title_weight_ignored", "query_tf_ignored", "single_line_queries_weighted"):
                 target, replacement = {
                     "title_weight_ignored": ("reps += title_weight - 1", "pass"),

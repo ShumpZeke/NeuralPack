@@ -92,6 +92,10 @@ and +3.0 to +12.0 points of regression-test sites, all significant (run R002).
   chat-memory questions, are unchanged. Cost: FTS5 scores every repeated term again, so
   lexical ranking takes about twice as long; median selection time rises about 55% (70 -> 109
   ms at 4K on heldout-d, four parallel workers) and the 95th percentile about 1.9x.
+- **Long queries:** a query keeps its first 512 distinct search terms (backticked literals
+  always kept). Issues rarely have more than a few hundred (p99 300-470), but a pasted log can
+  have thousands; on Django a 20,000-identifier query now takes about 4 s instead of 114 s.
+  Shorter queries are unaffected.
 - **Robust ingestion:** as received, 46 of 103 benchmark snapshots failed to compile
   because a single binary, non-UTF-8, or credential-like file aborted the build (for
   example, every Django snapshot). Files that were never indexed are now skipped and
