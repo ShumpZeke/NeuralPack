@@ -86,7 +86,12 @@ and +3.0 to +12.0 points of regression-test sites, all significant (run R002).
   On a fresh held-out split (heldout-c, 400 issues) fix sites rise +0.7 / +0.9 / +1.2
   points at 4K / 8K / 16K and regression-test sites +0.4 at 1K and +1.4 at 16K (all
   significant), with no significant loss at any budget. On the multilingual development
-  split the effect was mixed (fix -0.3 to +1.4 points).
+  split the effect was mixed (fix -0.3 to +1.4 points). Environment dumps are removed
+  too: `show_versions()`, `version_info()` or `doctor` output (blocks of `package: version`
+  lines, mostly version numbers) otherwise pulls the project's version-printing module
+  to the top. On a fresh held-out split of 300 SWE-Gym issues (10 Python repositories
+  SWE-bench does not use) this adds +0.5 / +1.4 / +1.0 fix points at 1K-4K and +1.1 to
+  +1.6 regression-test points at 2K-16K (significant; E052, GH01).
 - **Title and repetition weighting** (default; `title_weight=1, tf_cap=1` or
   `--title-weight 1 --tf-cap 1` turn it off): in a multi-line query, the terms of the first
   line (an issue's title, the reporter's one-line summary) count three times in lexical

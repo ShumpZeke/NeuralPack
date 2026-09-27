@@ -46,7 +46,7 @@ Splits (fixed before any NeuralPack result was observed):
   use: pandas, MONAI, moto, mypy, dvc, dask, modin, pydantic, conan, hydra, bokeh). Per
   repository in a fixed hash order, the first 30 issues are ``gym-dev`` (screening Python
   changes with more power than ``dev``) and the next 30 ``gym-heldout`` (confirmation only).
-  Declared 2026-09-27 before any result on them.
+  Declared 2026-09-27 before any result on them. (``gym-heldout`` spent on E052 by GH01.)
 * ``poly-heldout-b`` -- the rest of the full SWE-PolyBench's Java/JS/TS issues (outside the
   500-issue subset and ``poly-dev-b``), same exclusions, at most 80 per repository by a
   fresh fixed hash. Declared 2026-09-27 before any result on it; confirmation only.

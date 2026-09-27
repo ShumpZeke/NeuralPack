@@ -19,10 +19,9 @@ python -m benchmarks.npkbench.report --judge RUN BASE_ARM CANDIDATE_ARM --target
 python -m benchmarks.npkbench.report --judge-runs BASE_RUN:ARM CAND_RUN:ARM --targets tests   # across runs
 ```
 
-Unused confirmation splits: `heldout-e` (Python, 384), `gym-heldout` (Python, SWE-Gym, 300)
-and `poly-heldout-b` (JS/TS, 320). Larger screening splits: `gym-dev` (Python, 326) and
-`poly-dev-b` (Java/JS/TS, 371). Plans for the next confirmations are declared below
-(E052 -> GH01).
+Unused confirmation splits: `heldout-e` (Python, 384) and `poly-heldout-b` (JS/TS, 320);
+`gym-heldout` was spent on E052 (GH01). Larger screening splits: `gym-dev` (Python, 326) and
+`poly-dev-b` (Java/JS/TS, 371). Declare each confirmation's criteria here before its run.
 
 First runs clone the 12 SWE-bench repositories (blobless, ~2 GB) and build packs
 (~15 s each for Django). Use `--ephemeral-packs` on `heldout` (407 tasks) unless you
@@ -298,6 +297,14 @@ unused.
 - **pandas release notes**: nearly every pandas fix adds a `doc/source/whatsnew` entry, which
   the fix target counts; retrieving "the newest release-note file" would be benchmark-shaped
   rather than useful context, so it is not pursued.
+
+### GH01 outcome: E052 promoted (gym-heldout now spent)
+
+E052 passed on `gym-heldout`: fix +0.51 / +1.44 / +0.96 at 1K-4K (significant), tests +1.09 to
++1.55 at 2K-16K (significant), utility >= 0 everywhere (mean +1.92). The product form cleans
+every screened query exactly as the prototype and reproduces its selections (dev-fast
+515/515, gym-dev 1630/1630); it is the default, inside `enable_query_cleaning`. Remaining
+unused confirmation splits: `heldout-e` (Python, 384) and `poly-heldout-b` (JS/TS, 320).
 
 ## Semantic evidence for code: what has been measured
 

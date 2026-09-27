@@ -176,7 +176,12 @@ query ──strip issue-form scaffolding (E031)
   caller's text. Template words ("steps to reproduce", "expected behavior") otherwise
   pull CONTRIBUTING guides, READMEs and changelogs above code. Fresh heldout-c (HC01, 400
   issues): fix +0.7/+0.9/+1.2 points at 4K/8K/16K and tests +0.4 (1K) and +1.4 (16K), all
-  significant; no significant loss at any budget.
+  significant; no significant loss at any budget. Environment dumps (E052) go too: a block
+  of `key: value` lines (blank and bare `Header:` lines may sit inside it) with at least
+  three version-number or `None` values, making up at least half of its key-value lines, is
+  dropped; booleans do not count and code lines (`::`, trailing `;`/`{`) never match, so
+  configuration and code snippets stay. gym-heldout (GH01, 300 SWE-Gym issues): fix +0.5 to
+  +1.4 points at 1K-4K, tests +1.1 to +1.6 at 2K-16K, significant; no loss.
 - **Title and repetition weighting (E039, `title_weight` 3 and `tf_cap` 3,
   `--title-weight`/`--tf-cap`):** for a multi-line query, the lexical OR repeats each term
   `min(tf_cap, 1 + floor(log2 tf))` times, plus `title_weight - 1` more if it occurs in the
