@@ -137,6 +137,16 @@ them missed at 4K, about 13 candidate blocks per issue, so at most a few hunks);
 skipping per-file `realpath` in scans (a test pins resolution-before-read,
 which matters for Windows reparse points; saving ~0.3 s per Django update).
 
+## Open policy question for the maintainers
+
+The top-file module header (E036/E042) consistently finds about 2 more fix sites per 100
+issues from 2K-4K up (significant on held-out and dev), but its tokens displace a test
+block, costing about 0.7-1.2 regression-test points at one budget (significant). Its
+utility is positive (+1 to +3 points), yet the declared rule forbids any significant loss, so
+it is not shipped. If fix sites should count more than the rule's 1 : 0.99 fix/tests weights
+say, or the rule should accept losses where utility is clearly positive (as E016c's
+criteria did), the header becomes a candidate; that is a policy decision, not a tuning one.
+
 ## Things that were tried and must not be repeated without a new idea
 
 See the rejected entries in EXPERIMENTS.md: file aggregation (E003), coarse->fine
