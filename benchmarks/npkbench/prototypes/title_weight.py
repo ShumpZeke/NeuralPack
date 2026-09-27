@@ -102,6 +102,36 @@ def make_channel(name: str, weight: int = 1) -> Arm:
     return register(Arm(name, runner=runner))
 
 
+@contextlib.contextmanager
+def _title_only(title: str):
+    """Diagnostic: the lexical channel reads only the title (other channels see the issue)."""
+    original = sel._lexical_channel
+    sel._lexical_channel = lambda con, query, limit: original(con, title, limit)
+    try:
+        yield
+    finally:
+        sel._lexical_channel = original
+
+
+def make_title_only(name: str) -> Arm:
+    def runner(pack: Path, task: Task, budgets: Sequence[int]) -> Dict[int, ArmResult]:
+        title = task.query.strip().split("\n", 1)[0]
+        out: Dict[int, ArmResult] = {}
+        with _title_only(title), PackSelector(str(pack), enable_cache=False) as selector:
+            for budget in budgets:
+                started = time.perf_counter()
+                selection = selector.select(task.query, budget_tokens=budget)
+                out[budget] = ArmResult(
+                    spans=[_span(e) for e in selection.evidence], tokens=selection.total_tokens,
+                    latency_ms=(time.perf_counter() - started) * 1000,
+                    status="fallback_required" if selection.seed_failed or not selection.evidence else "selected",
+                    n_blocks=len(selection.evidence))
+        return out
+
+    return register(Arm(name, runner=runner))
+
+
+make_title_only("e034_title_only")
 make("e034_title_x1", 1)   # control: must reproduce the product's multi-word ranking
 make("e034_title_x2", 2)
 make("e034_title_x3", 3)
