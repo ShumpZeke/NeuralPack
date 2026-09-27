@@ -26,19 +26,21 @@ Lite and confirmed once on a **held-out** split (SWE-bench Verified minus Lite,
 |---|---:|---:|---:|---:|---:|
 | Standard RAG baseline: BM25 over 60-line chunks (identifier-split) | 0.101 | 0.149 | 0.217 | 0.267 | 0.321 |
 | NeuralPack before this loop's retrieval changes | 0.136 | 0.206 | 0.302 | 0.393 | 0.490 |
-| **Current default** (definition channel, top-block trimming, test mate from 2K) | **0.230** | **0.303** | **0.385** | **0.472** | **0.569** |
-| Current default, regression-test sites found (tests target) | 0.058 | 0.143 | 0.194 | 0.256 | 0.303 |
+| Code-first ranking (definition channel, top-block trimming, test mate from 2K) | 0.230 | 0.303 | 0.385 | 0.472 | 0.569 |
+| **Current default** (+ issue-form cleaning, title and repetition weighting) | **0.254** | **0.346** | **0.452** | **0.571** | **0.638** |
+| Current default, regression-test sites found (tests target) | 0.089 | 0.180 | 0.252 | 0.338 | 0.423 |
 
-The held-out rows were measured before issue-form cleaning and title/repetition weighting
-(below), which add up to 1.2 and 4.6 more points of fix sites on fresh splits.
+The query-handling changes of the last row were decided on other fresh splits (heldout-c,
+heldout-d). On this split they add +2.3 / +4.3 / +6.8 / +9.9 / +7.0 points of fix sites
+and +3.0 to +12.0 points of regression-test sites, all significant (run R002).
 
 - **Against a standard RAG pipeline** (same files, budgets and gold; BM25 over fixed
-  60-line chunks, filled in score order): NeuralPack finds 1.6-2.1x as many fix sites
-  on held-out, and every gap is significant. Without the test mate, regression-test
-  recall is equal at 1-2K and higher from 4K. The baseline finds more documentation
-  (at 2K: 0.31 vs 0.17 on held-out, where 33 of 407 issues edit docs): NeuralPack
-  ranks code first, and small prose chunks match issue text well. This is the main
-  open weakness.
+  60-line chunks, filled in score order): NeuralPack finds 2.0-2.5x as many fix sites on
+  held-out (significant at every budget) and 1.5-2.1x as many regression-test sites
+  (significant from 2K). The baseline still finds somewhat more of the documentation
+  maintainers edit at 2K-8K (at 2K: 0.31 vs 0.25; 33 of 407 held-out issues edit docs),
+  but the gap is no longer significant at any budget; before the query-handling changes
+  it was 0.31 vs 0.17 at 2K. Documentation remains the weakest target.
 - **Beyond Python** (SWE-bench Multilingual sample: 114 issues in 41 Rust, Ruby, Java,
   Go, C/C++, PHP and JS/TS repositories): NeuralPack still beats both chunk-BM25
   baselines on fix sites (+8 to +12 points at 2K-16K against 1,000-character chunks)

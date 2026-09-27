@@ -59,9 +59,11 @@ runs stage into `<out>.partial` (git-ignored) and appear only when complete. Fai
 markers live in `~/npk-data/failed/`. Worktree branches `exp/*` are local only; each
 rejected experiment's patch is saved in its run directory.
 
-Where the product stands (held-out, 407 issues): fix-site recall 0.230/0.303/0.385/0.472/0.569
-at 1K-16K with the default budget-gated test mate (0.230/0.309/0.399/0.475/0.575 without it),
-1.6-2.1x a standard BM25-over-chunks RAG baseline (B001/B002), confirmed on six unseen
+Where the product stands (held-out, 407 issues, run R002): fix-site recall
+0.254/0.346/0.452/0.571/0.638 at 1K-16K and regression-test recall 0.089/0.180/0.252/0.338/0.423,
+2.0-2.5x (fix) and 1.5-2.1x (tests) a standard BM25-over-chunks RAG baseline (B001); the
+documentation gap to that baseline is no longer significant. Before E031/E039 the product
+scored 0.230/0.303/0.385/0.472/0.569 (fix). Code-first ranking was confirmed on six unseen
 repositories (O001). Opt-in modes: context map (E017), semantic/hybrid for chat histories
 read with 4K tokens or more (M006, MH01).
 
