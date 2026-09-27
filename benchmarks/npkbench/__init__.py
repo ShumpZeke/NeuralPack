@@ -42,6 +42,9 @@ Splits (fixed before any NeuralPack result was observed):
   subset (disjoint from ``poly-dev`` and ``poly-heldout``), same repository exclusions,
   at most 80 per repository by a fixed hash (371 issues). Declared 2026-09-27 before any
   result on it; development only, for screening with more power than ``poly-dev``.
+* ``poly-heldout-b`` -- the rest of the full SWE-PolyBench's Java/JS/TS issues (outside the
+  500-issue subset and ``poly-dev-b``), same exclusions, at most 80 per repository by a
+  fresh fixed hash. Declared 2026-09-27 before any result on it; confirmation only.
 * ``ood-multi`` -- SWE-bench Multilingual (300 issues, 41 non-Python repositories);
   ``ood-multi-sample``: at most 3 per repository, measurement only;
   ``ood-multi-dev``: the other 186, for developing non-Python handling.

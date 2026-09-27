@@ -371,6 +371,22 @@ POLY_DEV_B_PER_REPO = 80
 
 
 def _rows(name: str) -> List[Dict[str, object]]:
+    if name == "polybench_heldoutb":
+        # poly-heldout-b, declared 2026-09-27 before any result on it: the full SWE-PolyBench's
+        # Java/JS/TS issues outside its 500-issue subset and outside poly-dev-b, minus
+        # POLY_EXCLUDED_REPOS, at most POLY_DEV_B_PER_REPO per repository by a fixed hash.
+        # Confirmation only (JS/TS; the Java issues outside the 500 all went to poly-dev-b).
+        taken = ({row["instance_id"] for row in _rows("polybench500")}
+                 | {row["instance_id"] for row in _rows("polybench_devb")})
+        by_repo_h: Dict[str, List[Dict[str, object]]] = {}
+        for row in _rows("polybench_full"):
+            if row["instance_id"] not in taken:
+                by_repo_h.setdefault(str(row["repo"]), []).append(row)
+        chosen_h: List[Dict[str, object]] = []
+        for _repo, items in sorted(by_repo_h.items()):
+            items.sort(key=lambda row: _stable_hash("poly-hb:" + str(row["instance_id"])))
+            chosen_h.extend(items[:POLY_DEV_B_PER_REPO])
+        return sorted(chosen_h, key=lambda row: str(row["instance_id"]))
     if name == "polybench_devb":
         # poly-dev-b, declared 2026-09-27 before any result on it: the full SWE-PolyBench's
         # Java/JS/TS issues outside its 500-issue subset (so disjoint from poly-dev and
@@ -470,7 +486,7 @@ def split(name: str) -> List[Task]:
                    "ood-multi": "swe_multi_test", "ood-multi-sample": "swe_multi_test",
                    "ood-multi-dev": "swe_multi_test",
                    "poly-dev": "polybench500", "poly-heldout": "polybench500",
-                   "poly-dev-b": "polybench_devb"}[base]
+                   "poly-dev-b": "polybench_devb", "poly-heldout-b": "polybench_heldoutb"}[base]
         lite = {t.instance_id for t in load("swe_lite_test")} if base == "heldout" else set()
         return [t for t in load(dataset, target)
                 if t.instance_id in wanted and t.instance_id not in lite]
@@ -542,6 +558,8 @@ def split(name: str) -> List[Task]:
         return sorted(chosen_p, key=lambda t: t.instance_id)
     if name == "poly-dev-b":
         return load("polybench_devb")
+    if name == "poly-heldout-b":
+        return load("polybench_heldoutb")
     if name == "long-queries":
         # Diagnostic split (declared 2026-09-27 for E043, the query-term cap): the issues of
         # dev, ood-multi-dev and the spent heldout-b/c/d whose cleaned query has more than
