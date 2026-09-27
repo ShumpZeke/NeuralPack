@@ -29,10 +29,11 @@ have ~20 GB free. Record every experiment with `benchmarks.npkbench.expdb.append
 
 ## Evidence discipline that must not be relaxed
 
-- Contract mutations: 181 mutants, all killed at 7cca1f3
-  (`experiments/npkbench/contract-mutations-7cca1f3.json`, with E047's three; before that
-  178/178 at c66ccca and 168/168 in `contract-mutations-3b5f9f5.json`, whose commit message
-  misstates the added count as 13). Add a mutant for every new guard or ranking rule.
+- Contract mutations: 184 mutants, all killed at 4293b7f
+  (`experiments/npkbench/contract-mutations-4293b7f.json`, with E047's and E052's three each;
+  before that 181/181 at 7cca1f3, 178/178 at c66ccca and 168/168 in
+  `contract-mutations-3b5f9f5.json`, whose commit message misstates the added count as 13).
+  Add a mutant for every new guard or ranking rule.
 
 - Decide on `dev`/`dev-fast`; confirm once on `heldout`; never tune on `heldout`.
 - Small dev-fast effects have not replicated: E035, E036 and E044 each looked good on the
