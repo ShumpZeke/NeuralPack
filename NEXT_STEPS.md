@@ -68,12 +68,16 @@ runs stage into `<out>.partial` (git-ignored) and appear only when complete. Fai
 markers live in `~/npk-data/failed/`. Worktree branches `exp/*` are local only; each
 rejected experiment's patch is saved in its run directory.
 
-Where the product stands (held-out, 407 issues, run R002): fix-site recall
-0.254/0.346/0.452/0.571/0.638 at 1K-16K and regression-test recall 0.089/0.180/0.252/0.338/0.423,
+Where the product stands (held-out SWE-bench Verified, 407 issues, run R004): fix-site recall
+0.254/0.343/0.456/0.572/0.638 at 1K-16K and regression-test recall 0.090/0.183/0.257/0.344/0.428,
 2.0-2.5x (fix) and 1.5-2.1x (tests) a standard BM25-over-chunks RAG baseline (B001); the
 documentation gap to that baseline is no longer significant. Before E031/E039 the product
-scored 0.230/0.303/0.385/0.472/0.569 (fix). Code-first ranking was confirmed on six unseen
-repositories (O001). Opt-in modes: context map (E017), semantic/hybrid for chat histories
+scored 0.230/0.303/0.385/0.472/0.569 (fix). Multilingual sample (R005): fix 0.198-0.455,
+1.9-3.1x B002. SWE-PolyBench Java/JS/TS (P001): fix 0.195-0.476. SWE-Gym Python (gym-heldout,
+GH01 default arm): fix 0.142-0.479; pandas and mypy are the weakest repositories (about 0.05
+at 2K) and neither dense re-ranking (D1) nor qualified-name resolution helps them. Default
+since this session: E047 (test-file conventions beyond Python) and E052 (environment dumps
+stripped from queries). Opt-in modes: context map (E017), semantic/hybrid for chat histories
 read with 4K tokens or more (M006, MH01).
 
 1. **Documentation retrieval is the main weakness, and it is the definition channel's
@@ -93,10 +97,10 @@ read with 4K tokens or more (M006, MH01).
    at 4K on memory-dev): needs CLS pooling and a query prefix in `npk/context/embedding.py`
    and a new encoder identity; for code it passed the rule only barely (E012b) at a large
    compile cost.
-5. **Held-out split hygiene:** `heldout` confirmed E002, E005c, E016b and E017; `heldout-b`
-   confirmed E016c (HB01); `heldout-c` is spent on E031 (HC01, passed). `heldout-d` (401 issues, a fixed
-   stratified sample of the 785 unused issues of `heldout-b-all`) was declared on
-   2026-09-27 before any result on it; declare the criteria in this file before running it.
+5. **Held-out split hygiene:** spent: `heldout` (E002, E005c, E016b, E017), `heldout-b` (E016c,
+   HB01), `heldout-c` (E031, HC01), `heldout-d` (E039, HD01), `poly-heldout` (E047, PH01),
+   `gym-heldout` (E052, GH01). Unused: `heldout-e` (Python, 384) and `poly-heldout-b` (JS/TS,
+   320; reserved by the declared E053/E054 plan). Declare criteria here before any run on them.
 8. **Done: very long queries are capped (E043).** Distinct lexical terms per issue: median
    62-82, p99 300-466, up to 4,164. A query now keeps its first 512 distinct terms (backticked
    literals always kept): synthetic Django queries of 1,000 / 20,000 identifiers take 2.2 / 4.1
