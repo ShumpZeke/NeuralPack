@@ -138,7 +138,11 @@ Measured non-opportunities (do not re-run without a new idea): vendored code (`d
 (the 7 dev-fast tasks whose traceback names a gold file already score 0.86-0.93 from 1K);
 module-path mentions (the product already selects the named gold file at 2K in 15 of 20
 cases); an error-message phrase channel (3 of 103 issues quote a message found verbatim in
-a gold file); git co-change history for the test mate (the test file that most often
+a gold file; re-measured 2026-09-27 on the larger screens: of issues quoting an exception message
+without a traceback, the message's raise site (a verbatim fragment found in 1-3 files) holds a fix
+hunk in 1 of 20 on gym-dev and 1 of 32 on dev); Java and JavaScript stack-trace frames (20 of 371
+poly-dev-b, 10 of 199 poly-dev and 3 of 186 ood-multi-dev issues carry any, and they name a fix
+file in 6, 6 and 2, so E055 stays Python-only); git co-change history for the test mate (the test file that most often
 changed with the top implementation file in the 3,000 commits before the base is a gold
 test file in 35/103 dev-fast issues, vs 36 for path mirroring and 49 for mirror plus lexical
 rank; 52 vs 50 when given the true fix file), so it does not justify adding history to packs;
@@ -343,6 +347,25 @@ is a candidate if it passes on `poly-dev-b` with no significant loss on `gym-dev
 and E054 are both `poly-heldout-b` candidates, one confirmation run carries both arms against
 `npk_default` and each is promoted only if its own arm meets the standard rule there.
 Translated docs (7-8% of material-ui's budget, 2 gold hunks) were measured and not pursued.
+
+### poly-dev-b outcome for E053/E054 and PHB01 (written before PHB01 runs)
+
+Both pass on `poly-dev-b` (371 issues; the E054 control reproduces `npk_default` on all 1,855
+selections). E053 (`e053_urls`): fix +0.68 / +0.90 / +0.83 / +2.01 / +1.49 at 1K-16K
+(significant at 2K, 8K, 16K), tests +0.39 to +1.02 (none significant), utility >= 0 everywhere
+(mean +1.82); on `gym-dev` it changes nothing significantly (mean utility +0.39), so it is a
+candidate. E054 (`e054_notes_last`): tests +0.65 / +0.56 / +1.32 at 1K-4K and fix +1.13 at 4K
+(all significant), fix -0.13 at 16K (not significant), utility >= 0 everywhere (mean +1.38); it
+passed on `gym-dev`, so it is a candidate. Per the plan, PHB01 runs once on `poly-heldout-b`
+(320 issues: material-ui, prettier, serverless, svelte) with arms `npk_default`, `e053_urls`,
+`e054_notes_last` and `e054_control` (which must equal `npk_default`), targets fix and tests;
+each change is promoted only if its own arm meets the standard rule there (utility
+`d_fix + 0.99 d_tests` >= 0 at every budget, a significant fix or tests gain at one or more
+budgets, no significant loss at any budget). Added before the run, following HD01: the run
+also carries `e053_e054` (both changes, prototype `urls_notes.py`); if both arms pass, they are
+combined in the product only if `e053_e054` meets the same rule in the same run, and otherwise
+only the arm with the higher mean utility is promoted. A product form must reproduce its
+prototype's selections before it is merged (E054's is ready on local branch `exp/e054p`).
 
 ### Pre-declared plan for E055 (traceback frames; written before any E055 result)
 

@@ -1,0 +1,42 @@
+{
+ "split": "poly-dev-b",
+ "arms": [
+  "npk_default",
+  "e053_urls",
+  "e054_control",
+  "e054_notes_last"
+ ],
+ "budgets": [
+  1024,
+  2048,
+  4096,
+  8192,
+  16384
+ ],
+ "tasks": 371,
+ "targets": [
+  "fix",
+  "tests"
+ ],
+ "ephemeral_packs": true,
+ "load": [
+  "benchmarks.npkbench.prototypes.url_clean",
+  "benchmarks.npkbench.prototypes.release_notes"
+ ],
+ "environment": {
+  "git_commit": "c3cd9a612fdbef569476bca85c795835b69e1edf",
+  "git_dirty": false,
+  "python": "3.12.3",
+  "sqlite": "3.45.1",
+  "platform": "Linux-6.18.44-fc-v37-x86_64-with-glibc2.39",
+  "cpus": 4,
+  "bench_version": "npkbench-1.1"
+ },
+ "started_unix": 1790515316.7878828,
+ "compiler_fingerprints": {
+  "npk_default": "5effbb3d57dcedd5",
+  "e053_urls": "5effbb3d57dcedd5",
+  "e054_control": "5effbb3d57dcedd5",
+  "e054_notes_last": "5effbb3d57dcedd5"
+ }
+}
