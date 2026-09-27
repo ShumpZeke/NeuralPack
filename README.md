@@ -84,7 +84,9 @@ The held-out rows were measured before issue-form cleaning and title/repetition 
   / +4.6 points at 2K / 4K / 8K / 16K and regression-test sites +2.8 to +12.2 points at every
   budget (all significant; no significant loss). The title part alone gained +6.5 to +8.2
   fix points at 4K-16K on the non-Python development split. Single-line queries, including
-  chat-memory questions, are unchanged. Cost: about 15% more query time.
+  chat-memory questions, are unchanged. Cost: FTS5 scores every repeated term again, so
+  lexical ranking takes about twice as long; median selection time rises about 55% (70 -> 109
+  ms at 4K on heldout-d, four parallel workers) and the 95th percentile about 1.9x.
 - **Robust ingestion:** as received, 46 of 103 benchmark snapshots failed to compile
   because a single binary, non-UTF-8, or credential-like file aborted the build (for
   example, every Django snapshot). Files that were never indexed are now skipped and

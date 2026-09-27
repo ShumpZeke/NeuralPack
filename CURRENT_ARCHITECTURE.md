@@ -179,4 +179,8 @@ query ──strip issue-form scaffolding (E031)
   ranking use the same weighted MATCH. Single-line queries are unweighted. Fresh heldout-d
   (HD01, 401 issues): fix +1.4/+2.9/+3.2/+4.6 points at 2K-16K and tests +2.8 to +12.2 at
   every budget, all significant. The title-only variant (E034, x4) also passed; by the
-  declared rule only the higher-utility candidate was promoted.
+  declared rule only the higher-utility candidate was promoted. Cost: `bm25()` work is per
+  phrase and per matching row, and repeated terms raise the phrase count 1.6-1.8x, so the
+  Django lexical ranking goes from about 51 to 107 ms (matching alone 8 -> 18 ms) and median
+  selection time rises about 55%. Per-phrase weights inside FTS5 would remove this but need a
+  C auxiliary function.
