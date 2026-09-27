@@ -36,6 +36,11 @@ Lite and confirmed once on a **held-out** split (SWE-bench Verified minus Lite,
   (at 2K: 0.31 vs 0.17 on held-out, where 33 of 407 issues edit docs): NeuralPack
   ranks code first, and small prose chunks match issue text well. This is the main
   open weakness.
+- **Beyond Python** (SWE-bench Multilingual sample: 114 issues in 41 Rust, Ruby, Java,
+  Go, C/C++, PHP and JS/TS repositories): NeuralPack still beats both chunk-BM25
+  baselines on fix sites (+8 to +12 points at 2K-16K against 1,000-character chunks)
+  and the definition channel still helps (+4 to +5 points at 2K-8K), but absolute
+  recall is about half of Python's (0.164 at 2K). C/C++ and JS/TS are weakest.
 - **Definition channel** (default): code identifiers named in the query
   (`Signal.send_robust()`, `django.core.exceptions.ValidationError`) resolve to their
   defining blocks. On the held-out split it adds +5.7 to +10.3 points at every
