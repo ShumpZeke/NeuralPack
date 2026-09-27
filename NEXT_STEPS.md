@@ -86,6 +86,15 @@ read with 4K tokens or more (M006, MH01).
    confirmed E016c (HB01); `heldout-c` is spent on E031 (HC01, passed). `heldout-d` (401 issues, a fixed
    stratified sample of the 785 unused issues of `heldout-b-all`) was declared on
    2026-09-27 before any result on it; declare the criteria in this file before running it.
+8. **Open engineering item: very long queries.** Distinct lexical terms per issue: median
+   62-82, p99 300-466, but up to 4,164 (pydata__xarray-5662, 57K characters) and 1,506 on the
+   multilingual split. `bm25()` cost grows with terms and matching rows, and E039's repeats
+   multiply it: synthetic Django queries of 1,000 / 20,000 random identifiers take 3.2 / 34 s
+   unweighted and 8.4 / 114 s weighted (4K budget); the real 4,164-term xarray issue takes
+   1.5 s unweighted and 2.0 s weighted. A cap of about 512 distinct terms (keeping title terms
+   and terms by first occurrence) would bound the worst case and changes only 2 dev, 0
+   held-out, 7 heldout-b-all and 2 multilingual queries; evaluate it as a robustness change
+   (identical selections below the cap, recall on the capped queries, latency bound).
 7. **Where ranking still fails (E039 default, dev-fast, full fused ranking):** the first gold
    block is ranked first in 38 of 103 issues, in the top 3 in 45, top 10 in 59, top 50 in 78;
    in 24 issues no candidate covers a gold hunk at all (the gold block is outside every
