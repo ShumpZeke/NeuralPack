@@ -146,7 +146,10 @@ a gold file; re-measured 2026-09-27 on the larger screens: of issues quoting an 
 without a traceback, the message's raise site (a verbatim fragment found in 1-3 files) holds a fix
 hunk in 1 of 20 on gym-dev and 1 of 32 on dev); Java and JavaScript stack-trace frames (20 of 371
 poly-dev-b, 10 of 199 poly-dev and 3 of 186 ood-multi-dev issues carry any, and they name a fix
-file in 6, 6 and 2, so E055 stays Python-only); git co-change history for the test mate (the test file that most often
+file in 6, 6 and 2, so E055 stays Python-only); change history as a fix-location prior (dev-fast: for the 42 issues
+whose first fix block ranks 2-50, the fix file has more commits among the 500 before the base
+than the median block above it in 24, and re-ranking the top 50 by churn tier helps 21 and
+hurts 18, median rank 7.5 -> 11); git co-change history for the test mate (the test file that most often
 changed with the top implementation file in the 3,000 commits before the base is a gold
 test file in 35/103 dev-fast issues, vs 36 for path mirroring and 49 for mirror plus lexical
 rank; 52 vs 50 when given the true fix file), so it does not justify adding history to packs;
