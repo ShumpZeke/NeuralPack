@@ -259,3 +259,9 @@ heldout-e. HE01 runs `npk_default` and that candidate on `heldout-e` (384 unused
 targets fix and tests, and promotes it only if utility `d_fix + 0.99 d_tests` >= 0 at every
 budget, fix or tests gains significantly at one or more budgets, and no target loses
 significantly at any budget.
+
+**E044 outcome (2026-09-27): not sent to heldout-e.** On the full dev split the from-8K second
+mate passes only narrowly (mean utility 0.08), and on the 197 dev issues outside dev-fast its
+utility is negative (-0.9 / -0.7 at 8K / 16K). The declared plan would have run HE01; it was
+deliberately skipped (a skipped confirmation can only prevent a promotion), so `heldout-e`
+(384 issues) is still unused.
