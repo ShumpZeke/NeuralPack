@@ -37,7 +37,7 @@ Splits (fixed before any NeuralPack result was observed):
   SWE-PolyBench 500-issue verified subset (MIT), minus microsoft/vscode, angular/angular
   and google/guava; split per repository by a fixed hash, about 60% for developing
   non-Python handling and 40% for confirmation only. Declared 2026-09-27 before any
-  result on them.
+  result on them. (``poly-heldout`` spent on E047 by PH01.)
 * ``poly-dev-b`` -- the full SWE-PolyBench's Java/JS/TS issues outside that 500-issue
   subset (disjoint from ``poly-dev`` and ``poly-heldout``), same repository exclusions,
   at most 80 per repository by a fixed hash (371 issues). Declared 2026-09-27 before any

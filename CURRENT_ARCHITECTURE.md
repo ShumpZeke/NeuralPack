@@ -163,7 +163,12 @@ query ──strip issue-form scaffolding (E031)
   right after that block. The lexical ranking is fetched once to depth 1000 and reused for
   the mate lookup; parsed test paths are cached per artifact snapshot. Always-on on
   held-out: tests +1.1 to +4.5 points, fix -0.3 to -1.4 (even trade at 1K). Gated at 2K
-  and above on the fresh heldout-b: tests +2.3 to +6.0, fix -0.4 to -1.1.
+  and above on the fresh heldout-b: tests +2.3 to +6.0, fix -0.4 to -1.1. `TEST_PATH`
+  holds each language's test-file convention (Python, Jest, JUnit/PHPUnit/NUnit, Go,
+  gtest, RSpec; none of the non-Python forms matches a `.py` path). A test file's parts
+  include its name without a CamelCase test affix, so `FooTest.java` mirrors `Foo.java`.
+  A mate must share the module or package name (E047; poly-heldout tests +0.9 to +1.8
+  points at 2K-16K, fix unchanged).
 - **Issue-form cleaning (E031, `enable_query_cleaning`, `--raw-query`):** before any channel
   runs, HTML comments, checklist lines (`- [x] ...`) and heading lines of at most six words
   (markdown `#` or bold-only) are removed from the query; the first line is always kept,

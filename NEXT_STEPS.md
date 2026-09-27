@@ -215,6 +215,15 @@ budgets, and no target loses significantly at any budget. The product form (work
 `exp/e047p`) must reproduce `e047_strict` exactly on `dev-fast` and `poly-dev` before it is
 merged. E048's multilingual screen is dropped (C2 failed).
 
+### PH01 outcome: E047 promoted (poly-heldout now spent)
+
+E047 passed on `poly-heldout`: tests +1.82 / +0.90 / +1.62 / +1.53 at 2K-16K (significant
+at 2K, 8K, 16K), fix +0.02 to +0.14, utility >= 0 everywhere (mean +1.23). The product form
+reproduces the prototype exactly (dev-fast 515/515, poly-dev 995/995) and is the default.
+There is no unused JS/TS/Java held-out split left. The rest of the full SWE-PolyBench outside
+`poly-dev-b` (about 1,000 Java/JS/TS issues, mostly svelte, material-ui, serverless and
+prettier) can supply the next one; declare it before any result on it.
+
 ## Semantic evidence for code: what has been measured
 
 Dense and neural evidence has not helped code retrieval on this benchmark so far: equal-weight

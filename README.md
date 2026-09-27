@@ -71,7 +71,12 @@ and +3.0 to +12.0 points of regression-test sites, all significant (run R002).
   `tests/.../test_mod.py`) right after it. On a fresh held-out split (heldout-b, 400
   issues) it finds +5.7 / +6.0 / +3.7 / +2.3 points more regression-test sites at
   2K-16K (all significant) for 0.4-1.1 points of fix sites. Below 2K the trade was even
-  on held-out, so it stays off there.
+  on held-out, so it stays off there. Test files are recognized by each language's
+  convention: Python, Jest (`Button.test.js`, `__tests__/`), JUnit/PHPUnit/NUnit
+  (`FooTest`, `TestFoo`, `FooIT`), Go (`_test.go`), gtest and RSpec. A CamelCase test
+  class mirrors its subject (`ServiceConfigTest.java` -> `ServiceConfig.java`). On the
+  JS/TS/Java held-out split (poly-heldout, 133 issues) this finds +1.8 / +0.9 / +1.6 /
+  +1.5 points more regression-test sites at 2K-16K at no fix cost (E047, PH01).
 - **Issue-form cleaning** (default; `enable_query_cleaning=False` or `--raw-query` turn
   it off): issue templates wrap the reporter's words in headings ("Steps to reproduce",
   "Expected behavior"), checklists and HTML-comment instructions, and those words match
