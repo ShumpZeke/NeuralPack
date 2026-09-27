@@ -82,12 +82,18 @@ read with 4K tokens or more (M006, MH01).
    confirmed E016c (HB01); `heldout-c` is spent on E031 (HC01, passed). `heldout-d` (401 issues, a fixed
    stratified sample of the 785 unused issues of `heldout-b-all`) was declared on
    2026-09-27 before any result on it; declare the criteria in this file before running it.
-6. **E034 (in progress): weight the issue title's terms in the lexical channel.** The
-   channel deduplicates query terms, so the title (the author's own summary) counts no more
-   than a traceback or template word. Prototype `prototypes/title_weight.py` repeats title
-   terms in the FTS5 MATCH (bm25 sums repeated phrases); the x1 control reproduces the
-   product on 90/90 cached selections. Screen on dev-fast, then dev; held-out only if dev
-   passes the rule.
+6. **HD01 on heldout-d (running 2026-09-27): E034 title weighting (x4), E039 (tf + title),
+   E035 (mate file choice, mirror_any) and E036 (top-file header), plus their combinations.**
+   All passed the full dev split (E034 x4: utility +6.6 to +16.4 points; non-Python dev
+   +2.7 to +11.8). Product forms are ready on the local branch `exp/e034p` (worktree
+   `~/np-e034p`): `title_weight` (constant `TITLE_WEIGHT`; set it to 4 if x4 is confirmed),
+   the mirror_any `_test_mate`, `_place_file_header` (`enable_file_header`,
+   `--no-file-header`), tests and five mutants (all killed). The combined product equals
+   `combo_title4_mate_any_header1` and `combo_title4_mate_any` on 515/515 dev-fast
+   selections. Merge only the parts HD01 confirms, re-run the equivalence for that subset,
+   and fill the README/architecture placeholders (`HD01_TBD`). Rejected on the way: E037
+   (stemming), E038 (static embeddings), E040 (title-weighted definition votes); E041
+   (title weighting in trimming's member ranking) is queued on dev-fast.
 
 Measured non-opportunities (do not re-run without a new idea): vendored code (`deps/`, `vendor/`, `third_party/`: no gold hunk in 2,360 across dev, held-out and multilingual dev; only 0.2-1.2% of selected lines at 2K, so demoting it cannot pay for the scope change); a traceback-frame channel
 (the 7 dev-fast tasks whose traceback names a gold file already score 0.86-0.93 from 1K);
