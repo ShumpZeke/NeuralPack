@@ -293,6 +293,35 @@ def _strip_environment(lines: List[str]) -> List[str]:
     return out
 
 
+#: URLs (E053): scheme, host and GitHub scaffolding (``https``, ``github``, ``com``,
+#: ``blob``, organisation and project names) add the same words to every issue with
+#: links, and they match READMEs, docs and CI files. Image links and GitHub
+#: attachments are dropped; a GitHub ``blob``/``tree``/``raw`` link keeps the
+#: repository path it points to; other GitHub links (issues, pull requests,
+#: commits) are dropped; any other URL keeps its path and fragment words.
+_URL_IMAGE = re.compile(r"!\[[^\]]*\]\([^)]*\)|<img\b[^>]*>", re.IGNORECASE)
+_URL = re.compile(r"https?://[^\s)>\]\"'`<]+", re.IGNORECASE)
+_ATTACHMENT_HOSTS = ("user-images.githubusercontent.com", "private-user-images.githubusercontent.com")
+
+
+def _rewrite_url(match: "re.Match[str]") -> str:
+    host, _, rest = match.group(0).split("://", 1)[1].partition("/")
+    host = host.lower()
+    if host in _ATTACHMENT_HOSTS or rest.startswith("user-attachments/"):
+        return " "
+    if host in ("github.com", "www.github.com"):
+        parts = rest.split("/")
+        if len(parts) > 4 and parts[2] in ("blob", "tree", "raw"):
+            return " " + "/".join(parts[4:]).split("#", 1)[0] + " "
+        return " "
+    path, _, fragment = rest.partition("#")
+    return " " + path.split("?", 1)[0].replace("/", " ") + " " + fragment + " "
+
+
+def _strip_urls(line: str) -> str:
+    return _URL.sub(_rewrite_url, _URL_IMAGE.sub(" ", line))
+
+
 def _strip_issue_template(query: str) -> str:
     """The query without issue-form scaffolding.
 
@@ -302,9 +331,10 @@ def _strip_issue_template(query: str) -> str:
     code but common in CONTRIBUTING.md, READMEs and changelogs, which then
     outrank the code. HTML comments, checklist lines and heading lines of at
     most ``TEMPLATE_HEADING_MAX_WORDS`` words (markdown ``#`` headings or
-    bold-only lines) are removed, then environment dumps (E052); the first
-    line, an issue's title, is always kept, and a query that would become
-    empty is used unchanged.
+    bold-only lines) are removed, then environment dumps (E052), then URLs are
+    reduced to their informative parts (E053); the first line, an issue's
+    title, is always kept, and a query that would become empty is used
+    unchanged.
     """
     text = _TEMPLATE_COMMENT.sub(" ", query)
     lines = text.split("\n")
@@ -317,7 +347,9 @@ def _strip_issue_template(query: str) -> str:
             continue
         kept.append(line)
     cleaned = "\n".join(_strip_environment(kept))
-    return cleaned if cleaned.strip() else query
+    lines = (cleaned if cleaned.strip() else query).split("\n")
+    rewritten = "\n".join(lines[:1] + [_strip_urls(line) for line in lines[1:]])
+    return rewritten if rewritten.strip() else query
 
 
 def _explicit_literals(query: str) -> List[str]:

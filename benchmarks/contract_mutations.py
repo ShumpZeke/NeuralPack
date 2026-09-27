@@ -378,6 +378,12 @@ MUTANTS = [
      "tests/test_query_cleaning.py::test_version_listing_no_longer_pulls_the_version_module"),
     ("environment_booleans_counted", "npk/pack/select.py", None, None,
      "tests/test_query_cleaning.py::test_configuration_and_code_are_kept"),
+    ("url_scaffolding_kept", "npk/pack/select.py", "_strip_urls", "return line",
+     "tests/test_query_cleaning.py::test_link_scaffolding_no_longer_pulls_the_readme"),
+    ("github_source_link_path_dropped", "npk/pack/select.py", None, None,
+     "tests/test_query_cleaning.py::test_urls_keep_only_their_informative_parts"),
+    ("url_title_rewritten", "npk/pack/select.py", None, None,
+     "tests/test_query_cleaning.py::test_a_url_in_the_title_is_kept"),
     ("query_cleaning_drops_title", "npk/pack/select.py", None, None,
      "tests/test_query_cleaning.py::test_first_line_and_long_headings_are_kept"),
     ("query_cleaning_reports_cleaned_query", "npk/pack/select.py", None, None,
@@ -517,6 +523,16 @@ def main():
                 if source.count(target) != 1:
                     raise ValueError("release-note demotion is no longer unique")
                 changed = source.replace(target, "        if False:\n")
+            elif name == "github_source_link_path_dropped":
+                target = 'return " " + "/".join(parts[4:]).split("#", 1)[0] + " "'
+                if source.count(target) != 1:
+                    raise ValueError("GitHub source-link rule is no longer unique")
+                changed = source.replace(target, 'return " "')
+            elif name == "url_title_rewritten":
+                target = "lines[:1] + [_strip_urls(line) for line in lines[1:]]"
+                if source.count(target) != 1:
+                    raise ValueError("URL title rule is no longer unique")
+                changed = source.replace(target, "[_strip_urls(line) for line in lines]")
             elif name == "environment_booleans_counted":
                 target = 'r"\\d+\\.\\d+|^(None|not installed)$"'
                 if source.count(target) != 1:

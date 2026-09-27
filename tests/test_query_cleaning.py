@@ -175,3 +175,45 @@ def test_version_listing_no_longer_pulls_the_version_module(tmp_path):
     with PackSelector(str(pack), enable_cache=False) as selector:
         top = selector.select(query, budget_tokens=10**6, allow_escalation=False).evidence[0]
     assert top.path == "pkg/interval.py"   # without E052 the version module ranks first
+
+
+URL_QUERY = """Tooltip flickers on hover
+The tooltip flickers, see ![recording](https://user-images.githubusercontent.com/1/2.gif) and
+https://github.com/acme/widgets/issues/12, as in https://github.com/acme/widgets/blob/main/src/tooltip/position.js#L40.
+Docs: https://widgets.acme.dev/components/tooltip?tab=api#placement
+"""
+
+
+def test_urls_keep_only_their_informative_parts():
+    cleaned = _strip_issue_template(URL_QUERY)
+    assert cleaned.split("\n")[0] == "Tooltip flickers on hover"
+    for scaffolding in ("https", "github", "githubusercontent", "recording", "issues", "acme.dev", "tab=api"):
+        assert scaffolding not in cleaned, scaffolding
+    assert " src/tooltip/position.js " in cleaned     # a source link keeps its repository path
+    assert "components tooltip" in cleaned and "placement" in cleaned
+
+
+def test_a_url_in_the_title_is_kept():
+    query = "Crash on https://example.com/page\nThe page crashes."
+    assert _strip_issue_template(query).split("\n")[0] == "Crash on https://example.com/page"
+
+
+def test_link_scaffolding_no_longer_pulls_the_readme(tmp_path):
+    links = "".join(f"See https://github.com/acme/widgets/issues/{n} and https://github.com/acme/widgets/pull/{n + 1}.\n"
+                    for n in range(10, 16))
+    query = "Tooltip flickers on hover\nThe tooltip position flickers on hover.\n" + links
+    src = tmp_path / "src"
+    (src / "widgets").mkdir(parents=True)
+    (src / "widgets" / "tooltip.py").write_text(
+        "def position_tooltip(anchor):\n    '''Place the tooltip next to its anchor on hover.'''\n"
+        "    return anchor\n")
+    (src / "README.md").write_text("# Widgets\n\n" + "".join(
+        f"- https://github.com/acme/widgets/issues/{n} and https://github.com/acme/widgets/pull/{n}\n"
+        for n in range(40)))
+    for i in range(10):
+        (src / "widgets" / f"mod{i}.py").write_text(f"def helper_{i}(value):\n    return value + {i}\n")
+    pack = tmp_path / "p.npk"
+    compile_pack(src, pack)
+    with PackSelector(str(pack), enable_cache=False) as selector:
+        top = selector.select(query, budget_tokens=10**6, allow_escalation=False).evidence[0]
+    assert top.path == "widgets/tooltip.py"   # without E053 the README's links rank first
