@@ -19,7 +19,8 @@ python -m benchmarks.npkbench.report --judge RUN BASE_ARM CANDIDATE_ARM --target
 python -m benchmarks.npkbench.report --judge-runs BASE_RUN:ARM CAND_RUN:ARM --targets tests   # across runs
 ```
 
-Unused confirmation splits: `heldout-e` (Python, 384) and `poly-heldout-b` (JS/TS, 320);
+Unused confirmation splits: `heldout-e` (Python, 384; reserved by the declared E055 plan) and
+`poly-heldout-b` (JS/TS, 320; reserved by the declared E053/E054 plan);
 `gym-heldout` was spent on E052 (GH01). Larger screening splits: `gym-dev` (Python, 326) and
 `poly-dev-b` (Java/JS/TS, 371). Declare each confirmation's criteria here before its run.
 
@@ -99,8 +100,9 @@ read with 4K tokens or more (M006, MH01).
    compile cost.
 5. **Held-out split hygiene:** spent: `heldout` (E002, E005c, E016b, E017), `heldout-b` (E016c,
    HB01), `heldout-c` (E031, HC01), `heldout-d` (E039, HD01), `poly-heldout` (E047, PH01),
-   `gym-heldout` (E052, GH01). Unused: `heldout-e` (Python, 384) and `poly-heldout-b` (JS/TS,
-   320; reserved by the declared E053/E054 plan). Declare criteria here before any run on them.
+   `gym-heldout` (E052, GH01). Unused: `heldout-e` (Python, 384; reserved by the declared E055
+   plan) and `poly-heldout-b` (JS/TS, 320; reserved by the declared E053/E054 plan). Declare
+   criteria here before any run on them.
 8. **Done: very long queries are capped (E043).** Distinct lexical terms per issue: median
    62-82, p99 300-466, up to 4,164. A query now keeps its first 512 distinct terms (backticked
    literals always kept): synthetic Django queries of 1,000 / 20,000 identifiers take 2.2 / 4.1
@@ -341,6 +343,31 @@ is a candidate if it passes on `poly-dev-b` with no significant loss on `gym-dev
 and E054 are both `poly-heldout-b` candidates, one confirmation run carries both arms against
 `npk_default` and each is promoted only if its own arm meets the standard rule there.
 Translated docs (7-8% of material-ui's budget, 2 gold hunks) were measured and not pursued.
+
+### Pre-declared plan for E055 (traceback frames; written before any E055 result)
+
+E055 (prototype `traceback_frames.py`) adds a channel ranking the blocks that define the
+functions named by the issue's traceback frames (CPython, IPython 7 and 8, and pytest
+formats), innermost frame first, fused by RRF like the other channels. A frame's path is
+resolved to a pack file by its longest path suffix (after `site-packages/`), its function to
+that file's defining blocks (the frame's line chooses among same-named definitions; a
+`<module>` or comprehension frame takes the block containing its line); frames outside the
+repository resolve to nothing. Arms: `e055_frames` (every resolved frame), `e055_frames3`
+(the three innermost resolved frames), control `e055_control` (must equal `npk_default`).
+Only issues with a traceback can change (dev 64 of 300, gym-dev 49 of 326; query cleaning
+keeps every frame). The opportunity was measured on both screening splits (a frame's own
+function holds a fix hunk in 38 dev and 32 gym-dev issues; the default covers 29 of those 45
+hunks at 1K and 27 at 2K on dev, 20 of 57 and 32 on gym-dev), so neither screen is fresh and
+`heldout-e` is the guard. Screens: `dev` (fix, tests, docs) and `gym-dev` (fix, tests), with
+the standard rule. A variant is a candidate if it passes the rule on at least one screen and
+has utility >= 0 at every budget and no significant loss on the other; if both variants are
+candidates, the one with the higher mean utility over the ten screen cells goes on. The
+candidate runs once on `heldout-e` (HE01, 384 issues, the last unused Python split) against
+`npk_default`, targets fix and tests, and is promoted only if it meets the standard rule
+there (utility `d_fix + 0.99 d_tests` >= 0 at every budget, a significant fix or tests gain at
+one or more budgets, no significant loss at any budget). If no variant is a candidate,
+`heldout-e` stays unused. The product form puts the channel first in the fusion order, as the
+prototype's hybrid slot does, and must reproduce the prototype's selections on both screens.
 
 ## Semantic evidence for code: what has been measured
 
