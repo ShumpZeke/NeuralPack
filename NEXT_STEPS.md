@@ -86,6 +86,12 @@ read with 4K tokens or more (M006, MH01).
    confirmed E016c (HB01); `heldout-c` is spent on E031 (HC01, passed). `heldout-d` (401 issues, a fixed
    stratified sample of the 785 unused issues of `heldout-b-all`) was declared on
    2026-09-27 before any result on it; declare the criteria in this file before running it.
+7. **Where ranking still fails (E039 default, dev-fast, full fused ranking):** the first gold
+   block is ranked first in 38 of 103 issues, in the top 3 in 45, top 10 in 59, top 50 in 78;
+   in 24 issues no candidate covers a gold hunk at all (the gold block is outside every
+   channel's top 60, and a larger candidate limit did not help, E026). The top block is in a
+   gold file for 57 issues. Candidates that are not the fix but outrank it are mostly other
+   code (15) or other blocks of the right file (16); tests (8) and docs (2) are rare.
 6. **Done: E039 title and repetition weighting is the default (HD01 on heldout-d).** Fix
    +1.4 to +4.6 points at 2K-16K and tests +2.8 to +12.2 at every budget, all significant.
    E034 (title x4 alone) also passed; E035 (mate file choice) and E036 (top-file header)
@@ -103,7 +109,9 @@ a gold file); git co-change history for the test mate (the test file that most o
 changed with the top implementation file in the 3,000 commits before the base is a gold
 test file in 35/103 dev-fast issues, vs 36 for path mirroring and 49 for mirror plus lexical
 rank; 52 vs 50 when given the true fix file), so it does not justify adding history to packs;
-compositional name matches (a definition such as `_print_Product` whose name parts all occur
+promoting the top file's next block right after the top block at small budgets (simulated
+on the E039 default, dev-fast: it would lift a gold block to rank 1 in 7 issues but push a
+gold block from another file down in about 10); compositional name matches (a definition such as `_print_Product` whose name parts all occur
 in the issue and include a code name it mentions: 13 of 153 dev-fast fix hunks covered, 6 of
 them missed at 4K, about 13 candidate blocks per issue, so at most a few hunks);
 skipping per-file `realpath` in scans (a test pins resolution-before-read,
