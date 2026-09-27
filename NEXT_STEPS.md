@@ -94,7 +94,11 @@ Measured non-opportunities (do not re-run without a new idea): vendored code (`d
 (the 7 dev-fast tasks whose traceback names a gold file already score 0.86-0.93 from 1K);
 module-path mentions (the product already selects the named gold file at 2K in 15 of 20
 cases); an error-message phrase channel (3 of 103 issues quote a message found verbatim in
-a gold file); skipping per-file `realpath` in scans (a test pins resolution-before-read,
+a gold file); git co-change history for the test mate (the test file that most often
+changed with the top implementation file in the 3,000 commits before the base is a gold
+test file in 35/103 dev-fast issues, vs 36 for path mirroring and 49 for mirror plus lexical
+rank; 52 vs 50 when given the true fix file), so it does not justify adding history to packs;
+skipping per-file `realpath` in scans (a test pins resolution-before-read,
 which matters for Windows reparse points; saving ~0.3 s per Django update).
 
 ## Things that were tried and must not be repeated without a new idea
