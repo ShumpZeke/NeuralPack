@@ -1,0 +1,33 @@
+{
+ "split": "poly-dev",
+ "arms": [
+  "npk_default"
+ ],
+ "budgets": [
+  1024,
+  2048,
+  4096,
+  8192,
+  16384
+ ],
+ "tasks": 199,
+ "targets": [
+  "fix",
+  "tests"
+ ],
+ "ephemeral_packs": true,
+ "load": [],
+ "environment": {
+  "git_commit": "541469f070daa939045b7ca13d8f5196fe059fb9",
+  "git_dirty": false,
+  "python": "3.12.3",
+  "sqlite": "3.45.1",
+  "platform": "Linux-6.18.44-fc-v37-x86_64-with-glibc2.39",
+  "cpus": 4,
+  "bench_version": "npkbench-1.1"
+ },
+ "started_unix": 1790493154.3436446,
+ "compiler_fingerprints": {
+  "npk_default": "5025d8ff064469a0"
+ }
+}

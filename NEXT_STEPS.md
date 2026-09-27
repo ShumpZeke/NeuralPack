@@ -156,7 +156,20 @@ tests +3.1 to +11.0, all significant, against `npk_query_baseline`), and the def
 (75) 0.218 / 0.440, TypeScript (50) 0.258 / 0.514. JavaScript is the weakest; about a
 quarter of first gold files are changesets or docs, which the code channels cannot rank.
 E046 (E032's member and modifier-prefixed definitions, scoped to JS/TS/Java at compile
-time) is the first `poly-dev` experiment.
+time) failed the rule on `poly-dev`: fix +2.5 / +1.4 / +0.6 points at 1K / 4K / 8K
+(significant), mostly Java, but regression tests -0.3 / -0.9 at 4K / 8K (significant) and
+utility below zero at 8K and 16K. The likely cause is the test mate, which cannot pair
+Java's `FooTest.java` with `Foo.java` (E047): re-screen E046 on top of E047 if E047 is kept.
+
+E047 (running): `TEST_PATH` knows only Python's test conventions, so colocated JS/TS tests
+(`Button.test.js`, `__tests__/`) count as implementation files and get no mate, and Java's
+mate ties among every test of the package. Offline, on P001's 2K selections, the mate file
+is a gold test file for 24 of 173 tests-target issues now and 51 with the JS/TS/Java
+conventions (Java 16 -> 26, JavaScript 6 -> 12, TypeScript 2 -> 13). Arms: `e047_paths`
+(polyglot test-path patterns), `e047_affix` (+ CamelCase test affixes stripped for
+mirroring), `e047_strict` (+ a mate must share the module or package name). Screened on
+`poly-dev` (decision), `ood-multi-dev` (other languages) and `dev-fast` (Python selections
+should not move).
 
 ## Semantic evidence for code: what has been measured
 
