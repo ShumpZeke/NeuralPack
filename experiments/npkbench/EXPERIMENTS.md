@@ -48,6 +48,7 @@ Do not edit by hand.
 | M006 | 2026-09-26 | The shipped semantic/hybrid mode on conversation memory | **kept** | Kept as the documented configuration for conversation memory (no code change). vs lexical default on memory-dev: +4.5 [+0.4,+9.0] / +1.4 / +0.3 / +3.5 / +4.4 [+0.2,+9.2] / +7.1 [+2.8,+12.2] points at 256-8K; largest on preferences (0.67 -> 1.00 at 8K) and multi-session (0.74 -> 0.83 at 8K). Within about 3 points of M004's bge-small pool fusion (-3.3 at 4K, +1.3 at 8K) and indistinguishable from MiniLM pool fusion. Cost: 48.9 s compile per history (one CPU thread) vs 0.25 s; query p50 5.9 ms vs 1.9 ms. Held-out (MH01, 370 questions): confirmed at 4K (+4.2) and 8K (+6.0), neutral at 2K and below; the recommendation is scoped to 4K+ budgets. |
 | MH01 | 2026-09-27 | Held-out confirmation of the semantic/hybrid chat-memory configuration (M006) | **kept** | Confirmed at 4K and above only. Hybrid vs lexical: +0.7/-0.7/+1.1/+2.2 (none significant) at 256-2K; +4.2 [+2.2,+6.4] at 4K (38 wins/6 losses) and +6.0 [+4.2,+8.1] at 8K (42/0). The 256-token gain seen on dev did not replicate. By type at 8K: preferences 0.71 -> 0.92, multi-session 0.78 -> 0.85, temporal 0.87 -> 0.92; knowledge-update is lower at 512-1K. README now recommends the mode for chat histories read with 4K tokens or more. Compile cost 44.6 s vs 0.22 s per history. |
 | O001 | 2026-09-26 | Out-of-distribution check on six never-used repositories (SWE-bench Lite dev) | **kept** | Generalizes on the fix target (23 issues: sqlfluff, pvlib, astroid, pydicom, marshmallow, pyvista). Definition channel + trimming vs neither: fix +19.6 [+4.3,+37.0] / +13.8 / +8.7 / +2.2 / +0.7 points at 1K-16K; tests -5/-10/-7.5/-7.5/-2.5 (not significant, same direction as held-out). Trimming alone: fix +15.2 [+2.2,+30.4] at 1K, identical beyond. Test mate (opt-in): tests +5/+15/+10/+5/+5 with no fix loss (20 tasks, lower CI bounds at zero). |
+| OM01 | 2026-09-27 | Non-Python generalization: SWE-bench Multilingual sample (114 issues, 41 repositories) | **kept** | Holds, at lower absolute recall. Product fix recall 0.110/0.164/0.197/0.269/0.320 at 1K-16K (Python held-out: 0.230/0.303/...). vs BM25 over 60-line chunks: fix +7.4 to +14.8 points and tests +2.4 to +9.8 (all significant); vs ~1,000-character chunks: fix +4.2 (n.s.) / +8.2 / +6.2 / +12.3 / +8.2 (significant from 2K). The definition channel helps outside Python: +5.1/+4.1/+3.6 points at 2K-8K (significant), decisive for Go (2K: 0.002 -> 0.202) and Ruby (0.000 -> 0.125). By language at 2K: PHP 0.33, Go 0.20, Java 0.20 (chunk baseline 0.27), Rust 0.18, Ruby 0.13, JS/TS 0.12 (flat to 8K), C/C++ 0.09. Weak spots (JS/TS, C/C++, Java) must be analyzed on ood-multi-dev, never on this sample. |
 
 ## B001 — Standard-RAG baseline: Okapi BM25 over fixed 60-line chunks (whole and split identifiers)
 
@@ -1875,3 +1876,47 @@ Do not edit by hand.
 ```
 
 - **Decision:** Generalizes on the fix target (23 issues: sqlfluff, pvlib, astroid, pydicom, marshmallow, pyvista). Definition channel + trimming vs neither: fix +19.6 [+4.3,+37.0] / +13.8 / +8.7 / +2.2 / +0.7 points at 1K-16K; tests -5/-10/-7.5/-7.5/-2.5 (not significant, same direction as held-out). Trimming alone: fix +15.2 [+2.2,+30.4] at 1K, identical beyond. Test mate (opt-in): tests +5/+15/+10/+5/+5 with no fix loss (20 tasks, lower CI bounds at zero).
+
+## OM01 — Non-Python generalization: SWE-bench Multilingual sample (114 issues, 41 repositories)
+
+- **Status:** kept
+- **Hypothesis:** NeuralPack's advantage over standard RAG, and the definition channel's gain, hold outside Python (measurement only; declared in NEXT_STEPS.md before the run).
+- **Run:** experiments/npkbench/runs/OM01-multilingual
+- **Results:**
+
+```json
+{
+ "fix_1K_16K": {
+  "bm25_60line_split": [
+   0.036,
+   0.06,
+   0.087,
+   0.141,
+   0.173
+  ],
+  "bm25_chars1000_split": [
+   0.068,
+   0.082,
+   0.134,
+   0.145,
+   0.238
+  ],
+  "no_defs_no_trim": [
+   0.093,
+   0.113,
+   0.156,
+   0.233,
+   0.302
+  ],
+  "product": [
+   0.11,
+   0.164,
+   0.197,
+   0.269,
+   0.32
+  ]
+ }
+}
+```
+
+- **Decision:** Holds, at lower absolute recall. Product fix recall 0.110/0.164/0.197/0.269/0.320 at 1K-16K (Python held-out: 0.230/0.303/...). vs BM25 over 60-line chunks: fix +7.4 to +14.8 points and tests +2.4 to +9.8 (all significant); vs ~1,000-character chunks: fix +4.2 (n.s.) / +8.2 / +6.2 / +12.3 / +8.2 (significant from 2K). The definition channel helps outside Python: +5.1/+4.1/+3.6 points at 2K-8K (significant), decisive for Go (2K: 0.002 -> 0.202) and Ruby (0.000 -> 0.125). By language at 2K: PHP 0.33, Go 0.20, Java 0.20 (chunk baseline 0.27), Rust 0.18, Ruby 0.13, JS/TS 0.12 (flat to 8K), C/C++ 0.09. Weak spots (JS/TS, C/C++, Java) must be analyzed on ood-multi-dev, never on this sample.
