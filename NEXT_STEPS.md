@@ -319,6 +319,20 @@ the other. A candidate that passes on `poly-dev-b` is confirmed once on `poly-he
 otherwise one that passes only on `gym-dev` is confirmed once on `heldout-e`. Only one
 confirmation run is made; if E053 is not a candidate, both splits stay unused.
 
+### Pre-declared plan for E054 (release notes last; written before any E054 result)
+
+E054 (`e054_notes_last`, prototype `release_notes.py`) moves blocks of historical release-note
+prose files (CHANGELOG, CHANGES, HISTORY, NEWS, release notes, whatsnew, blog and releases
+paths; prose extensions only) behind all other candidates. At 2K they take 9.2% of selected
+lines on `poly-dev-b`, 2.4% on `gym-dev`, 3.0% on `ood-multi-dev`; of 5,193 fix hunks on those
+splits 74 are release-note entries and the default finds 2 of them; the docs target already
+excludes release notes. It is screened on `poly-dev-b` and `gym-dev` in the same runs as E053
+(control `e054_control` must equal `npk_default`), with the standard rule on fix and tests; it
+is a candidate if it passes on `poly-dev-b` with no significant loss on `gym-dev`. If E053
+and E054 are both `poly-heldout-b` candidates, one confirmation run carries both arms against
+`npk_default` and each is promoted only if its own arm meets the standard rule there.
+Translated docs (7-8% of material-ui's budget, 2 gold hunks) were measured and not pursued.
+
 ## Semantic evidence for code: what has been measured
 
 Dense and neural evidence has not helped code retrieval on this benchmark so far: equal-weight
