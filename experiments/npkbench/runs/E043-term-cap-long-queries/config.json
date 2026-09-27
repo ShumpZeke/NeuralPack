@@ -1,0 +1,37 @@
+{
+ "split": "long-queries",
+ "arms": [
+  "npk_default",
+  "e043_uncapped"
+ ],
+ "budgets": [
+  1024,
+  2048,
+  4096,
+  8192,
+  16384
+ ],
+ "tasks": 10,
+ "targets": [
+  "fix",
+  "tests"
+ ],
+ "ephemeral_packs": true,
+ "load": [
+  "benchmarks.npkbench.prototypes.term_cap"
+ ],
+ "environment": {
+  "git_commit": "1ac5e664a05a49b966db4d4487f493600ff9d02c",
+  "git_dirty": false,
+  "python": "3.12.3",
+  "sqlite": "3.45.1",
+  "platform": "Linux-6.18.44-fc-v37-x86_64-with-glibc2.39",
+  "cpus": 4,
+  "bench_version": "npkbench-1.1"
+ },
+ "started_unix": 1790483598.7285693,
+ "compiler_fingerprints": {
+  "npk_default": "5effbb3d57dcedd5",
+  "e043_uncapped": "5effbb3d57dcedd5"
+ }
+}
