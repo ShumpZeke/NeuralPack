@@ -85,3 +85,56 @@ def test_mate_sees_test_files_added_by_an_update(tmp_path):
         update_pack(pack, src)
         after = selector.select(QUERY, budget_tokens=10**6, allow_escalation=False).evidence
     assert any("test_mate" in e.channels and e.path == "tests/test_throttle.py" for e in after)
+
+
+# --- E047: test-file conventions beyond Python ---------------------------------------
+
+def test_test_paths_follow_each_languages_conventions():
+    tests = ["packages/ui/src/Button/Button.test.js", "src/utils/__tests__/format.ts", "lib/x.spec.tsx",
+             "core/src/test/java/io/x/TestFoo.java", "api/src/main/java/org/x/FooTest.java",
+             "it/src/main/java/org/x/FooIT.java", "app/FooTests.cs", "tests/FooTest.php",
+             "pkg/server_test.go", "src/format_unittest.cc", "spec/models/user_spec.rb",
+             "tests/test_mod.py", "pkg/mod_test.py", "conftest.py"]
+    code = ["src/Button/Button.js", "src/latest.js", "src/contest.ts", "api/src/main/java/org/x/Contest.java",
+            "api/src/main/java/org/x/EDIT.java", "core/src/main/java/io/x/TestingFoo.java",
+            "src/Testimonial.tsx", "pkg/server.go", "pkg/mod.py", "lib/protest.rb"]
+    assert [p for p in tests if not select_module.TEST_PATH.search(p)] == []
+    assert [p for p in code if select_module.TEST_PATH.search(p)] == []
+
+
+def test_java_test_class_mirrors_its_subject():
+    impl = "dubbo-config/src/main/java/org/apache/dubbo/config/ServiceConfig.java"
+    own = "dubbo-config/src/test/java/org/apache/dubbo/config/ServiceConfigTest.java"
+    sibling = "dubbo-config/src/test/java/org/apache/dubbo/config/AbstractConfigTest.java"
+    assert _mate_score(impl, own) >= _mate_score(impl, sibling) + 2.0
+    assert _mate_score("core/src/main/java/io/x/Foo.java", "core/src/test/java/io/x/TestFoo.java") >= 3.0
+    assert _mate_score("core/src/main/java/io/x/Foo.java", "core/src/it/java/io/x/FooIT.java") >= 3.0
+
+
+def test_shared_generic_parts_are_no_mirror():
+    impl = "dubbo-config/src/main/java/org/apache/dubbo/config/ServiceConfig.java"
+    assert _mate_score(impl, "dubbo-rpc/src/test/java/org/apache/dubbo/rpc/RpcContextTest.java") == 0.0
+
+
+def test_colocated_js_test_is_the_mate(tmp_path):
+    src = tmp_path / "src"
+    for name in ("Button", "Card", "Menu"):
+        (src / "src" / name).mkdir(parents=True)
+    (src / "src" / "Button" / "Button.js").write_text(
+        "export function Button(props) {\n  // the focus ripple starts on keyboard focus\n"
+        "  return startRipple(props.focusRipple, props.disabled);\n}\n")
+    (src / "src" / "Button" / "Button.test.js").write_text(
+        "import { Button } from './Button';\n\ndescribe('Button', () => {\n"
+        "  it('shows the focus ripple', () => {\n    expect(render(Button)).toBeTruthy();\n  });\n});\n")
+    for name in ("Card", "Menu"):
+        (src / "src" / name / f"{name}.js").write_text(
+            f"export function {name}(props) {{\n  return props.children;\n}}\n")
+        (src / "src" / name / f"{name}.test.js").write_text(
+            f"describe('{name}', () => {{\n  it('renders', () => {{}});\n}});\n")
+    pack = tmp_path / "p.npk"
+    compile_pack(src, pack)
+    query = "Button focus ripple does not start on keyboard focus"
+    with PackSelector(str(pack), enable_cache=False, enable_test_mate=True) as selector:
+        chosen = selector.select(query, budget_tokens=10**6, allow_escalation=False).evidence
+    assert chosen[0].path == "src/Button/Button.js"
+    assert chosen[1].path == "src/Button/Button.test.js" and "test_mate" in chosen[1].channels

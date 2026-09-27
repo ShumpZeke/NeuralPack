@@ -488,9 +488,24 @@ TEST_MATE_DEPTH = 1000
 #: Below it the mate displaced fix sites (held-out H001 at 1K); at and above it
 #: the fresh heldout-b confirmed a net gain (E016c/HB01).
 TEST_MATE_MIN_BUDGET = 2048
-TEST_PATH = re.compile(r"(^|/)(tests?|testing)(/|$)|(^|/)test_[^/]*$|_tests?\.py$|(^|/)conftest\.py$")
+#: Test files by each language's convention (E047): Python (``tests/``,
+#: ``test_*.py``, ``*_test.py``, ``conftest.py``), Jest (``__tests__/``,
+#: ``*.test.js``/``*.spec.ts``), JUnit/PHPUnit/NUnit (``FooTest``, ``FooTests``,
+#: ``FooTestCase``, ``TestFoo``, Maven's ``FooIT``), Go (``*_test.go``), gtest
+#: (``*_test.cc``, ``*_unittest.cc``) and RSpec (``*_spec.rb``). None of the
+#: non-Python forms can match a ``.py`` path.
+TEST_PATH = re.compile(
+    r"(^|/)(tests?|testing)(/|$)|(^|/)test_[^/]*$|_tests?\.py$|(^|/)conftest\.py$"
+    r"|(^|/)__tests__/|\.(test|spec)\.[cm]?[jt]sx?$"
+    r"|(^|/)[^/]*(Test|Tests|TestCase)\.(java|kt|scala|groovy|php|cs)$"
+    r"|(^|/)[^/]*[a-z0-9]IT\.(java|kt|scala|groovy)$"
+    r"|(^|/)Test[A-Z0-9][^/]*\.(java|kt|scala|groovy|php|cs)$"
+    r"|_test\.(go|c|cc|cpp)$|_unittest\.(c|cc|cpp)$|_spec\.rb$")
 DOC_PATH = re.compile(r"(^|/)(docs?|doc_src)(/|$)|\.(rst|md|txt)$")
 _GENERIC_PATH_PARTS = frozenset({"tests", "test", "testing", "src", "lib", "py", "__init__", "unit", "units", "t"})
+#: A test class named after its subject: ``FooTest``, ``FooTests``, ``FooIT``,
+#: ``FooTestCase``, ``FooSpec`` or ``TestFoo`` (the affix is capitalized).
+_TEST_AFFIX = re.compile(r"^(?:Test(?=[A-Z0-9])(?P<prefixed>.+)|(?P<suffixed>.+?[a-z0-9])(?:Tests?|IT|TestCase|Spec))$")
 
 
 def _path_parts(path: str) -> List[str]:
@@ -498,15 +513,32 @@ def _path_parts(path: str) -> List[str]:
     return [part for part in re.split(r"[/_.-]+", stem.lower()) if part]
 
 
+def _test_path_parts(path: str) -> List[str]:
+    """A test file's path parts plus its name without a CamelCase test affix.
+
+    ``ServiceConfigTest.java`` then mirrors ``ServiceConfig.java`` as
+    ``test_mod.py`` mirrors ``mod.py``; without it every test of the package
+    tied (E047).
+    """
+    parts = _path_parts(path)
+    match = _TEST_AFFIX.match(re.sub(r"\.[A-Za-z0-9]+$", "", path.rsplit("/", 1)[-1]))
+    if match:
+        parts.append((match.group("prefixed") or match.group("suffixed")).lower())
+    return parts
+
+
 def _mate_score(impl: str, test: str, test_parts: Optional[frozenset] = None,
                 impl_parts: Optional[List[str]] = None) -> float:
     """How strongly a test path mirrors an implementation path (0 = unrelated).
 
     ``pkg/mod.py`` -> ``tests/pkg/test_mod.py``: the module name counts 2, its
-    package 1, any other shared non-generic path part 0.25.
+    package 1, any other shared non-generic path part 0.25. A test that shares
+    neither the module nor the package name is no mirror, however many other
+    parts it shares (Java's ``src/test/java/org/apache/...`` shares four with
+    every class of the project; E047).
     """
     ip = impl_parts if impl_parts is not None else _path_parts(impl)
-    tp = test_parts if test_parts is not None else frozenset(_path_parts(test))
+    tp = test_parts if test_parts is not None else frozenset(_test_path_parts(test))
     if not ip or not tp:
         return 0.0
     module, parent = ip[-1], (ip[-2] if len(ip) > 1 else "")
@@ -515,13 +547,15 @@ def _mate_score(impl: str, test: str, test_parts: Optional[frozenset] = None,
         score += 2.0
     if parent and parent in tp and parent not in _GENERIC_PATH_PARTS:
         score += 1.0
+    if not score:
+        return 0.0
     shared = (set(ip) & tp) - _GENERIC_PATH_PARTS - {module, parent}
     return score + 0.25 * len(shared)
 
 
 def _test_paths(con: sqlite3.Connection) -> List[Tuple[str, frozenset]]:
     """Test-file paths with their path parts (callers cache this per snapshot)."""
-    return [(row[0], frozenset(_path_parts(row[0]))) for row in con.execute("SELECT path FROM files")
+    return [(row[0], frozenset(_test_path_parts(row[0]))) for row in con.execute("SELECT path FROM files")
             if TEST_PATH.search(row[0])]
 
 

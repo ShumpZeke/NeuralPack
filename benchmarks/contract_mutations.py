@@ -371,6 +371,12 @@ MUTANTS = [
      "tests/test_query_cleaning.py::test_first_line_and_long_headings_are_kept"),
     ("query_cleaning_reports_cleaned_query", "npk/pack/select.py", None, None,
      "tests/test_query_cleaning.py::test_selection_reports_the_callers_query"),
+    ("polyglot_test_paths_ignored", "npk/pack/select.py", None, None,
+     "tests/test_test_mate.py::test_colocated_js_test_is_the_mate"),
+    ("test_affix_ignored", "npk/pack/select.py", "_test_path_parts", "return _path_parts(path)",
+     "tests/test_test_mate.py::test_java_test_class_mirrors_its_subject"),
+    ("unnamed_mirror_accepted", "npk/pack/select.py", None, None,
+     "tests/test_test_mate.py::test_shared_generic_parts_are_no_mirror"),
     ("test_mate_paths_never_refreshed", "npk/pack/select.py", "_place_test_mate",
      "self._test_paths_key = manifest.get('root_sha256', '')",
      "tests/test_test_mate.py::test_mate_sees_test_files_added_by_an_update"),
@@ -486,6 +492,15 @@ def main():
                 assert isinstance(matches[0].values[0], ast.Constant) and matches[0].values[0].value is True
                 matches[0].values[0] = ast.Constant(value=False)
                 changed = ast.unparse(ast.fix_missing_locations(tree))+'\n'
+            elif name in ("polyglot_test_paths_ignored", "unnamed_mirror_accepted"):
+                target, replacement = {
+                    "polyglot_test_paths_ignored": (
+                        '    r"|(^|/)__tests__/|\\.(test|spec)\\.[cm]?[jt]sx?$"\n', ""),
+                    "unnamed_mirror_accepted": ("    if not score:\n        return 0.0\n", ""),
+                }[name]
+                if source.count(target) != 1:
+                    raise ValueError(f"{name} target is no longer unique")
+                changed = source.replace(target, replacement)
             elif name == "test_mate_gate_ignored":
                 target = "budget >= TEST_MATE_MIN_BUDGET if self.enable_test_mate is None"
                 if source.count(target) != 1:
