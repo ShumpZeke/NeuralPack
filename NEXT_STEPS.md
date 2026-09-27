@@ -282,6 +282,23 @@ confirmed once on `gym-heldout` (GH01, 300 issues) against `npk_default` with th
 rule on fix and tests. If it fails either screen, it is rejected and `gym-heldout` stays
 unused.
 
+### gym-dev observations (open problems, measured 2026-09-27)
+
+- **Large codebases are the weakest Python case.** pandas finds 0.061 of fix hunks at 2K
+  (0.113 excluding its release-note hunks) and mypy 0.046: every file shares the domain
+  vocabulary (Series, dtype, TypeInfo), so lexical ranking cannot separate them. This needs
+  a new kind of evidence (call structure from the named entities, or code-aware semantics),
+  not more lexical tuning.
+- **mypy specifics** (30 issues): at 2K, docs take 29% of selected lines, vendored typeshed
+  stubs 12% (never gold), and 67 of 72 regression-test gold hunks sit in `test-data/unit/*.test`,
+  which no test-file convention covers (the test mate never fires). Go's `testdata/` is the
+  one language-level convention of this kind; anything broader would be repository fitting.
+- **Cython is not indexed** (`.pyx`, `.pxd`): 9 of 1,905 gym-dev fix hunks, 4 issues. Low
+  priority.
+- **pandas release notes**: nearly every pandas fix adds a `doc/source/whatsnew` entry, which
+  the fix target counts; retrieving "the newest release-note file" would be benchmark-shaped
+  rather than useful context, so it is not pursued.
+
 ## Semantic evidence for code: what has been measured
 
 Dense and neural evidence has not helped code retrieval on this benchmark so far: equal-weight
