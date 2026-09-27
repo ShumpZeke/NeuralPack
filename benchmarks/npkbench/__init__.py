@@ -30,7 +30,9 @@ Splits (fixed before any NeuralPack result was observed):
   declared 2026-09-26 for the next confirmation. (Spent on E031 by HC01.)
 * ``heldout-d`` -- a fixed stratified 400 of ``heldout-b-all`` minus ``heldout-b``
   and ``heldout-c`` (785 remain), declared 2026-09-27 before any result on it;
-  confirmation only.
+  confirmation only. (Spent on E039 by HD01.)
+* ``heldout-e`` -- the rest of ``heldout-b-all`` (not in ``heldout-b``, ``-c`` or ``-d``),
+  declared 2026-09-27 before any result on it; confirmation only.
 * ``ood-multi`` -- SWE-bench Multilingual (300 issues, 41 non-Python repositories);
   ``ood-multi-sample``: at most 3 per repository, measurement only;
   ``ood-multi-dev``: the other 186, for developing non-Python handling.

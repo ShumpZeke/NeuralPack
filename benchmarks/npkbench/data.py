@@ -407,6 +407,7 @@ def split(name: str) -> List[Task]:
                    "heldout": "swe_verified_test", "ood": "swe_lite_dev",
                    "heldout-b": "swe_full_test", "heldout-b-all": "swe_full_test",
                    "heldout-c": "swe_full_test", "heldout-d": "swe_full_test",
+                   "heldout-e": "swe_full_test",
                    "ood-multi": "swe_multi_test", "ood-multi-sample": "swe_multi_test",
                    "ood-multi-dev": "swe_multi_test"}[base]
         lite = {t.instance_id for t in load("swe_lite_test")} if base == "heldout" else set()
@@ -465,6 +466,14 @@ def split(name: str) -> List[Task]:
             items.sort(key=lambda t: _stable_hash("heldout-c:" + t.instance_id))
             chosen_c.extend(items[:max(2, round(400 * len(items) / len(rest)))])
         return sorted(chosen_c, key=lambda t: t.instance_id)
+    if name == "heldout-e":
+        # Fifth confirmation split (declared 2026-09-27, before any result on it, after
+        # heldout-d was spent on E039/HD01): every issue of heldout-b-all not in
+        # heldout-b, heldout-c or heldout-d.
+        spent = set()
+        for other in ("heldout-b", "heldout-c", "heldout-d"):
+            spent |= {t.instance_id for t in split(other)}
+        return [t for t in split("heldout-b-all") if t.instance_id not in spent]
     if name == "heldout-d":
         # Fourth confirmation split (declared 2026-09-27, before any result on it, while
         # heldout-c was being spent on E031/HC01): a fixed stratified 400 of
