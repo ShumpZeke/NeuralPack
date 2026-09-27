@@ -161,8 +161,10 @@ channel, no trimming) on `heldout-b` (400 fresh issues), targets fix and tests.
 ## Non-Python code (OM01, OMD01, E030)
 
 On SWE-bench Multilingual (41 repositories), NeuralPack beats both chunk-BM25 baselines
-(fix +8 to +15 points on the measurement sample) and the definition channel helps, but
-absolute recall is about half of Python's (0.164 vs 0.303 at 2K). Diagnosis on
+and the definition channel helps. The query handling (E031 + E039) added +8.9 to +13.5 fix
+points on the measurement sample (R003: 0.198/0.260/0.301/0.364/0.455 at 1K-16K; 0.164 at 2K
+before), so absolute recall is now about three quarters of Python's (0.260 vs 0.346 at 2K).
+The diagnosis below predates those changes. Diagnosis on
 `ood-multi-dev` only: the loss is ranking, not packing (fix sites rank at median 112-401;
 window trimming for non-Python blocks, E030, changed nothing). C/C++, JS/TS and Rust are
 weakest (3-4% of gold hunks selected at 2K). JS issues' budgets go to CONTRIBUTING.md,
