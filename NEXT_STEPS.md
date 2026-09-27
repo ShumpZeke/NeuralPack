@@ -166,3 +166,23 @@ significant losses.
 **Outcome (2026-09-27): passed; E031 is the default.** heldout-c: fix +0.7/+0.9/+1.2 points
 at 4K/8K/16K and tests +0.4 (1K) / +1.4 (16K), all significant; utility
 +0.25/+0.54/+1.26/+1.86/+2.57; no significant loss. `npk_rawquery` is the previous product.
+
+## Pre-declared criteria for HD01 (heldout-d; written 2026-09-27 before its run and before the full-dev results of E034/E035/E036/E039)
+
+Candidate selection on the full dev split (run `E034-E035-E036-dev`, 300 issues, all arms
+against the current product with E031 cleaning):
+- E034 title weighting: x3 or x4, whichever has the higher mean utility over the five budgets
+  on the full dev split (ties go to x3, the smaller change). It goes to heldout-d if it passes
+  the declared dev rule (utility `d_fix + 0.99 d_tests + 0.087 d_docs` >= 0 at every budget and
+  a significant gain on fix or tests).
+- E035 (mate file choice), E036 (top-file header) and the E039 + title combination go to
+  heldout-d only if they pass the same dev rule on the full dev split; E035 and E036 must also
+  keep utility >= 0 at every budget on the 197 dev issues outside dev-fast, where their rules
+  were not designed.
+
+HD01 runs `npk_default` and the selected candidate arms on `heldout-d` (401 unused issues),
+targets fix and tests. A candidate is promoted only if, against `npk_default`: utility
+`d_fix + 0.99 d_tests` is >= 0 at every budget, fix or tests gains significantly at one or
+more budgets, and no target loses significantly at any budget. If two or more candidates
+pass, an arm combining them must pass the same criteria in the same run before they are
+combined in the product; otherwise only the candidate with the higher mean utility is promoted.
