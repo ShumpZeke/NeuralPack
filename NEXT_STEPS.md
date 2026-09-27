@@ -19,12 +19,11 @@ python -m benchmarks.npkbench.report --judge RUN BASE_ARM CANDIDATE_ARM --target
 python -m benchmarks.npkbench.report --judge-runs BASE_RUN:ARM CAND_RUN:ARM --targets tests   # across runs
 ```
 
-Unused confirmation splits: `heldout-e` (Python, 384; reserved by the declared E055 plan),
-`poly-heldout-b` (JS/TS, 320; reserved by the declared E053/E054 plan), and, declared later on
-2026-09-27 before any result on them, `gym-heldout-b` (Python, 254), `gym-heldout-c` (Python,
-197; both SWE-Gym, the next runs of 30 per repository after `gym-heldout`) and `poly-heldout-c`
-(JS/TS, 246);
-`gym-heldout` was spent on E052 (GH01). Larger screening splits: `gym-dev` (Python, 326) and
+Unused confirmation splits: `heldout-e` (Python, 384; reserved by the declared E055 plan) and,
+declared later on 2026-09-27 before any result on them, `gym-heldout-b` (Python, 254),
+`gym-heldout-c` (Python, 197; both SWE-Gym, the next runs of 30 per repository after
+`gym-heldout`) and `poly-heldout-c` (JS/TS, 246). `gym-heldout` was spent on E052 (GH01) and
+`poly-heldout-b` on E053/E054 (PHB01). Larger screening splits: `gym-dev` (Python, 326) and
 `poly-dev-b` (Java/JS/TS, 371). Declare each confirmation's criteria here before its run.
 
 First runs clone the 12 SWE-bench repositories (blobless, ~2 GB) and build packs
@@ -103,10 +102,9 @@ read with 4K tokens or more (M006, MH01).
    compile cost.
 5. **Held-out split hygiene:** spent: `heldout` (E002, E005c, E016b, E017), `heldout-b` (E016c,
    HB01), `heldout-c` (E031, HC01), `heldout-d` (E039, HD01), `poly-heldout` (E047, PH01),
-   `gym-heldout` (E052, GH01). Unused: `heldout-e` (Python, 384; reserved by the declared E055
-   plan), `poly-heldout-b` (JS/TS, 320; reserved by the declared E053/E054 plan),
-   `gym-heldout-b` (Python, 254), `gym-heldout-c` (Python, 197) and `poly-heldout-c` (JS/TS,
-   246). Declare criteria here before any run on them.
+   `gym-heldout` (E052, GH01), `poly-heldout-b` (E053/E054, PHB01). Unused: `heldout-e` (Python,
+   384; reserved by the declared E055 plan), `gym-heldout-b` (Python, 254), `gym-heldout-c`
+   (Python, 197) and `poly-heldout-c` (JS/TS, 246). Declare criteria here before any run on them.
 8. **Done: very long queries are capped (E043).** Distinct lexical terms per issue: median
    62-82, p99 300-466, up to 4,164. A query now keeps its first 512 distinct terms (backticked
    literals always kept): synthetic Django queries of 1,000 / 20,000 identifiers take 2.2 / 4.1
@@ -373,6 +371,18 @@ also carries `e053_e054` (both changes, prototype `urls_notes.py`); if both arms
 combined in the product only if `e053_e054` meets the same rule in the same run, and otherwise
 only the arm with the higher mean utility is promoted. A product form must reproduce its
 prototype's selections before it is merged (E054's is ready on local branch `exp/e054p`).
+
+### PHB01 outcome: E053 and E054 promoted together (poly-heldout-b now spent)
+
+Both arms and the combination pass on `poly-heldout-b` (320 issues; control identical
+1,600/1,600). E053: fix +1.83 / +2.50 / +3.30 / +2.63 / +2.74 at 1K-16K (all significant), tests
++2.22 / +1.77 / +1.10 / +2.13 at 2K-16K (significant), mean utility +4.14. E054: fix +1.18 /
++1.30 / +1.71 and tests +0.48 / +0.43 / +0.63 at 2K-8K (significant), mean +1.41. `e053_e054`:
+fix +1.56 to +3.62 and tests +1.08 to +2.56, every cell significant, mean +4.72. The default on
+`poly-heldout-b` finds 0.162 / 0.214 / 0.318 / 0.418 / 0.484 of fix hunks; with both changes
+0.177 / 0.238 / 0.354 / 0.454 / 0.515. The product forms (local branch `exp/e053-e054`) merge
+once they reproduce the prototypes' selections and the running `gym-dev` screen, which uses
+the current product, has finished.
 
 ### Pre-declared plan for E055 (traceback frames; written before any E055 result)
 
