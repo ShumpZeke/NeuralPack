@@ -353,6 +353,14 @@ MUTANTS = [
      "tests/test_test_mate.py::test_reused_ranking_matches_a_dedicated_query"),
     ("test_mate_gate_ignored", "npk/pack/select.py", None, None,
      "tests/test_test_mate.py::test_default_mate_is_budget_gated"),
+    ("title_weight_ignored", "npk/pack/select.py", None, None,
+     "tests/test_title_weight.py::test_title_terms_outweigh_the_body"),
+    ("query_tf_ignored", "npk/pack/select.py", None, None,
+     "tests/test_title_weight.py::test_repeated_terms_count_more"),
+    ("single_line_queries_weighted", "npk/pack/select.py", None, None,
+     "tests/test_title_weight.py::test_single_line_query_is_unweighted"),
+    ("title_weight_whole_query", "npk/pack/select.py", None, None,
+     "tests/test_title_weight.py::test_title_terms_outweigh_the_body"),
     ("query_cleaning_disabled", "npk/pack/select.py", "_strip_issue_template", "return query",
      "tests/test_query_cleaning.py::test_template_words_no_longer_pull_the_contributing_guide"),
     ("query_cleaning_drops_title", "npk/pack/select.py", None, None,
@@ -479,6 +487,23 @@ def main():
                 if source.count(target) != 1:
                     raise ValueError("test-mate budget gate is no longer unique")
                 changed = source.replace(target, "True if self.enable_test_mate is None")
+            elif name in ("title_weight_ignored", "query_tf_ignored", "single_line_queries_weighted"):
+                target, replacement = {
+                    "title_weight_ignored": ("reps += title_weight - 1", "pass"),
+                    "query_tf_ignored": ("reps = min(tf_cap, 1 + int(math.log2(max(1, counts.get(term, 1)))))",
+                                         "reps = 1"),
+                    "single_line_queries_weighted": (
+                        "if not newline or not body.strip() or (title_weight == 1 and tf_cap == 1):",
+                        "if title_weight == 1 and tf_cap == 1:"),
+                }[name]
+                if source.count(target) != 1:
+                    raise ValueError(f"{name} target is no longer unique")
+                changed = source.replace(target, replacement)
+            elif name == "title_weight_whole_query":
+                target = 'title, newline, body = query.strip().partition("\\n")'
+                if source.count(target) != 1:
+                    raise ValueError("title split is no longer unique")
+                changed = source.replace(target, 'title, newline, body = query.strip(), "\\n", query')
             elif name in ("query_cleaning_drops_title", "query_cleaning_reports_cleaned_query"):
                 target, replacement = {
                     "query_cleaning_drops_title": ("kept = lines[:1]", "kept = []"),

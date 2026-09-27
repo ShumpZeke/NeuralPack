@@ -126,7 +126,7 @@ source tree ──scan──▶ files ──split──▶ blocks ──index─
   (unindexable never-indexed files are skipped and listed in manifest skipped_sources)
                                                             │
 query ──strip issue-form scaffolding (E031)
-      ──analyze──▶ terms ──FTS5 bm25 top-60───────────┐     │
+      ──analyze──▶ weighted terms ──bm25 top-60───────┐     │
       ├─raise-intent──▶ relation sites ───────────────┤     │
       └─named code entities──▶ defining blocks ───────┴─RRF─▶ greedy fill ──▶ Selection
                                   (if the top block alone exceeds the budget,
@@ -172,3 +172,11 @@ query ──strip issue-form scaffolding (E031)
   pull CONTRIBUTING guides, READMEs and changelogs above code. Fresh heldout-c (HC01, 400
   issues): fix +0.7/+0.9/+1.2 points at 4K/8K/16K and tests +0.4 (1K) and +1.4 (16K), all
   significant; no significant loss at any budget.
+- **Title and repetition weighting (E039, `title_weight` 3 and `tf_cap` 3,
+  `--title-weight`/`--tf-cap`):** for a multi-line query, the lexical OR repeats each term
+  `min(tf_cap, 1 + floor(log2 tf))` times, plus `title_weight - 1` more if it occurs in the
+  first line (FTS5 `bm25()` sums repeated phrases); the channel and the test-mate depth
+  ranking use the same weighted MATCH. Single-line queries are unweighted. Fresh heldout-d
+  (HD01, 401 issues): fix +1.4/+2.9/+3.2/+4.6 points at 2K-16K and tests +2.8 to +12.2 at
+  every budget, all significant. The title-only variant (E034, x4) also passed; by the
+  declared rule only the higher-utility candidate was promoted.

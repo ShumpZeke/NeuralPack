@@ -22,8 +22,8 @@ def test_query_cannot_mix_old_candidate_ids_with_a_concurrently_committed_update
         def write():
             try:return update_pack(pack,source)
             finally:writer_finished.set()
-        def interleaved(con,query,limit):
-            ids=lexical(con,query,limit)
+        def interleaved(con,query,limit,*weights):
+            ids=lexical(con,query,limit,*weights)
             if not jobs:
                 (source/'a.py').write_text('LIMIT = 19001\n')
                 jobs.append(pool.submit(write))

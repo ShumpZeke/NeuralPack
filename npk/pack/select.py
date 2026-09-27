@@ -336,12 +336,46 @@ def _rank_lexical_terms(
     return [row["block_id"] for row in rows]
 
 
-def _lexical_channel(con: sqlite3.Connection, query: str, limit: int) -> List[int]:
+#: Extra weight for the terms of an issue's title, the first line of a multi-line
+#: query (E034/E039): each counts ``TITLE_WEIGHT - 1`` more times in the lexical OR.
+TITLE_WEIGHT = 3
+#: Most times a query term counts from its frequency in a multi-line query:
+#: ``min(TF_CAP, 1 + floor(log2(tf)))`` (E039). 1 ignores frequency.
+TF_CAP = 3
+
+
+def _weighted_terms(con: sqlite3.Connection, query: str, terms: Sequence[str],
+                    title_weight: int = 1, tf_cap: int = 1) -> List[str]:
+    """Lexical terms repeated by their weight in an issue-style query.
+
+    The lexical OR lists each distinct term once, so a word the reporter
+    repeats throughout the issue, or states in its title (the one-line summary
+    of the topic), counts no more than one from a traceback or an environment
+    listing. ``bm25()`` sums repeated OR phrases, so a term repeated ``k`` times
+    counts ``k`` times. Single-line queries are left unweighted.
+    """
+    title, newline, body = query.strip().partition("\n")
+    if not newline or not body.strip() or (title_weight == 1 and tf_cap == 1):
+        return list(terms)
+    counts = collections.Counter(analyzed_terms(query))
+    in_title = set(_lexical_terms(con, title)) if title_weight > 1 else set()
+    weighted: List[str] = []
+    for term in terms:
+        reps = min(tf_cap, 1 + int(math.log2(max(1, counts.get(term, 1)))))
+        if term in in_title:
+            reps += title_weight - 1
+        weighted.extend([term] * reps)
+    return weighted
+
+
+def _lexical_channel(con: sqlite3.Connection, query: str, limit: int,
+                     title_weight: int = 1, tf_cap: int = 1) -> List[int]:
     try:
         terms = _lexical_terms(con, query)
         if not terms:
             return []
-        expanded = _rank_lexical_terms(con, terms, limit)
+        weighted = _weighted_terms(con, query, terms, title_weight, tf_cap)
+        expanded = _rank_lexical_terms(con, weighted, limit)
         whole_terms = _whole_lexical_terms(query)
         if whole_terms == terms or len(whole_terms) != 1:
             return expanded
@@ -731,6 +765,8 @@ class PackSelector:
         enable_trim: bool = True,
         enable_test_mate: Optional[bool] = None,
         enable_query_cleaning: bool = True,
+        title_weight: int = TITLE_WEIGHT,
+        tf_cap: int = TF_CAP,
         enable_cache: bool = True,
         max_cache_entries: int = 128,
     ):
@@ -764,6 +800,12 @@ class PackSelector:
         if type(enable_query_cleaning) is not bool:
             raise ValueError("enable_query_cleaning must be a boolean")
         self.enable_query_cleaning = enable_query_cleaning
+        if type(title_weight) is not int or title_weight < 1:
+            raise ValueError("title_weight must be an integer >= 1 (1 = no title emphasis)")
+        self.title_weight = title_weight
+        if type(tf_cap) is not int or tf_cap < 1:
+            raise ValueError("tf_cap must be an integer >= 1 (1 = ignore query term frequency)")
+        self.tf_cap = tf_cap
         self._test_paths_cache: Optional[List[Tuple[str, frozenset]]] = None
         self._test_paths_key: Optional[str] = None
         self._con: Optional[sqlite3.Connection] = None
@@ -962,6 +1004,8 @@ class PackSelector:
                     self.enable_trim,
                     self.enable_test_mate,
                     self.enable_query_cleaning,
+                    self.title_weight,
+                    self.tf_cap,
                     self.tokenizer.sha256 if self.tokenizer is not None else None,
                 )
                 if cache_key in self._cache:
@@ -1068,10 +1112,10 @@ class PackSelector:
         if use_mate and len(_whole_lexical_terms(query)) != 1:
             # One ranking serves the channel (its top-limit prefix) and the
             # test-mate lookup; ORDER BY is total, so prefixes are identical.
-            deep = _lexical_channel(con, query, max(limit, TEST_MATE_DEPTH))
+            deep = _lexical_channel(con, query, max(limit, TEST_MATE_DEPTH), self.title_weight, self.tf_cap)
             lex = deep[:limit]
         else:
-            lex = _lexical_channel(con, query, limit)
+            lex = _lexical_channel(con, query, limit, self.title_weight, self.tf_cap)
         if lex:
             ranks["lexical"] = lex
         if self.enable_relations:

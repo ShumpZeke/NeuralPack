@@ -120,8 +120,11 @@ def paired(run_a: Path, arm_a: str, run_b: Path, arm_b: str, metric: str = "hunk
         mean, lo, hi = bootstrap_diff(a, b)
         wins = sum(y > x for x, y in zip(a, b))
         losses = sum(y < x for x, y in zip(a, b))
+        # Significance comes from the unrounded bounds: a bound that rounds to 0.0 can
+        # still exclude zero (E036 on heldout-d had an upper bound of -0.00004).
         out[str(budget)] = {"n": len(keys), "a": round(_mean(a), 4), "b": round(_mean(b), 4),
                             "diff": round(mean, 4), "ci95": [round(lo, 4), round(hi, 4)],
+                            "significant": "gain" if lo > 0 else "loss" if hi < 0 else "",
                             "wins": wins, "losses": losses}
     return out
 

@@ -74,9 +74,11 @@ def test_query_that_would_become_empty_is_used_unchanged():
 
 
 def test_template_words_no_longer_pull_the_contributing_guide(pack):
-    with PackSelector(str(pack), enable_cache=False) as selector:
+    # Title and term-frequency weighting (E039) also demote the guide here; isolate cleaning.
+    flat = {"title_weight": 1, "tf_cap": 1}
+    with PackSelector(str(pack), enable_cache=False, **flat) as selector:
         cleaned = selector.select(QUERY, budget_tokens=10**6, allow_escalation=False).evidence
-    with PackSelector(str(pack), enable_cache=False, enable_query_cleaning=False) as selector:
+    with PackSelector(str(pack), enable_cache=False, enable_query_cleaning=False, **flat) as selector:
         raw = selector.select(QUERY, budget_tokens=10**6, allow_escalation=False).evidence
     assert raw[0].path == "CONTRIBUTING.md"
     assert cleaned[0].path == "pkg/cache.py"

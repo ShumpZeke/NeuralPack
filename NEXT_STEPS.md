@@ -23,13 +23,17 @@ have ~20 GB free. Record every experiment with `benchmarks.npkbench.expdb.append
 
 ## Evidence discipline that must not be relaxed
 
-- Contract mutations: 172 mutants. The 168 at 3b5f9f5 (159 at the base commit plus 9 added
+- Contract mutations: 176 mutants. The 168 at 3b5f9f5 (159 at the base commit plus 9 added
   in this loop for source-policy skips, the definition channel, top-block trimming and the
   test mate) are all killed (`experiments/npkbench/contract-mutations-3b5f9f5.json`; commit
-  8eb6b27 misstates the added count as 13); `test_mate_gate_ignored` (E016c) and the three
-  query-cleaning mutants (E031) were killed when added (172 in total). Add a mutant for every new guard or ranking rule.
+  8eb6b27 misstates the added count as 13); `test_mate_gate_ignored` (E016c), the three
+  query-cleaning mutants (E031) and the four weighting mutants (E039) were killed when added
+  (176 in total). Add a mutant for every new guard or ranking rule.
 
 - Decide on `dev`/`dev-fast`; confirm once on `heldout`; never tune on `heldout`.
+- Judge significance from unrounded bootstrap bounds (`report.paired` now returns a
+  `significant` field): E036's tests loss on heldout-d had an upper bound of -0.00004, which
+  rounds to 0.0.
 - Apply the declared decision rule in `benchmarks/npkbench/__init__.py`: frequency-weighted
   utility `U = d_fix + 0.99 d_tests + 0.087 d_docs` must be >= 0 at every budget, with a
   significant gain on the target the change addresses.
@@ -82,18 +86,14 @@ read with 4K tokens or more (M006, MH01).
    confirmed E016c (HB01); `heldout-c` is spent on E031 (HC01, passed). `heldout-d` (401 issues, a fixed
    stratified sample of the 785 unused issues of `heldout-b-all`) was declared on
    2026-09-27 before any result on it; declare the criteria in this file before running it.
-6. **HD01 on heldout-d (running 2026-09-27): E034 title weighting (x4), E039 (tf + title),
-   E035 (mate file choice, mirror_any) and E036 (top-file header), plus their combinations.**
-   All passed the full dev split (E034 x4: utility +6.6 to +16.4 points; non-Python dev
-   +2.7 to +11.8). Product forms are ready on the local branch `exp/e034p` (worktree
-   `~/np-e034p`): `title_weight` (constant `TITLE_WEIGHT`; set it to 4 if x4 is confirmed),
-   the mirror_any `_test_mate`, `_place_file_header` (`enable_file_header`,
-   `--no-file-header`), tests and five mutants (all killed). The combined product equals
-   `combo_title4_mate_any_header1` and `combo_title4_mate_any` on 515/515 dev-fast
-   selections. Merge only the parts HD01 confirms, re-run the equivalence for that subset,
-   and fill the README/architecture placeholders (`HD01_TBD`). Rejected on the way: E037
-   (stemming), E038 (static embeddings), E040 (title-weighted definition votes); E041
-   (title weighting in trimming's member ranking) is queued on dev-fast.
+6. **Done: E039 title and repetition weighting is the default (HD01 on heldout-d).** Fix
+   +1.4 to +4.6 points at 2K-16K and tests +2.8 to +12.2 at every budget, all significant.
+   E034 (title x4 alone) also passed; E035 (mate file choice) and E036 (top-file header)
+   failed on held-out (E036 on a significant tests loss of 0.7 points at 2K despite
+   significant fix gains, so a header variant gated to 4K+ is a candidate for a fresh split).
+   Next: re-measure the README table with the new default on `heldout` (measurement only)
+   and the non-Python sample (`ood-multi-sample`); 384 issues of `heldout-b-all` remain
+   unused for a `heldout-e`.
 
 Measured non-opportunities (do not re-run without a new idea): vendored code (`deps/`, `vendor/`, `third_party/`: no gold hunk in 2,360 across dev, held-out and multilingual dev; only 0.2-1.2% of selected lines at 2K, so demoting it cannot pay for the scope change); a traceback-frame channel
 (the 7 dev-fast tasks whose traceback names a gold file already score 0.86-0.93 from 1K);
@@ -201,3 +201,8 @@ significant), so the candidates are **`e035_mirror_any`** (0/+2.4/+1.2/+0.8/0) a
 **`e036_header`** (+0.9/+0.9/+0.3/+0.4/+3.6). **E039 (cap 3 + title x3)** passes and goes too.
 HD01 also runs the combinations of these candidates (`prototypes/combo.py`), so that whichever
 subset passes has its combination measured in the same run.
+
+**HD01 outcome (2026-09-27): E039 promoted.** Passing: E034 x4 (mean utility 9.54) and E039
+(9.99); failing: E035 (significant fix loss at 4K) and E036 (significant tests loss at 2K).
+The two passing candidates are alternatives with no arm combining them, so by the rule
+above only E039 (higher mean utility) is promoted.

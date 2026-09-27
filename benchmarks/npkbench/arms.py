@@ -109,6 +109,11 @@ ARMS: Dict[str, Arm] = {
     # The product before E031: retrieval reads issue-form scaffolding too. Every
     # product arm in runs made before E031's promotion (2026-09-27) is raw-query.
     "npk_rawquery": Arm("npk_rawquery", selector_options={"enable_query_cleaning": False}),
+    # The product before E039: every query term counts once (no title or frequency weight).
+    "npk_unweighted": Arm("npk_unweighted", selector_options={"title_weight": 1, "tf_cap": 1}),
+    # The product before this loop's query handling (neither E031 nor E039).
+    "npk_query_baseline": Arm("npk_query_baseline", selector_options={
+        "enable_query_cleaning": False, "title_weight": 1, "tf_cap": 1}),
     "npk_members": Arm("npk_members", compile_options={"python_members": True}),
     "oracle_blocks": Arm("oracle_blocks", runner=_oracle_blocks),
 }

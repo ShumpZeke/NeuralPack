@@ -29,8 +29,8 @@ Lite and confirmed once on a **held-out** split (SWE-bench Verified minus Lite,
 | **Current default** (definition channel, top-block trimming, test mate from 2K) | **0.230** | **0.303** | **0.385** | **0.472** | **0.569** |
 | Current default, regression-test sites found (tests target) | 0.058 | 0.143 | 0.194 | 0.256 | 0.303 |
 
-The held-out rows were measured before issue-form cleaning (below), which adds up to 1.2
-more points of fix sites on a fresh split.
+The held-out rows were measured before issue-form cleaning and title/repetition weighting
+(below), which add up to 1.2 and 4.6 more points of fix sites on fresh splits.
 
 - **Against a standard RAG pipeline** (same files, budgets and gold; BM25 over fixed
   60-line chunks, filled in score order): NeuralPack finds 1.6-2.1x as many fix sites
@@ -74,6 +74,17 @@ more points of fix sites on a fresh split.
   points at 4K / 8K / 16K and regression-test sites +0.4 at 1K and +1.4 at 16K (all
   significant), with no significant loss at any budget. On the multilingual development
   split the effect was mixed (fix -0.3 to +1.4 points).
+- **Title and repetition weighting** (default; `title_weight=1, tf_cap=1` or
+  `--title-weight 1 --tf-cap 1` turn it off): in a multi-line query, the terms of the first
+  line (an issue's title, the reporter's one-line summary) count three times in lexical
+  retrieval, and a term the reporter repeats counts up to three times (1 + log2 of its
+  count). Without it, every distinct word counts once, so words from reproduction code,
+  tracebacks and environment details match unrelated code and prose as strongly as the
+  topic. On a fresh held-out split (heldout-d, 401 issues) fix sites rise +1.4 / +2.9 / +3.2
+  / +4.6 points at 2K / 4K / 8K / 16K and regression-test sites +2.8 to +12.2 points at every
+  budget (all significant; no significant loss). The title part alone gained +6.5 to +8.2
+  fix points at 4K-16K on the non-Python development split. Single-line queries, including
+  chat-memory questions, are unchanged. Cost: about 15% more query time.
 - **Robust ingestion:** as received, 46 of 103 benchmark snapshots failed to compile
   because a single binary, non-UTF-8, or credential-like file aborted the build (for
   example, every Django snapshot). Files that were never indexed are now skipped and

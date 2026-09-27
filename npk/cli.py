@@ -18,6 +18,7 @@ from .pack import (
 )
 # v1 and v2 each define their own PackError; keep them distinguishable.
 from .pack.format import PackError as PackV2Error
+from .pack.select import TF_CAP, TITLE_WEIGHT
 from .telemetry import analyze_traces
 from .auditor import audit_run
 
@@ -94,6 +95,12 @@ def main(argv: list[str] | None = None) -> int:
     query.add_argument("--raw-query", action="store_true",
                        help="retrieve with the query exactly as given (keep issue-form headings, "
                             "checklists and HTML comments)")
+    query.add_argument("--title-weight", type=int, default=TITLE_WEIGHT,
+                       help="times the terms of a multi-line query's first line (an issue title) "
+                            "count in lexical retrieval; 1 turns the emphasis off")
+    query.add_argument("--tf-cap", type=int, default=TF_CAP,
+                       help="most times a term of a multi-line query counts from its frequency in "
+                            "the query; 1 ignores frequency")
     query.add_argument("--map-share", type=float, default=0.0,
                        help="fraction of the budget for a context map: further ranked places "
                             "(path:start-end kind name) listed without their text")
@@ -197,7 +204,9 @@ def main(argv: list[str] | None = None) -> int:
                                     enable_definitions=not args.no_definitions,
                                     enable_trim=not args.no_trim,
                                     enable_test_mate={'auto': None, 'always': True, 'never': False}[args.test_mate],
-                                    enable_query_cleaning=not args.raw_query)
+                                    enable_query_cleaning=not args.raw_query,
+                                    title_weight=args.title_weight,
+                                    tf_cap=args.tf_cap)
             selection = selector.select(args.query, budget_tokens=args.budget,
                                         target_model=args.target_model,
                                         allow_escalation=not args.no_escalation,

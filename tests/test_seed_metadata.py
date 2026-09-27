@@ -24,7 +24,7 @@ def test_explicit_literal_query_survives_the_filter(tmp_path,name):
     pack=tmp_path/'project.npk';compile_pack(source,pack)
     query=f'What is `{name}`?\r\n'
     with open_pack(pack) as con:assert name in literal_terms(con,query)
-    def challenger(con,q,limit):return original_index_rank(con,q,limit,policy='literal')
+    def challenger(con,q,limit,*_weights):return original_index_rank(con,q,limit,policy='literal')
     with patch('npk.pack.select._lexical_channel',challenger):
         result=PackSelector(pack).select(query,budget_tokens=50)
     assert result.query==query and result.context_text()==f'{name} = 17' and not result.seed_failed
