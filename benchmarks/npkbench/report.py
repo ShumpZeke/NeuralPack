@@ -3,6 +3,7 @@
     python -m benchmarks.npkbench.report RUN_DIR
     python -m benchmarks.npkbench.report --compare RUN_A:ARM_A RUN_B:ARM_B
     python -m benchmarks.npkbench.report --judge RUN_DIR BASE_ARM CANDIDATE_ARM [--targets tests,docs]
+    python -m benchmarks.npkbench.report --judge-runs BASE_RUN:ARM CANDIDATE_RUN:ARM [--targets tests]
 """
 from __future__ import annotations
 
@@ -11,7 +12,7 @@ import json
 import math
 from pathlib import Path
 import statistics
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from .metrics import bootstrap_diff
 
@@ -134,9 +135,12 @@ def paired(run_a: Path, arm_a: str, run_b: Path, arm_b: str, metric: str = "hunk
 UTILITY_WEIGHTS = {"": 1.0, "@tests": 0.99, "@docs": 0.087}
 
 
-def judge(run: Path, base: str, candidate: str, targets=("", "@tests", "@docs")) -> Dict[str, Any]:
-    """Apply the declared decision rule to *candidate* against *base* in one run.
+def judge(run: Path, base: str, candidate: str, targets=("", "@tests", "@docs"),
+          candidate_run: Optional[Path] = None) -> Dict[str, Any]:
+    """Apply the declared decision rule to *candidate* against *base*.
 
+    Both arms come from *run*, or the candidate from *candidate_run* (a compiler
+    experiment runs in its own worktree, so its arms land in a separate run).
     Per budget: paired bootstrap differences per target (unrounded bounds decide
     significance) and the utility ``d_fix + 0.99 d_tests + 0.087 d_docs`` over the
     targets present. The verdict fields are the rule's three conditions: utility
@@ -145,6 +149,8 @@ def judge(run: Path, base: str, candidate: str, targets=("", "@tests", "@docs"))
     rows = _read(run / "rows.jsonl")
     table: Dict[str, Dict[str, Any]] = {}
     by = {(r["arm"], r["instance_id"], r["budget"]): r["hunk_recall"] for r in rows}
+    other = by if candidate_run is None else {
+        (r["arm"], r["instance_id"], r["budget"]): r["hunk_recall"] for r in _read(candidate_run / "rows.jsonl")}
     budgets = sorted({r["budget"] for r in rows if r["arm"] == base})
     gain = loss = negative = False
     utilities = []
@@ -153,11 +159,11 @@ def judge(run: Path, base: str, candidate: str, targets=("", "@tests", "@docs"))
         utility = 0.0
         for target in targets:
             keys = sorted(i for (arm, i, b) in by if arm == base + target and b == budget
-                          and (candidate + target, i, budget) in by)
+                          and (candidate + target, i, budget) in other)
             if not keys:
                 continue
             mean, lo, hi = bootstrap_diff([by[(base + target, i, budget)] for i in keys],
-                                          [by[(candidate + target, i, budget)] for i in keys])
+                                          [other[(candidate + target, i, budget)] for i in keys])
             if math.isnan(mean):
                 continue
             significant = "gain" if lo > 0 else "loss" if hi < 0 else ""
@@ -196,13 +202,18 @@ def main(argv: List[str] | None = None) -> int:
     parser.add_argument("--compare", nargs=2, metavar=("RUN_A:ARM", "RUN_B:ARM"))
     parser.add_argument("--metric", default="hunk_recall")
     parser.add_argument("--judge", nargs=3, metavar=("RUN", "BASE_ARM", "CANDIDATE_ARM"))
+    parser.add_argument("--judge-runs", nargs=2, metavar=("BASE_RUN:ARM", "CANDIDATE_RUN:ARM"),
+                        help="--judge across two runs (e.g. a compiler experiment's worktree run)")
     parser.add_argument("--targets", default="tests,docs",
                         help="extra targets for --judge (fix is always included)")
     args = parser.parse_args(argv)
+    targets = ("", *[f"@{t}" for t in args.targets.split(",") if t])
     if args.judge:
         run, base, candidate = args.judge
-        targets = ("", *[f"@{t}" for t in args.targets.split(",") if t])
         print(render_judgement(judge(Path(run), base, candidate, targets)))
+    elif args.judge_runs:
+        (rb, base), (rc, candidate) = (x.rsplit(":", 1) for x in args.judge_runs)
+        print(render_judgement(judge(Path(rb), base, candidate, targets, candidate_run=Path(rc))))
     elif args.compare:
         (ra, aa), (rb, ab) = (x.rsplit(":", 1) for x in args.compare)
         print(json.dumps(paired(Path(ra), aa, Path(rb), ab, args.metric), indent=1))

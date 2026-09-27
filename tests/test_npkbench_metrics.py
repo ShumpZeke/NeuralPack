@@ -130,3 +130,11 @@ def test_judge_applies_the_declared_rule(tmp_path):
     assert not result["utility_nonnegative"] and not result["passes"]   # U < 0 at 1K
     same = judge(tmp_path, "base", "base", ("", "@tests"))
     assert same["utility_nonnegative"] and not same["significant_gain"] and not same["passes"]
+    # Across runs (a compiler experiment's worktree run): the candidate's arms may even
+    # share the base's name; the verdict equals the single-run one.
+    other = tmp_path / "other"
+    other.mkdir()
+    (other / "rows.jsonl").write_text("\n".join(json.dumps({**r, "arm": r["arm"].replace("cand", "base")})
+                                               for r in rows if r["arm"].startswith("cand")))
+    across = judge(tmp_path, "base", "base", ("", "@tests"), candidate_run=other)
+    assert across == result
