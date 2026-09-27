@@ -102,7 +102,14 @@ read with 4K tokens or more (M006, MH01).
    in 24 issues no candidate covers a gold hunk at all (the gold block is outside every
    channel's top 60, and a larger candidate limit did not help, E026). The top block is in a
    gold file for 57 issues. Candidates that are not the fix but outrank it are mostly other
-   code (15) or other blocks of the right file (16); tests (8) and docs (2) are rare.
+   code (15) or other blocks of the right file (16); tests (8) and docs (2) are rare. Of the
+   24 issues without a gold block in the pool, 16 have the gold *file* in the pool (another of
+   its blocks ranked) and 8 miss the file entirely (vocabulary gap: likely needs semantic
+   retrieval). A file-local second stage (rank the top files' own blocks by file-local BM25,
+   as trimming ranks members) could reach the first group, but the budget is almost always
+   full (about 40 tokens left at 16K), so such blocks must displace low-ranked pool blocks,
+   which is how file aggregation (E003) failed; test it only with a placement that cannot
+   move the first few ranks.
 6. **Done: E039 title and repetition weighting is the default (HD01 on heldout-d).** Fix
    +1.4 to +4.6 points at 2K-16K and tests +2.8 to +12.2 at every budget, all significant.
    E034 (title x4 alone) also passed; E035 (mate file choice) and E036 (top-file header)
