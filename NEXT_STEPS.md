@@ -197,7 +197,10 @@ both pass, the one with the higher mean utility on `poly-dev-b`) is run once on
 there; for C2 the product change is the E048 compiler change plus E049 and E047 in
 `select.py`. Python is untouched by construction apart from JS/TS/Java files inside Python
 repositories (dev-fast: one Django issue's mate changes, no recall change), so no Python
-held-out split is spent; dev-fast equivalence is re-checked for the product form.
+held-out split is spent; dev-fast equivalence is re-checked for the product form. E048 also
+changes Go, Rust, C/C++, C# and PHP packs: its `ood-multi-dev` screen (queued, no result yet)
+is a side condition for C2. If it shows a significant loss on either target at any budget,
+E048 is restricted at compile time to JavaScript, TypeScript and Java before promotion.
 
 ## Semantic evidence for code: what has been measured
 
