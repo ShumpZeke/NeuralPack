@@ -28,6 +28,10 @@ have ~20 GB free. Record every experiment with `benchmarks.npkbench.expdb.append
   `contract-mutations-3b5f9f5.json`, whose commit message misstates the added count as 13). Add a mutant for every new guard or ranking rule.
 
 - Decide on `dev`/`dev-fast`; confirm once on `heldout`; never tune on `heldout`.
+- Small dev-fast effects have not replicated: E035, E036 and E044 each looked good on the
+  103 dev-fast issues (utility +1 to +3 points) and then failed on held-out or on the 197
+  dev issues outside dev-fast. Screen small-effect ideas on the full dev split and require
+  the 197 fresh dev issues to agree before spending a held-out split.
 - Judge significance from unrounded bootstrap bounds (`report.paired` now returns a
   `significant` field): E036's tests loss on heldout-d had an upper bound of -0.00004, which
   rounds to 0.0.
