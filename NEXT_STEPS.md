@@ -262,6 +262,20 @@ does not use): fix 0.176 / 0.227 / 0.315 / 0.392 / 0.485 and tests 0.053 / 0.133
 the weakest, both large codebases with many near-identical names. `gym-dev` is now the
 larger Python screening split; `gym-heldout` (300) and `heldout-e` (384) are unused.
 
+### Pre-declared plan for E052 (environment dumps; written before any E052 result)
+
+E052 (`e052_env`, prototype `env_dump.py`) removes environment/version dumps from the
+retrieval query (blocks of `key: value` lines with at least three version numbers or
+`None` values making up at least half of their key-value lines). It changes 70 of 326
+`gym-dev` queries (pydantic 23, pandas 18, bokeh 14, ...), 15 of 300 `dev` queries
+(scikit-learn 10), 7 of 199 `poly-dev` and 1 of 186 `ood-multi-dev`. The idea came from
+`gym-dev` selections (pandas' `_print_versions.py` ranked first for 8 of 30 pandas issues),
+so `gym-dev` is not a fair screen. It is screened on `gym-dev` and `dev` (standard rule on
+fix and tests; neither may show a significant loss) and, if it passes on `gym-dev`,
+confirmed once on `gym-heldout` (GH01, 300 issues) against `npk_default` with the standard
+rule on fix and tests. If it fails either screen, it is rejected and `gym-heldout` stays
+unused.
+
 ## Semantic evidence for code: what has been measured
 
 Dense and neural evidence has not helped code retrieval on this benchmark so far: equal-weight
