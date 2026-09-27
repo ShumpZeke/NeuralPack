@@ -367,6 +367,11 @@ MUTANTS = [
      "tests/test_title_weight.py::test_title_terms_outweigh_the_body"),
     ("query_cleaning_disabled", "npk/pack/select.py", "_strip_issue_template", "return query",
      "tests/test_query_cleaning.py::test_template_words_no_longer_pull_the_contributing_guide"),
+    ("release_notes_not_demoted", "npk/pack/select.py", None, None,
+     "tests/test_release_notes.py::test_release_notes_go_after_code"),
+    ("release_notes_prose_check_dropped", "npk/pack/select.py", "_release_notes",
+     "return bool(_RELEASE_WORDS.search(path))",
+     "tests/test_release_notes.py::test_code_named_like_release_notes_keeps_its_rank"),
     ("environment_dump_kept", "npk/pack/select.py", "_strip_environment", "return lines",
      "tests/test_query_cleaning.py::test_environment_dump_is_removed"),
     ("environment_dump_ranks_version_module", "npk/pack/select.py", "_strip_environment", "return lines",
@@ -507,6 +512,11 @@ def main():
                 if source.count(target) != 1:
                     raise ValueError(f"{name} target is no longer unique")
                 changed = source.replace(target, replacement)
+            elif name == "release_notes_not_demoted":
+                target = "        if self.demote_release_notes:\n"
+                if source.count(target) != 1:
+                    raise ValueError("release-note demotion is no longer unique")
+                changed = source.replace(target, "        if False:\n")
             elif name == "environment_booleans_counted":
                 target = 'r"\\d+\\.\\d+|^(None|not installed)$"'
                 if source.count(target) != 1:

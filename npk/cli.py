@@ -95,6 +95,9 @@ def main(argv: list[str] | None = None) -> int:
     query.add_argument("--raw-query", action="store_true",
                        help="retrieve with the query exactly as given (keep issue-form headings, "
                             "checklists and HTML comments)")
+    query.add_argument("--no-release-notes-last", action="store_true",
+                       help="rank changelogs, release notes and release blog posts like any other file "
+                            "(by default they go behind all other candidates)")
     query.add_argument("--title-weight", type=int, default=TITLE_WEIGHT,
                        help="times the terms of a multi-line query's first line (an issue title) "
                             "count in lexical retrieval; 1 turns the emphasis off")
@@ -205,6 +208,7 @@ def main(argv: list[str] | None = None) -> int:
                                     enable_trim=not args.no_trim,
                                     enable_test_mate={'auto': None, 'always': True, 'never': False}[args.test_mate],
                                     enable_query_cleaning=not args.raw_query,
+                                    demote_release_notes=not args.no_release_notes_last,
                                     title_weight=args.title_weight,
                                     tf_cap=args.tf_cap)
             selection = selector.select(args.query, budget_tokens=args.budget,

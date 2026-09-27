@@ -541,6 +541,17 @@ TEST_PATH = re.compile(
     r"|(^|/)Test[A-Z0-9][^/]*\.(java|kt|scala|groovy|php|cs)$"
     r"|_test\.(go|c|cc|cpp)$|_unittest\.(c|cc|cpp)$|_spec\.rb$")
 DOC_PATH = re.compile(r"(^|/)(docs?|doc_src)(/|$)|\.(rst|md|txt)$")
+#: Historical release notes (E054): changelogs, release notes, "what's new" pages and
+#: release blog posts describe past changes in an issue's own words and rank high, but a
+#: fix adds a new entry rather than editing the historical one that matched. Only prose
+#: files count, so a code module named ``history.js`` or a ``releases/`` package stays.
+_RELEASE_WORDS = re.compile(
+    r"(^|/)(changelog|changes|history|news|release[-_ ]?notes?|whatsnew|blog|releases?)([-_./]|$)", re.IGNORECASE)
+_PROSE_FILE = re.compile(r"\.(md|mdx|rst|txt|adoc|html)$|(^|/)[A-Z][A-Z_-]*$", re.IGNORECASE)
+
+
+def _release_notes(path: str) -> bool:
+    return bool(_RELEASE_WORDS.search(path)) and bool(_PROSE_FILE.search(path))
 _GENERIC_PATH_PARTS = frozenset({"tests", "test", "testing", "src", "lib", "py", "__init__", "unit", "units", "t"})
 #: A test class named after its subject: ``FooTest``, ``FooTests``, ``FooIT``,
 #: ``FooTestCase``, ``FooSpec`` or ``TestFoo`` (the affix is capitalized).
@@ -850,6 +861,7 @@ class PackSelector:
         enable_trim: bool = True,
         enable_test_mate: Optional[bool] = None,
         enable_query_cleaning: bool = True,
+        demote_release_notes: bool = True,
         title_weight: int = TITLE_WEIGHT,
         tf_cap: int = TF_CAP,
         enable_cache: bool = True,
@@ -885,6 +897,9 @@ class PackSelector:
         if type(enable_query_cleaning) is not bool:
             raise ValueError("enable_query_cleaning must be a boolean")
         self.enable_query_cleaning = enable_query_cleaning
+        if type(demote_release_notes) is not bool:
+            raise ValueError("demote_release_notes must be a boolean")
+        self.demote_release_notes = demote_release_notes
         if type(title_weight) is not int or title_weight < 1:
             raise ValueError("title_weight must be an integer >= 1 (1 = no title emphasis)")
         self.title_weight = title_weight
@@ -1089,6 +1104,7 @@ class PackSelector:
                     self.enable_trim,
                     self.enable_test_mate,
                     self.enable_query_cleaning,
+                    self.demote_release_notes,
                     self.title_weight,
                     self.tf_cap,
                     self.tokenizer.sha256 if self.tokenizer is not None else None,
@@ -1238,6 +1254,12 @@ class PackSelector:
         if use_mate and ordered_ids:
             ordered_ids = self._place_test_mate(con, manifest, query, ordered_ids, fused, channels_of, deep)
         blocks = {b.id: b for b in load_blocks(con, ordered_ids)}
+        if self.demote_release_notes:
+            # Historical release notes go behind every other candidate (E054).
+            history = [b for b in ordered_ids if b in blocks and _release_notes(blocks[b].path)]
+            if history:
+                late = set(history)
+                ordered_ids = [b for b in ordered_ids if b not in late] + history
 
         evidence: List[Evidence] = []
         used_chars = 0
