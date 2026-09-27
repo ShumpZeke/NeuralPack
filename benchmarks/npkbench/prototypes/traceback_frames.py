@@ -21,8 +21,9 @@ script, other libraries) resolve to nothing. Blocks are ranked innermost frame f
 and fused with the other channels by RRF like any channel.
 
 Arms: ``e055_frames`` (every resolved frame), ``e055_frames3`` (the three innermost
-resolved frames), ``e055_control`` (the same selector with an empty channel; must equal
-``npk_default``). The prototype uses the selector's hybrid slot: on a pack without
+resolved frames), ``e055_frames_2k`` (E055b: every resolved frame, from 2K only) and
+``e055_control`` (the same selector with an empty channel; must equal ``npk_default``).
+The prototype uses the selector's hybrid slot: on a pack without
 embeddings, hybrid retrieval differs from lexical only by fusing ``_symbol_channel``,
 which is replaced here by the traceback channel.
 """
@@ -153,12 +154,12 @@ def _channel(max_frames: Optional[int], enabled: bool):
         sel._symbol_channel = original
 
 
-def make(name: str, max_frames: Optional[int] = None, enabled: bool = True) -> Arm:
+def make(name: str, max_frames: Optional[int] = None, enabled: bool = True, min_budget: int = 0) -> Arm:
     def runner(pack: Path, task: Task, budgets: Sequence[int]) -> Dict[int, ArmResult]:
         out: Dict[int, ArmResult] = {}
-        with _channel(max_frames, enabled), \
-                PackSelector(str(pack), retrieval="hybrid", enable_cache=False) as selector:
-            for budget in budgets:
+        for budget in budgets:
+            with _channel(max_frames, enabled and budget >= min_budget), \
+                    PackSelector(str(pack), retrieval="hybrid", enable_cache=False) as selector:
                 started = time.perf_counter()
                 selection = selector.select(task.query, budget_tokens=budget)
                 out[budget] = ArmResult(
@@ -174,3 +175,6 @@ def make(name: str, max_frames: Optional[int] = None, enabled: bool = True) -> A
 make("e055_control", enabled=False)       # hybrid slot left empty: must equal npk_default
 make("e055_frames")
 make("e055_frames3", max_frames=3)
+# E055b (declared after the dev screen): the channel only from 2K, as the test mate is gated;
+# 1K selections are the default's by construction.
+make("e055_frames_2k", min_budget=2048)

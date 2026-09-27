@@ -63,7 +63,8 @@ Do not edit by hand.
 | E052 | 2026-09-27 | Environment/version dumps stripped from the retrieval query (issue-form cleaning, part 2) | **kept** | Confirmed on gym-heldout by GH01 (300 fresh SWE-Gym issues; criteria declared before the run): fix +0.51 / +1.44 / +0.96 / +0.62 / +0.12 at 1K-16K (significant at 1K-4K), tests +0.75 / +1.09 / +1.20 / +1.55 / +1.40 (significant from 2K), utility >= 0 everywhere (mean +1.92), no significant loss. Screens: gym-dev (326) tests +0.7 to +1.2 (significant at 1K, 2K, 4K, 16K), fix not significant, mean utility +1.22; dev (300, 15 queries change) no significant loss, mean +0.23. Product form (inside _strip_issue_template, so enable_query_cleaning/--raw-query cover it) cleans all 1,382 screened queries exactly as the prototype and reproduces its selections (dev-fast 515/515, gym-dev 1630/1630). Mutants environment_dump_kept, environment_dump_ranks_version_module and environment_booleans_counted are killed. |
 | E053 | 2026-09-27 | URLs in queries keep only their informative parts | **running** | poly-dev-b screen (371): passes the standard rule. Fix +0.68 / +0.90 / +0.83 / +2.01 / +1.49 at 1K-16K (significant at 2K, 8K, 16K), tests +0.39 to +1.02, utility >= 0 everywhere (mean +1.82). gym-dev (326): no significant change (mean utility +0.39). Candidate under the declared plan; PHB01 on poly-heldout-b decides (with e054 and the combination e053_e054). |
 | E054 | 2026-09-27 | Historical release notes go to the end of the ranking | **running** | poly-dev-b screen (371; control identical 1855/1855): passes the standard rule. Tests +0.65 / +0.56 / +1.32 at 1K-4K and fix +1.13 at 4K (significant), fix -0.13 at 16K (not significant), utility >= 0 everywhere (mean +1.38). gym-dev also passed (mean +0.51). Candidate; PHB01 on poly-heldout-b decides. |
-| E055 | 2026-09-27 | Traceback frames as a ranked retrieval channel | **running** | Declared in NEXT_STEPS before any result: screens dev (fix, tests, docs) and gym-dev (fix, tests) with arms e055_frames, e055_frames3 and control e055_control; one candidate confirms once on heldout-e (HE01). |
+| E055 | 2026-09-27 | Traceback frames as a ranked retrieval channel | **rejected** | dev screen (300; control identical 1500/1500): e055_frames fix -0.22 / +0.28 / +1.50 / +1.00 / +0.67 at 1K-16K (significant at 4K), tests -0.25 to +0.42 (none significant), utility -0.22 at 1K; e055_frames3 fix -1.06 at 1K and tests -0.84 at 4K (significant). Under the declared plan neither can be a candidate (utility < 0 at 1K on dev), so E055 is rejected; the 1K loss motivates E055b. |
+| E055b | 2026-09-27 | Traceback-frame channel from 2K only | **running** | Declared after E055's dev result and before any gym-dev result: its dev cells are not evidence; gym-dev (run E055-traceback-gymdev, arm e055_frames_2k) is the screen; a candidate confirms once on heldout-e. |
 | GH01 | 2026-09-27 | gym-heldout confirmation of E052 (environment dumps stripped from the query) | **kept** | Passes the pre-declared criteria. e052_env vs npk_default: fix +0.51 / +1.44 / +0.96 / +0.62 / +0.12 points at 1K-16K (significant at 1K, 2K, 4K), tests +0.75 / +1.09 / +1.20 / +1.55 / +1.40 (significant from 2K), utility +1.26 / +2.52 / +2.15 / +2.15 / +1.51 (mean +1.92), no significant loss. Default on gym-heldout: fix 0.142 / 0.189 / 0.299 / 0.418 / 0.479, tests 0.062 / 0.118 / 0.164 / 0.227 / 0.316. gym-heldout is now spent. |
 | H001 | 2026-09-26 | Held-out confirmation: test mate (E016b), top-block trimming (E005c), context map (E017) | **kept** | E005c confirmed: trimming vs no trimming, fix +3.8 points at 1K (significant), identical at >=2K; utility +2.9/0/0/0/0. E017 confirmed: located fix recall with a 25% map +9.6/+12.3/+13.0/+11.4/+7.2 points over the default's full text, tests +5.3/+5.2/+7.7/+8.0/+8.2 (all CIs exclude zero). E016b confirmed only as a tradeoff: tests up at every budget, fix down 0.3-1.4 points; the 1K utility is -0.012 points with a significant fix loss, so it ships opt-in. Full current default on held-out (definition channel + trimming): fix 0.230/0.309/0.399/0.475/0.575 at 1K-16K (before this loop 0.136/0.206/0.302/0.393/0.490). |
 | HB01 | 2026-09-26 | Confirmation on heldout-b: budget-gated test mate (E016c) and replication of E002+E005c | **kept** | E016c passes (see its record). The definition channel and trimming replicate on fresh data: fix +6.5/+5.8/+9.0/+8.0/+8.3 points at 1K-16K over no-definitions/no-trim (all CIs exclude zero); tests -1.9 to -3.3 (the known tradeoff). Product on heldout-b (mate off): fix 0.178/0.244/0.348/0.428/0.526. |
@@ -1764,13 +1765,23 @@ Do not edit by hand.
 
 ## E055 — Traceback frames as a ranked retrieval channel
 
-- **Status:** running
+- **Status:** rejected
 - **Hypothesis:** A traceback names the functions the failure passed through; the frame's own function holds a fix hunk in 38 of 64 dev and 32 of 49 gym-dev issues with tracebacks, and the default covers only 29/45 (dev) and 20/57 (gym-dev) of those hunks at 1K. Ranking the blocks that define the frames' functions, innermost first, as an RRF channel should lift those sites into small budgets.
 - **Expected:** Fix gains at 1K-4K on issues with tracebacks; other issues unchanged by construction.
-- **Run:** experiments/npkbench/runs/E055-traceback-dev, experiments/npkbench/runs/E055-traceback-gymdev
+- **Run:** experiments/npkbench/runs/E055-traceback-dev
 - **Bench version:** npkbench-1.1
 - **Files changed:** `benchmarks/npkbench/prototypes/traceback_frames.py`
-- **Decision:** Declared in NEXT_STEPS before any result: screens dev (fix, tests, docs) and gym-dev (fix, tests) with arms e055_frames, e055_frames3 and control e055_control; one candidate confirms once on heldout-e (HE01).
+- **Decision:** dev screen (300; control identical 1500/1500): e055_frames fix -0.22 / +0.28 / +1.50 / +1.00 / +0.67 at 1K-16K (significant at 4K), tests -0.25 to +0.42 (none significant), utility -0.22 at 1K; e055_frames3 fix -1.06 at 1K and tests -0.84 at 4K (significant). Under the declared plan neither can be a candidate (utility < 0 at 1K on dev), so E055 is rejected; the 1K loss motivates E055b.
+
+## E055b — Traceback-frame channel from 2K only
+
+- **Status:** running
+- **Hypothesis:** E055's traceback channel gains fix sites from 2K (dev: +1.50 at 4K, significant) but displaces default blocks at 1K; gated at 2K like the test mate, the gains should remain without the 1K cost.
+- **Expected:** Fix gains at 2K-8K on gym-dev (49 of 326 issues carry tracebacks); 1K identical by construction.
+- **Run:** experiments/npkbench/runs/E055-traceback-gymdev
+- **Bench version:** npkbench-1.1
+- **Files changed:** `benchmarks/npkbench/prototypes/traceback_frames.py`
+- **Decision:** Declared after E055's dev result and before any gym-dev result: its dev cells are not evidence; gym-dev (run E055-traceback-gymdev, arm e055_frames_2k) is the screen; a candidate confirms once on heldout-e.
 
 ## GH01 — gym-heldout confirmation of E052 (environment dumps stripped from the query)
 

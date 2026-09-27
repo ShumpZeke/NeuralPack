@@ -392,6 +392,22 @@ one or more budgets, no significant loss at any budget). If no variant is a cand
 `heldout-e` stays unused. The product form puts the channel first in the fusion order, as the
 prototype's hybrid slot does, and must reproduce the prototype's selections on both screens.
 
+### E055 dev outcome (rejected) and E055b (declared after it, before any gym-dev result)
+
+On `dev` (control identical to `npk_default` on all 1,500 selections), `e055_frames` gains fix
++1.50 at 4K (significant) and +0.28 / +1.00 / +0.67 at 2K / 8K / 16K but loses 0.22 at 1K
+(utility -0.22, not significant), and `e055_frames3` loses fix 1.06 at 1K and tests 0.84 at 4K
+(significant). Under the declared plan neither can be a candidate whatever `gym-dev` shows
+(each would need utility >= 0 at every budget on `dev`), so E055 is rejected. The 1K loss is
+the familiar small-budget displacement (the test mate is gated at 2K for this reason; E050b).
+E055b (`e055_frames_2k`: every resolved frame, fused only from 2K; 1K is the default's by
+construction) is declared now: its dev cells equal `e055_frames`' from 2K (utility +0.03 /
++1.00 / +1.42 / +0.50) and were seen before it was defined, so they are not evidence.
+`gym-dev` is its screen (the queued E055 run, which now also carries `e055_frames_2k`): E055b is
+a candidate if it passes the standard rule there on fix and tests. A candidate runs once on
+`heldout-e` (HE01) against `npk_default`, targets fix and tests, with the standard rule;
+otherwise `heldout-e` stays unused.
+
 ## Semantic evidence for code: what has been measured
 
 Dense and neural evidence has not helped code retrieval on this benchmark so far: equal-weight
