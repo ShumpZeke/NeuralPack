@@ -95,7 +95,19 @@ regression-test sites (not significant; run R004, whose numbers the table shows)
   lines, mostly version numbers) otherwise pulls the project's version-printing module
   to the top. On a fresh held-out split of 300 SWE-Gym issues (10 Python repositories
   SWE-bench does not use) this adds +0.5 / +1.4 / +1.0 fix points at 1K-4K and +1.1 to
-  +1.6 regression-test points at 2K-16K (significant; E052, GH01).
+  +1.6 regression-test points at 2K-16K (significant; E052, GH01). URLs keep only their
+  informative parts: image links and GitHub attachments are dropped, a link to a source file
+  keeps its repository path, and other links keep their path words, because scheme, host and
+  GitHub words otherwise match READMEs, docs and CI files. On 320 fresh JS/TS issues
+  (poly-heldout-b) this adds +1.8 to +3.3 fix points at every budget and +1.1 to +2.2
+  regression-test points from 2K (all significant; E053, PHB01).
+- **Release notes last** (default; `demote_release_notes=False` or
+  `--no-release-notes-last` turn it off): changelogs, release notes, "what's new" pages and
+  release blog posts describe past changes in an issue's own words, so they rank high, but a
+  fix adds a new entry rather than editing the old one. They are placed after every other
+  candidate. On poly-heldout-b this adds +1.2 to +1.7 fix points and +0.4 to +0.6
+  regression-test points at 2K-8K; together with the URL rule, +1.6 to +3.6 fix points and
+  +1.1 to +2.6 regression-test points at every budget (all significant; E054, PHB01).
 - **Title and repetition weighting** (default; `title_weight=1, tf_cap=1` or
   `--title-weight 1 --tf-cap 1` turn it off): in a multi-line query, the terms of the first
   line (an issue's title, the reporter's one-line summary) count three times in lexical

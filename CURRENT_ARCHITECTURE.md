@@ -125,11 +125,12 @@ NPK-Bench evidence recorded in [EXPERIMENTS.md](experiments/npkbench/EXPERIMENTS
 source tree ──scan──▶ files ──split──▶ blocks ──index──▶ project.npk (SQLite v8)
   (unindexable never-indexed files are skipped and listed in manifest skipped_sources)
                                                             │
-query ──strip issue-form scaffolding (E031)
+query ──strip issue-form scaffolding, environment dumps, URL scaffolding (E031, E052, E053)
       ──analyze──▶ weighted terms ──bm25 top-60───────┐     │
       ├─raise-intent──▶ relation sites ───────────────┤     │
       └─named code entities──▶ defining blocks ───────┴─RRF─▶ greedy fill ──▶ Selection
-                                  (if the top block alone exceeds the budget,
+                                  (release-note files go after every other candidate,
+                                   E054; if the top block alone exceeds the budget,
                                    its most query-relevant member spans are emitted)
 ```
 
@@ -181,7 +182,23 @@ query ──strip issue-form scaffolding (E031)
   three version-number or `None` values, making up at least half of its key-value lines, is
   dropped; booleans do not count and code lines (`::`, trailing `;`/`{`) never match, so
   configuration and code snippets stay. gym-heldout (GH01, 300 SWE-Gym issues): fix +0.5 to
-  +1.4 points at 1K-4K, tests +1.1 to +1.6 at 2K-16K, significant; no loss.
+  +1.4 points at 1K-4K, tests +1.1 to +1.6 at 2K-16K, significant; no loss. Then URLs are
+  reduced to their informative parts (E053), on every line but the title: image links and
+  GitHub attachments are dropped, a GitHub `blob`/`tree`/`raw` link keeps the repository path
+  it points to, other GitHub links (issues, pull requests, commits) are dropped, and any other
+  URL keeps its path and fragment words (no scheme, host or query string). Scheme, host and
+  GitHub scaffolding words otherwise match READMEs, docs and CI files. poly-heldout-b (PHB01,
+  320 JS/TS issues): fix +1.8 to +3.3 points at every budget and tests +1.1 to +2.2 from 2K,
+  all significant.
+- **Release notes last (E054, `demote_release_notes`, `--no-release-notes-last`):** blocks of
+  release-note prose files (`CHANGELOG`, `CHANGES`, `HISTORY`, `NEWS`, release notes,
+  `whatsnew`, `blog/` and `releases/` paths; prose extensions or upper-case names only, so a
+  `history.js` module stays) go after every other candidate once the test mate is placed,
+  keeping both groups' order. Changelogs and release posts describe past changes in an issue's
+  own words and rank high (9.2% of the 2K budget on poly-dev-b), but a fix adds a new entry
+  instead of editing the historical one that matched (the default found 2 of 74 such fix
+  hunks). PHB01: fix +1.2 / +1.3 / +1.7 and tests +0.4 to +0.6 points at 2K-8K (significant);
+  with E053, fix +1.6 to +3.6 and tests +1.1 to +2.6 at every budget, all significant.
 - **Title and repetition weighting (E039, `title_weight` 3 and `tf_cap` 3,
   `--title-weight`/`--tf-cap`):** for a multi-line query, the lexical OR repeats each term
   `min(tf_cap, 1 + floor(log2 tf))` times, plus `title_weight - 1` more if it occurs in the
