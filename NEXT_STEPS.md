@@ -146,8 +146,17 @@ google/guava, split per repository by a fixed hash (declared before any result, 
 gson, dubbo, tailwindcss, three.js, code-server, apollo); blobless clones add 0.3 GB. Their
 fix patches often include changesets and docs (about a quarter of first gold files are not
 code), as SWE-bench Multilingual's do. Develop JS/TS/Java handling on `poly-dev`, declare
-criteria here, then confirm once on `poly-heldout`. The first measurement (P001: default vs
-`npk_query_baseline` vs B002) is running.
+criteria here, then confirm once on `poly-heldout`.
+
+P001 (the reference before any tuning on `poly-dev`): fix recall 0.195 / 0.244 / 0.319 /
+0.404 / 0.476 at 1K-16K and regression tests 0.113 / 0.185 / 0.276 / 0.378 / 0.418. The
+query handling passes the declared rule on these languages too (fix +6.0 to +8.9 points,
+tests +3.1 to +11.0, all significant, against `npk_query_baseline`), and the default is
+1.6-2.2x B002 on fix. By language at 2K / 16K: Java (74 issues) 0.262 / 0.486, JavaScript
+(75) 0.218 / 0.440, TypeScript (50) 0.258 / 0.514. JavaScript is the weakest; about a
+quarter of first gold files are changesets or docs, which the code channels cannot rank.
+E046 (E032's member and modifier-prefixed definitions, scoped to JS/TS/Java at compile
+time) is the first `poly-dev` experiment.
 
 ## Semantic evidence for code: what has been measured
 

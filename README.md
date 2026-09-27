@@ -48,7 +48,10 @@ and +3.0 to +12.0 points of regression-test sites, all significant (run R002).
   query handling (issue-form cleaning and title/repetition weighting) matters most here:
   it adds +8.9 to +13.5 fix points (0.164 -> 0.260 at 2K; run R003). Absolute recall is
   still about three quarters of Python's; C/C++ and JS/TS were weakest before these
-  changes.
+  changes. On SWE-PolyBench's Java, JavaScript and TypeScript issues (`poly-dev`, 199
+  issues in 12 repositories, measured before any tuning on it; run P001) fix recall is
+  0.195 / 0.244 / 0.319 / 0.404 / 0.476, 1.6-2.2x B002, and the query handling adds +6.0
+  to +8.9 fix points (all significant).
 - **Definition channel** (default): code identifiers named in the query
   (`Signal.send_robust()`, `django.core.exceptions.ValidationError`) resolve to their
   defining blocks. On the held-out split it adds +5.7 to +10.3 points at every
