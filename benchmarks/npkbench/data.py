@@ -32,6 +32,12 @@ SOURCES = {
         "SWE-bench/SWE-bench_Multilingual", "846e647b9f33c0b51b739d005d13d85493c9af09",
         "data/test-00000-of-00001.parquet",
         "92abca7cb527b41a9f66d03a26ce441ff7319e3a49f985998fd56be4bb9b08b2"),
+    # Added 2026-09-27 for non-Python development at scale (MIT licence): the verified
+    # 500-issue subset of SWE-PolyBench, 125 each of Java, JavaScript, TypeScript and Python.
+    "polybench500": (
+        "AmazonScience/SWE-PolyBench_500", "546075b4b05d17ba914e72b8f4c6d5b1ea150c1d",
+        "test.csv",
+        "20961b616b404875adead16dd456adc4cf583035436fc0d7e9c3f2adf8322e0c"),
     # Added 2026-09-26 for a second confirmation split (heldout-b); never tuned on.
     "swe_full_test": (
         "princeton-nlp/SWE-bench", "e48e2bd1e9fecd5bbd641e9414ac59da9f2e69f6",
@@ -46,7 +52,8 @@ BENCH_VERSION = "npkbench-1.1"
 
 def download(name: str) -> Path:
     repo, revision, path, digest = SOURCES[name]
-    target = HOME / "datasets" / f"{name}-{digest[:12]}.parquet"
+    suffix = Path(path).suffix or ".parquet"
+    target = HOME / "datasets" / f"{name}-{digest[:12]}{suffix}"
     if not target.exists():
         target.parent.mkdir(parents=True, exist_ok=True)
         url = f"https://huggingface.co/datasets/{repo}/resolve/{revision}/{path}"
@@ -349,12 +356,32 @@ def _docs_patch(task: "Task", ref_patch: str) -> Tuple[str, Dict]:
     return _git(clone, "diff", lo, hi, "--", *kept), meta
 
 
-def load(name: str, target: str = "fix") -> List[Task]:
-    import pyarrow.parquet as pq
+#: SWE-PolyBench repositories left out of the benchmark: vscode and angular are too large
+#: for this machine's clone budget, guava has two issues; Python issues are left out
+#: because the Python splits are already large.
+POLY_EXCLUDED_REPOS = frozenset({"microsoft/vscode", "angular/angular", "google/guava"})
 
+
+def _rows(name: str) -> List[Dict[str, object]]:
+    path = download(name)
+    if path.suffix == ".csv":
+        import csv
+        import sys
+        csv.field_size_limit(sys.maxsize)
+        with path.open(newline="", encoding="utf-8") as handle:
+            rows = list(csv.DictReader(handle))
+        if name == "polybench500":
+            rows = [row for row in rows if row["language"] != "Python"
+                    and row["repo"] not in POLY_EXCLUDED_REPOS]
+        return rows
+    import pyarrow.parquet as pq
+    return pq.read_table(path).to_pylist()
+
+
+def load(name: str, target: str = "fix") -> List[Task]:
     if target not in TARGETS:
         raise ValueError(f"unknown target {target!r}")
-    rows = pq.read_table(download(name)).to_pylist()
+    rows = _rows(name)
     tasks = []
     docs_cache: Dict[str, list] = {}
     docs_cache_path = HOME / "gold" / f"{name}-docs-patches-{DOCS_VERSION}.json"
@@ -417,7 +444,8 @@ def split(name: str) -> List[Task]:
                    "heldout-c": "swe_full_test", "heldout-d": "swe_full_test",
                    "heldout-e": "swe_full_test",
                    "ood-multi": "swe_multi_test", "ood-multi-sample": "swe_multi_test",
-                   "ood-multi-dev": "swe_multi_test"}[base]
+                   "ood-multi-dev": "swe_multi_test",
+                   "poly-dev": "polybench500", "poly-heldout": "polybench500"}[base]
         lite = {t.instance_id for t in load("swe_lite_test")} if base == "heldout" else set()
         return [t for t in load(dataset, target)
                 if t.instance_id in wanted and t.instance_id not in lite]
@@ -474,6 +502,19 @@ def split(name: str) -> List[Task]:
             items.sort(key=lambda t: _stable_hash("heldout-c:" + t.instance_id))
             chosen_c.extend(items[:max(2, round(400 * len(items) / len(rest)))])
         return sorted(chosen_c, key=lambda t: t.instance_id)
+    if name in ("poly-dev", "poly-heldout"):
+        # Declared 2026-09-27 before any result on SWE-PolyBench: its Java/JS/TS issues
+        # (minus POLY_EXCLUDED_REPOS), split per repository by a fixed hash, about 60%
+        # for development (poly-dev) and 40% for confirmation only (poly-heldout).
+        by_repo_p: Dict[str, List[Task]] = {}
+        for task in load("polybench500"):
+            by_repo_p.setdefault(task.repo, []).append(task)
+        chosen_p: List[Task] = []
+        for repo, items in sorted(by_repo_p.items()):
+            items.sort(key=lambda t: _stable_hash("poly:" + t.instance_id))
+            cut = round(0.6 * len(items))
+            chosen_p.extend(items[:cut] if name == "poly-dev" else items[cut:])
+        return sorted(chosen_p, key=lambda t: t.instance_id)
     if name == "long-queries":
         # Diagnostic split (declared 2026-09-27 for E043, the query-term cap): the issues of
         # dev, ood-multi-dev and the spent heldout-b/c/d whose cleaned query has more than

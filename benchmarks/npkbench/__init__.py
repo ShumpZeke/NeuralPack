@@ -33,6 +33,11 @@ Splits (fixed before any NeuralPack result was observed):
   confirmation only. (Spent on E039 by HD01.)
 * ``heldout-e`` -- the rest of ``heldout-b-all`` (not in ``heldout-b``, ``-c`` or ``-d``),
   declared 2026-09-27 before any result on it; confirmation only.
+* ``poly-dev`` / ``poly-heldout`` -- the Java, JavaScript and TypeScript issues of the
+  SWE-PolyBench 500-issue verified subset (MIT), minus microsoft/vscode, angular/angular
+  and google/guava; split per repository by a fixed hash, about 60% for developing
+  non-Python handling and 40% for confirmation only. Declared 2026-09-27 before any
+  result on them.
 * ``ood-multi`` -- SWE-bench Multilingual (300 issues, 41 non-Python repositories);
   ``ood-multi-sample``: at most 3 per repository, measurement only;
   ``ood-multi-dev``: the other 186, for developing non-Python handling.
