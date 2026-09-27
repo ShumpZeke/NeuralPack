@@ -252,6 +252,16 @@ rule. If it passes, it runs once on `heldout-e` (HE01) with the same rule on fix
 otherwise it is rejected and `heldout-e` stays unused. The ungated `e050_first3_k1` runs
 alongside for information only.
 
+### E050b outcome (gym-dev): rejected; `heldout-e` still unused
+
+On `gym-dev` the 2K-gated trimming gains fix +1.35 at 2K (significant) but loses tests -1.75
+at 2K (significant) and -0.87 at 8K: the trimmed members displace test blocks on these
+repositories. The default's first measurement on `gym-dev` (11 Python repositories SWE-bench
+does not use): fix 0.176 / 0.227 / 0.315 / 0.392 / 0.485 and tests 0.053 / 0.133 / 0.177 /
+0.282 / 0.339 at 1K-16K, well below SWE-bench dev; pandas (0.061 at 2K) and mypy (0.046) are
+the weakest, both large codebases with many near-identical names. `gym-dev` is now the
+larger Python screening split; `gym-heldout` (300) and `heldout-e` (384) are unused.
+
 ## Semantic evidence for code: what has been measured
 
 Dense and neural evidence has not helped code retrieval on this benchmark so far: equal-weight
