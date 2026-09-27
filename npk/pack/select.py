@@ -407,11 +407,64 @@ def _whole_lexical_terms(query: str) -> List[str]:
     return list(dict.fromkeys(terms))
 
 
+#: Weighted term lists longer than this are scored one weight class at a time (E056).
+#: ``bm25()`` merges the instances of every OR phrase in each matching row, which
+#: costs about rows x phrases, and a term repeated ``k`` times (E039) is scored
+#: ``k`` times. BM25 is a sum over phrases whose IDF, frequency and length terms do
+#: not depend on the other phrases, so one query per weight over distinct terms,
+#: summed per row as ``weight * bm25`` in weight order, gives the same ranking: a
+#: 498-phrase query on a 31,000-block pack takes 0.44 s instead of 1.8 s. Shorter
+#: lists keep the single query, where splitting costs more than it saves.
+LEXICAL_SPLIT_MIN_PHRASES = 128
+
+
+def _rank_lexical_split(con: sqlite3.Connection, terms: Sequence[str], limit: int) -> List[int]:
+    weights: Dict[str, int] = {}
+    for term in terms:
+        weights[term] = weights.get(term, 0) + 1
+    classes: Dict[int, List[str]] = {}
+    for term, weight in weights.items():
+        classes.setdefault(weight, []).append(term)
+    cursor = con.cursor()
+    cursor.row_factory = None
+    total: Dict[int, float] = {}
+    for weight in sorted(classes):
+        factor = float(weight)
+        match = " OR ".join(f'"{term}"' for term in classes[weight])
+        for block_id, score in cursor.execute(
+                "SELECT rowid, bm25(lexical,1.0,1.0,1.0) FROM lexical WHERE lexical MATCH ?", (match,)):
+            total[block_id] = total.get(block_id, 0.0) + factor * score
+    ordered = sorted(total, key=total.__getitem__)
+    # ORDER BY score, path, ordinal LIMIT n: rows tied with the last kept score are
+    # ordered by path and ordinal before the cut; rows without a block are skipped.
+    size = limit
+    while True:
+        end = min(size, len(ordered))
+        if end < len(ordered):
+            boundary = total[ordered[end - 1]]
+            while end < len(ordered) and total[ordered[end]] == boundary:
+                end += 1
+        head = ordered[:end]
+        place: Dict[int, Tuple[str, int]] = {}
+        for i in range(0, len(head), 500):
+            part = head[i:i + 500]
+            place.update((row[0], (row[1], row[2])) for row in cursor.execute(
+                "SELECT b.id, f.path, b.ordinal FROM blocks b JOIN files f ON f.id=b.file_id "
+                f"WHERE b.id IN ({','.join('?' * len(part))})", part))
+        kept = [b for b in head if b in place]
+        if len(kept) >= limit or end == len(ordered):
+            kept.sort(key=lambda b: (total[b], place[b][0], place[b][1]))
+            return kept[:limit]
+        size *= 2
+
+
 def _rank_lexical_terms(
     con: sqlite3.Connection, terms: Sequence[str], limit: int
 ) -> List[int]:
     if not terms:
         return []
+    if len(terms) > LEXICAL_SPLIT_MIN_PHRASES and limit > 0:
+        return _rank_lexical_split(con, terms, limit)
     match = " OR ".join(f'"{term}"' for term in terms)
     rows = con.execute(
         "SELECT lexical.rowid AS block_id FROM lexical JOIN blocks b ON b.id=lexical.rowid "

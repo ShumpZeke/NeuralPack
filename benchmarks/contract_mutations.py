@@ -388,6 +388,12 @@ MUTANTS = [
      "tests/test_query_cleaning.py::test_unterminated_markup_is_scanned_in_linear_time"),
     ("data_uri_kept", "npk/pack/select.py", None, None,
      "tests/test_query_cleaning.py::test_inline_base64_images_are_removed_whole"),
+    ("lexical_split_ignores_weights", "npk/pack/select.py", None, None,
+     "tests/test_lexical_split.py::test_weights_decide_the_order"),
+    ("lexical_split_ties_by_row", "npk/pack/select.py", None, None,
+     "tests/test_lexical_split.py::test_ties_are_ordered_by_path_across_the_limit"),
+    ("lexical_split_boundary_ties_dropped", "npk/pack/select.py", None, None,
+     "tests/test_lexical_split.py::test_ties_are_ordered_by_path_across_the_limit"),
     ("query_cleaning_drops_title", "npk/pack/select.py", None, None,
      "tests/test_query_cleaning.py::test_first_line_and_long_headings_are_kept"),
     ("query_cleaning_reports_cleaned_query", "npk/pack/select.py", None, None,
@@ -547,6 +553,19 @@ def main():
                 if source.count(target) != 1:
                     raise ValueError("URL title rule is no longer unique")
                 changed = source.replace(target, "[_strip_urls(line) for line in lines]")
+            elif name in ("lexical_split_ignores_weights", "lexical_split_ties_by_row",
+                          "lexical_split_boundary_ties_dropped"):
+                target, replacement = {
+                    "lexical_split_ignores_weights": ("factor = float(weight)", "factor = 1.0"),
+                    "lexical_split_ties_by_row": ("kept.sort(key=lambda b: (total[b], place[b][0], place[b][1]))",
+                                                  "kept.sort(key=lambda b: total[b])"),
+                    "lexical_split_boundary_ties_dropped": (
+                        "while end < len(ordered) and total[ordered[end]] == boundary:",
+                        "while False:"),
+                }[name]
+                if source.count(target) != 1:
+                    raise ValueError("lexical split target is no longer unique")
+                changed = source.replace(target, replacement)
             elif name == "environment_booleans_counted":
                 target = 'r"\\d+\\.\\d+|^(None|not installed)$"'
                 if source.count(target) != 1:
