@@ -202,6 +202,19 @@ changes Go, Rust, C/C++, C# and PHP packs: its `ood-multi-dev` screen (queued, n
 is a side condition for C2. If it shows a significant loss on either target at any budget,
 E048 is restricted at compile time to JavaScript, TypeScript and Java before promotion.
 
+### poly-dev-b outcome and PH01 (written before PH01 runs)
+
+C1 (`e047_strict`) passes on `poly-dev-b`: tests +2.28 / +2.72 / +2.01 / +0.90 at 2K-16K
+(all significant), no significant fix change, utility >= 0 everywhere (mean +1.50). C2 (E048
+compiler + `e049_members_e047`) fails: fix -1.11 / -0.71 at 4K / 8K (significant), utility
+-0.47 at 1K; the E048 compiler alone is negative at every budget (mean -0.60). Per the plan,
+PH01 runs C1 once on `poly-heldout` (133 issues): arms `npk_default` and `e047_strict` on the
+current compiler, targets fix and tests; E047 is promoted only if utility
+`d_fix + 0.99 d_tests` >= 0 at every budget, fix or tests gains significantly at one or more
+budgets, and no target loses significantly at any budget. The product form (worktree
+`exp/e047p`) must reproduce `e047_strict` exactly on `dev-fast` and `poly-dev` before it is
+merged. E048's multilingual screen is dropped (C2 failed).
+
 ## Semantic evidence for code: what has been measured
 
 Dense and neural evidence has not helped code retrieval on this benchmark so far: equal-weight
