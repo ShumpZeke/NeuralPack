@@ -137,6 +137,17 @@ them missed at 4K, about 13 candidate blocks per issue, so at most a few hunks);
 skipping per-file `realpath` in scans (a test pins resolution-before-read,
 which matters for Windows reparse points; saving ~0.3 s per Django update).
 
+## Semantic evidence for code: what has been measured
+
+Dense and neural evidence has not helped code retrieval on this benchmark so far: equal-weight
+dense fusion (E012) loses fix recall at 1-2K; a bge-small channel (E012b) passes the rule only
+barely at a large compile or query cost; static Model2Vec vectors (E038) lose fix recall; and
+web-passage cross-encoders reordering the top 10 (E045) lose 8-16 fix points at 1K-4K because
+they prefer prose-like tests and docs over implementation code. The 8 dev-fast issues whose
+gold file is entirely missing from the pool (vocabulary gap) still need semantic evidence; a
+code-trained encoder or reranker is the remaining option, and it must be cheap enough to
+run on CPU at compile or query time.
+
 ## Open policy question for the maintainers
 
 The top-file module header (E036/E042) consistently finds about 2 more fix sites per 100
