@@ -425,6 +425,26 @@ a candidate if it passes the standard rule there on fix and tests. A candidate r
 `heldout-e` (HE01) against `npk_default`, targets fix and tests, with the standard rule;
 otherwise `heldout-e` stays unused.
 
+### E055b gym-dev outcome: candidate; HE01 runs on heldout-e (written before HE01 runs)
+
+On `gym-dev` (326; control identical 1,630/1,630) `e055_frames_2k` passes the standard rule: fix
++0.61 / +0.66 / +0.48 / +0.41 at 2K-16K (significant at 4K), tests +0.10 / -0.21 at 8K / 16K
+(not significant), utility >= 0 everywhere (mean +0.41); 1K is the default's by construction.
+The ungated arms also pass here (`e055_frames` mean +0.57, `e055_frames3` +1.04) but are out by
+their dev results. Per the plan, HE01 runs once on `heldout-e` (384 issues) with arms
+`npk_default`, `e055_control` (must equal `npk_default`) and `e055_frames_2k`, targets fix and
+tests; E055b is promoted only if it meets the standard rule there (utility `d_fix + 0.99 d_tests`
+>= 0 at every budget, a significant fix or tests gain at one or more budgets, no significant loss
+at any budget). HE01 runs on the current default, which now includes E053 and E054.
+
+### E053 + E054 merged
+
+The combined product form reproduces the combined prototype (`e053_e054`) on all 1,475
+selections of 295 cached packs (dev-fast, dev, gym-dev, poly-dev, poly-dev-b, ood-multi-dev,
+five budgets each) and is the default since commit `042f8fa`. README and CURRENT_ARCHITECTURE
+describe both; the README tables are re-measured as R006 (`heldout`) and R007
+(`ood-multi-sample`).
+
 ### Pre-declared plan for E057 (install and home paths; written before any E057 result)
 
 E057 (`e057_paths`, prototype `install_paths.py`) removes path prefixes that describe the
