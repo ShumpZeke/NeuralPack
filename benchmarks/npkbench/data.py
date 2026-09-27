@@ -38,6 +38,12 @@ SOURCES = {
         "AmazonScience/SWE-PolyBench_500", "546075b4b05d17ba914e72b8f4c6d5b1ea150c1d",
         "test.csv",
         "20961b616b404875adead16dd456adc4cf583035436fc0d7e9c3f2adf8322e0c"),
+    # Added 2026-09-27: the full SWE-PolyBench (2,110 issues, MIT). Its Java/JS/TS issues
+    # outside the 500-issue subset give a larger development set (poly-dev-b).
+    "polybench_full": (
+        "AmazonScience/SWE-PolyBench", "d56445f9940eae4e9d2974ec66820c2f1d7754e6",
+        "test.csv",
+        "17ad661b20e9af1e2067fbbc2e2658a21137d56693570d1d07f966d8bc0408b7"),
     # Added 2026-09-26 for a second confirmation split (heldout-b); never tuned on.
     "swe_full_test": (
         "princeton-nlp/SWE-bench", "e48e2bd1e9fecd5bbd641e9414ac59da9f2e69f6",
@@ -360,9 +366,27 @@ def _docs_patch(task: "Task", ref_patch: str) -> Tuple[str, Dict]:
 #: for this machine's clone budget, guava has two issues; Python issues are left out
 #: because the Python splits are already large.
 POLY_EXCLUDED_REPOS = frozenset({"microsoft/vscode", "angular/angular", "google/guava"})
+#: poly-dev-b: at most this many issues per repository (fixed hash order).
+POLY_DEV_B_PER_REPO = 80
 
 
 def _rows(name: str) -> List[Dict[str, object]]:
+    if name == "polybench_devb":
+        # poly-dev-b, declared 2026-09-27 before any result on it: the full SWE-PolyBench's
+        # Java/JS/TS issues outside its 500-issue subset (so disjoint from poly-dev and
+        # poly-heldout), minus POLY_EXCLUDED_REPOS, at most POLY_DEV_B_PER_REPO per
+        # repository by a fixed hash. Only these rows are loaded (gold refinement fetches
+        # base-commit files, so the rest of the full set is never touched).
+        taken = {row["instance_id"] for row in _rows("polybench500")}
+        by_repo: Dict[str, List[Dict[str, object]]] = {}
+        for row in _rows("polybench_full"):
+            if row["instance_id"] not in taken:
+                by_repo.setdefault(str(row["repo"]), []).append(row)
+        chosen: List[Dict[str, object]] = []
+        for _repo, items in sorted(by_repo.items()):
+            items.sort(key=lambda row: _stable_hash("poly-b:" + str(row["instance_id"])))
+            chosen.extend(items[:POLY_DEV_B_PER_REPO])
+        return sorted(chosen, key=lambda row: str(row["instance_id"]))
     path = download(name)
     if path.suffix == ".csv":
         import csv
@@ -370,7 +394,7 @@ def _rows(name: str) -> List[Dict[str, object]]:
         csv.field_size_limit(sys.maxsize)
         with path.open(newline="", encoding="utf-8") as handle:
             rows = list(csv.DictReader(handle))
-        if name == "polybench500":
+        if name in ("polybench500", "polybench_full"):
             rows = [row for row in rows if row["language"] != "Python"
                     and row["repo"] not in POLY_EXCLUDED_REPOS]
         return rows
@@ -445,7 +469,8 @@ def split(name: str) -> List[Task]:
                    "heldout-e": "swe_full_test",
                    "ood-multi": "swe_multi_test", "ood-multi-sample": "swe_multi_test",
                    "ood-multi-dev": "swe_multi_test",
-                   "poly-dev": "polybench500", "poly-heldout": "polybench500"}[base]
+                   "poly-dev": "polybench500", "poly-heldout": "polybench500",
+                   "poly-dev-b": "polybench_devb"}[base]
         lite = {t.instance_id for t in load("swe_lite_test")} if base == "heldout" else set()
         return [t for t in load(dataset, target)
                 if t.instance_id in wanted and t.instance_id not in lite]
@@ -515,6 +540,8 @@ def split(name: str) -> List[Task]:
             cut = round(0.6 * len(items))
             chosen_p.extend(items[:cut] if name == "poly-dev" else items[cut:])
         return sorted(chosen_p, key=lambda t: t.instance_id)
+    if name == "poly-dev-b":
+        return load("polybench_devb")
     if name == "long-queries":
         # Diagnostic split (declared 2026-09-27 for E043, the query-term cap): the issues of
         # dev, ood-multi-dev and the spent heldout-b/c/d whose cleaned query has more than

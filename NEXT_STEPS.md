@@ -171,6 +171,34 @@ mirroring), `e047_strict` (+ a mate must share the module or package name). Scre
 `poly-dev` (decision), `ood-multi-dev` (other languages) and `dev-fast` (Python selections
 should not move).
 
+## Pre-declared plan for poly-dev-b and poly-heldout (written before any result on either)
+
+Three JS/TS/Java candidates came out of `poly-dev` with real but small effects, and each
+missed the every-budget utility condition by a hair there (199 issues; one or two issues
+decide 8K/16K):
+
+* E047 `e047_strict`: test-file conventions (Jest/JUnit/Go/gtest/RSpec paths, CamelCase test
+  affixes, a mate must share the module or package name). Tests +2.45 at 2K (significant),
+  utility -0.22 at 8K.
+* E048: only a brace type's header fragment defines its name (compile time), with
+  E049 `e049_members_e047`: qualified member references (`Type#member`, `Type::member`,
+  `Type.member`) resolve method blocks, plus E047. Tests +3.11 at 2K (significant), fix
+  +1.49 at 1K, mean utility +1.03, utility -0.03 at 16K (one issue).
+
+`poly-dev-b` (371 issues, disjoint from `poly-dev` and `poly-heldout`, declared in
+`data.py` with this plan) screens them with more power. Arms: C1 = `e047_strict` on the
+current compiler; C2 = `e049_members_e047` on the E048 compiler (worktree `exp/e048`);
+each against `npk_default` on the current compiler, targets fix and tests. The standard
+rule applies: utility `d_fix + 0.99 d_tests` >= 0 at every budget, a significant fix or
+tests gain at one or more budgets, no significant loss at any budget. If neither passes,
+both are recorded as rejected and `poly-heldout` stays unused. If one passes, it (or, if
+both pass, the one with the higher mean utility on `poly-dev-b`) is run once on
+`poly-heldout` (PH01) against `npk_default` and promoted only if it meets the same rule
+there; for C2 the product change is the E048 compiler change plus E049 and E047 in
+`select.py`. Python is untouched by construction apart from JS/TS/Java files inside Python
+repositories (dev-fast: one Django issue's mate changes, no recall change), so no Python
+held-out split is spent; dev-fast equivalence is re-checked for the product form.
+
 ## Semantic evidence for code: what has been measured
 
 Dense and neural evidence has not helped code retrieval on this benchmark so far: equal-weight

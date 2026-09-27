@@ -38,6 +38,10 @@ Splits (fixed before any NeuralPack result was observed):
   and google/guava; split per repository by a fixed hash, about 60% for developing
   non-Python handling and 40% for confirmation only. Declared 2026-09-27 before any
   result on them.
+* ``poly-dev-b`` -- the full SWE-PolyBench's Java/JS/TS issues outside that 500-issue
+  subset (disjoint from ``poly-dev`` and ``poly-heldout``), same repository exclusions,
+  at most 80 per repository by a fixed hash (371 issues). Declared 2026-09-27 before any
+  result on it; development only, for screening with more power than ``poly-dev``.
 * ``ood-multi`` -- SWE-bench Multilingual (300 issues, 41 non-Python repositories);
   ``ood-multi-sample``: at most 3 per repository, measurement only;
   ``ood-multi-dev``: the other 186, for developing non-Python handling.
