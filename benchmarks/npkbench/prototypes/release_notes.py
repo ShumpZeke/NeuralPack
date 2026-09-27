@@ -4,8 +4,8 @@ Changelogs, release notes and release blog posts describe past changes in the
 issue's own vocabulary, often with the same code examples, so they rank high:
 at 2K they take 9.2% of the selected lines on poly-dev-b (prettier's release
 posts, svelte's CHANGELOG.md), 2.4-3.0% on gym-dev and ood-multi-dev and 0.5% on
-dev. They are almost never where a fix goes: of 5,629 fix hunks on those three
-splits, 74 are release-note entries and the default finds 2 of them at 2K (a
+dev. They are almost never where a fix goes: of 5,193 fix hunks on those four
+splits (with dev), 74 are release-note entries and the default finds 2 of them at 2K (a
 new entry goes at the top of the current notes, not into the historical block
 that matched). The docs target already excludes release notes as not topical.
 
