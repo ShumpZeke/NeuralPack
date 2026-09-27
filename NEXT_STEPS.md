@@ -79,7 +79,7 @@ hybrid for chat histories (M006).
    confirmed E016c (HB01). Use `heldout-c` (declared, unused) for the next confirmation,
    and declare its criteria in this file before running it.
 
-Measured non-opportunities (do not re-run without a new idea): a traceback-frame channel
+Measured non-opportunities (do not re-run without a new idea): vendored code (`deps/`, `vendor/`, `third_party/`: no gold hunk in 2,360 across dev, held-out and multilingual dev; only 0.2-1.2% of selected lines at 2K, so demoting it cannot pay for the scope change); a traceback-frame channel
 (the 7 dev-fast tasks whose traceback names a gold file already score 0.86-0.93 from 1K);
 module-path mentions (the product already selects the named gold file at 2K in 15 of 20
 cases); an error-message phrase channel (3 of 103 issues quote a message found verbatim in
