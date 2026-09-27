@@ -347,6 +347,16 @@ gold file is entirely missing from the pool (vocabulary gap) still need semantic
 code-trained encoder or reranker is the remaining option, and it must be cheap enough to
 run on CPU at compile or query time.
 
+D1 (2026-09-27, diagnostic only) tried that option where lexical ranking is weakest: a
+code-trained bi-encoder (Alibaba-NLP/gte-modernbert-base, Apache-2.0, pinned revision
+e7f32e3c, safetensors, CoIR 79.3; CLS pooling, 192-token inputs) re-ranked the lexical top 300
+for 20 gym-dev pandas and mypy issues. Of the 16 whose gold is in that pool, the dense order
+puts the gold higher than lexical ranking in 5 and lower in 11 (top-60: lexical 12, dense 9,
+RRF of both 10); RRF moves one of the four deep-tail gold blocks into the top 60. The
+embedding matches issue prose to docstrings and tests as readily as to the internal code a
+fix edits, so a dense channel is not built. Data and script:
+`experiments/npkbench/diagnostics/D1-*`.
+
 ## Open policy question for the maintainers
 
 The top-file module header (E036/E042) consistently finds about 2 more fix sites per 100
