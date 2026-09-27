@@ -183,7 +183,7 @@ def parse_patch(patch: str) -> Tuple[List[Hunk], List[str]]:
 
 def _nonblank_anchor(lines: Sequence[str], before: int, after: int) -> Tuple[int, int]:
     """Nearest non-blank original lines around an insertion point (0 = none)."""
-    lo = before
+    lo = min(before, len(lines))   # an end-of-file insertion can point one past the last line
     while lo >= 1 and not lines[lo - 1].strip():
         lo -= 1
     hi = after
