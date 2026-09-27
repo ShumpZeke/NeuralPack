@@ -461,6 +461,18 @@ tests), with the standard rule; it is a candidate if it passes on one screen and
 `gym-heldout-b` (254 SWE-Gym issues) against `npk_default`, targets fix and tests, with the
 standard rule; otherwise it is rejected and `gym-heldout-b` stays unused.
 
+### Candidate idea (measured, not declared): quoted repository code as a channel
+
+Issues often paste code; some of it is the project's own code, quoted where the reporter found
+the problem. Lines inside code fences (at least 25 non-space characters, prompts and traceback
+lines excluded) found verbatim in 1-3 source files at the base commit: `dev` 57 of 141 issues
+with code quote repository code, 21 of them at a fix site (25 fix hunks; the default covers 16
+at 1K and 2K, 22 at 4K); `gym-dev` 93 of 230, 30 at a fix site (41 hunks; 18 / 27 / 32 covered
+at 1K / 2K / 4K). A channel ranking the blocks that contain such lines could recover some of
+the missed sites but would add blocks for the ~60% of quoting issues whose quote is not at a
+fix site (precision is lower than the traceback frames'). Both Python screens are in use by E057
+now; declare a plan (screens, confirmation split) before any run.
+
 ## Semantic evidence for code: what has been measured
 
 Dense and neural evidence has not helped code retrieval on this benchmark so far: equal-weight
