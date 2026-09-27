@@ -141,7 +141,9 @@ on the E039 default, dev-fast: it would lift a gold block to rank 1 in 7 issues 
 gold block from another file down in about 10); qualified `Class.member` resolution by intersecting the class's blocks with the member's
 definitions (dev-fast: 24 issues name such pairs, 14 resolve to 1-3 blocks, 8 gold hunks sit in
 them, and the default already finds all 8 at 1K); translated documentation copies (7-8% of
-material-ui's budget on poly-dev-b, 2 gold hunks); compositional name matches (a definition such as `_print_Product` whose name parts all occur
+material-ui's budget on poly-dev-b, 2 gold hunks); repository boilerplate (LICENSE, AUTHORS,
+CODE_OF_CONDUCT, SECURITY, CONTRIBUTING, `.github/`: at most 0.2% of 2K lines on any split) and
+lockfiles (never selected; 24 poly-dev-b fix hunks are dependency bumps in them); compositional name matches (a definition such as `_print_Product` whose name parts all occur
 in the issue and include a code name it mentions: 13 of 153 dev-fast fix hunks covered, 6 of
 them missed at 4K, about 13 candidate blocks per issue, so at most a few hunks);
 skipping per-file `realpath` in scans (a test pins resolution-before-read,
