@@ -106,8 +106,10 @@ read with 4K tokens or more (M006, MH01).
    retrieval). A file-local second stage (rank the top files' own blocks by file-local BM25,
    as trimming ranks members) could reach the first group, but the budget is almost always
    full (about 40 tokens left at 16K), so such blocks must displace low-ranked pool blocks,
-   which is how file aggregation (E003) failed; test it only with a placement that cannot
-   move the first few ranks.
+   which is how file aggregation (E003) failed. Measured since: ranking each such gold file's
+   own blocks by file-local BM25 with the weighted query puts the gold block in the local
+   top 2 for only 1 of 16 issues (top 5 for 4), so the second stage has little to find; the
+   gold regions share little vocabulary with the issue (non-opportunity).
 6. **Done: E039 title and repetition weighting is the default (HD01 on heldout-d).** Fix
    +1.4 to +4.6 points at 2K-16K and tests +2.8 to +12.2 at every budget, all significant.
    E034 (title x4 alone) also passed; E035 (mate file choice) and E036 (top-file header)
