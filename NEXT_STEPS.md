@@ -307,6 +307,18 @@ every screened query exactly as the prototype and reproduces its selections (dev
 515/515, gym-dev 1630/1630); it is the default, inside `enable_query_cleaning`. Remaining
 unused confirmation splits: `heldout-e` (Python, 384) and `poly-heldout-b` (JS/TS, 320).
 
+### Pre-declared plan for E053 (URLs in queries; written before any E053 result)
+
+E053 (`e053_urls`, prototype `url_clean.py`) rewrites URLs in the retrieval query: image links
+and GitHub attachments dropped, GitHub `blob`/`tree`/`raw` links reduced to the repository path,
+other GitHub links dropped, other URLs reduced to path and fragment words. SWE-bench Lite
+removed issues with links (dev has none), so it is screened on `gym-dev` (151 of 326 issues
+have URLs) and `poly-dev-b` (URL-rich JS/TS/Java), both unused for this idea, with the standard
+rule on fix and tests. It is a candidate if it passes on one screen with no significant loss on
+the other. A candidate that passes on `poly-dev-b` is confirmed once on `poly-heldout-b` (320);
+otherwise one that passes only on `gym-dev` is confirmed once on `heldout-e`. Only one
+confirmation run is made; if E053 is not a candidate, both splits stay unused.
+
 ## Semantic evidence for code: what has been measured
 
 Dense and neural evidence has not helped code retrieval on this benchmark so far: equal-weight
