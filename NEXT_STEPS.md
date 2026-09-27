@@ -131,3 +131,13 @@ ranking, to be developed on `ood-multi-dev` and measured on `ood-multi-sample`:
 definition extraction for modifier-prefixed declarations (`pub fn`, `export function`,
 `public static`), which DEF_RE misses (block names partly compensate for brace languages),
 and a Ruby `def ... end` splitter (Ruby is cut into 60-line windows today).
+
+## Pre-declared criteria for HC01 (heldout-c; written before its results)
+
+HC01 runs `npk_default` and `e031_clean` (E031: issue-template headings, checklists and HTML
+comments removed from the query; title and content lines kept) on `heldout-c` (400 unused
+issues), targets fix and tests. E031 is promoted into the product's query handling only if
+utility `d_fix + 0.99 d_tests` is >= 0 at every budget, fix or tests gains significantly at
+one or more budgets, and no target loses significantly at any budget. Dev evidence (E031b,
+300 issues): utility +1.0/+0.7/+1.6/+2.5/+0.4 points, tests +1.1 at 4K (significant), no
+significant losses.
