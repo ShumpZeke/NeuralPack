@@ -46,8 +46,9 @@ regression-test sites (not significant; run R004, whose numbers the table shows)
   it was 0.31 vs 0.17 at 2K. Documentation remains the weakest target.
 - **Beyond Python** (SWE-bench Multilingual sample: 114 issues in 41 Rust, Ruby, Java,
   Go, C/C++, PHP and JS/TS repositories, never used for decisions): fix-site recall is
-  0.198 / 0.260 / 0.301 / 0.364 / 0.455 at 1K-16K, 2.2-3.2x a BM25 baseline over
-  1,000-character chunks, and regression-test recall 1.9-2.6x (all significant). The
+  0.198 / 0.253 / 0.304 / 0.364 / 0.455 at 1K-16K, 1.9-3.1x a BM25 baseline over
+  1,000-character chunks, and regression-test recall 0.079 / 0.122 / 0.185 / 0.269 / 0.317,
+  2.4-3.0x the baseline (every gap significant; run R005, with E047 and E052). The
   query handling (issue-form cleaning and title/repetition weighting) matters most here:
   it adds +8.9 to +13.5 fix points (0.164 -> 0.260 at 2K; run R003). Absolute recall is
   still about three quarters of Python's; C/C++ and JS/TS were weakest before these
