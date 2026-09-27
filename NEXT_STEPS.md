@@ -225,6 +225,18 @@ The next JS/TS confirmation split is declared (before any result on it): `poly-h
 SWE-PolyBench outside the verified 500 and `poly-dev-b`. It has no Java issues; Java work
 must confirm on a set built elsewhere (e.g. Multi-SWE-bench).
 
+## Pre-declared selection for E050 and HE01 (written before any E050 result)
+
+E050 (fit-or-trim for lower-ranked Python classes; arms `e050_first1_k2`, `e050_first3_k1`,
+`e050_all_k1`, control `e050_control`) runs on the full `dev` split (300). Its idea came from
+a dev-fast diagnostic, so the 197 dev issues outside dev-fast are the fair screen. A variant
+is a candidate only if it passes the standard rule on the full split (utility
+`d_fix + 0.99 d_tests + 0.087 d_docs` >= 0 at every budget, a significant fix or tests gain,
+no significant loss) and has utility >= 0 at every budget on the 197. The candidate with the
+highest mean utility on the 197 runs once on `heldout-e` (HE01, 384 issues, the last unused
+Python split) against `npk_default`, targets fix and tests, and is promoted only if it meets
+the standard rule there. If no variant is a candidate, `heldout-e` stays unused.
+
 ## Semantic evidence for code: what has been measured
 
 Dense and neural evidence has not helped code retrieval on this benchmark so far: equal-weight
