@@ -137,6 +137,18 @@ them missed at 4K, about 13 candidate blocks per issue, so at most a few hunks);
 skipping per-file `realpath` in scans (a test pins resolution-before-read,
 which matters for Windows reparse points; saving ~0.3 s per Django update).
 
+## Non-Python development set: SWE-PolyBench (added 2026-09-27)
+
+`poly-dev` (199 issues) and `poly-heldout` (133) are the Java, JavaScript and TypeScript
+issues of SWE-PolyBench's verified 500 (MIT), minus microsoft/vscode, angular/angular and
+google/guava, split per repository by a fixed hash (declared before any result, commit
+3d0466d). Twelve repositories (material-ui, svelte, trino, rocketmq, serverless, prettier,
+gson, dubbo, tailwindcss, three.js, code-server, apollo); blobless clones add 0.3 GB. Their
+fix patches often include changesets and docs (about a quarter of first gold files are not
+code), as SWE-bench Multilingual's do. Develop JS/TS/Java handling on `poly-dev`, declare
+criteria here, then confirm once on `poly-heldout`. The first measurement (P001: default vs
+`npk_query_baseline` vs B002) is running.
+
 ## Semantic evidence for code: what has been measured
 
 Dense and neural evidence has not helped code retrieval on this benchmark so far: equal-weight
