@@ -36,6 +36,7 @@ class TrimRankedSelector(PackSelector):
     trim_lower = True
     k: Optional[int] = None
     blocks: Optional[int] = None
+    min_budget = 0      # E050b: lower-ranked blocks are trimmed only from this budget up
 
     def _select_once(self, con, manifest, query, budget, limit):
         captured: Dict[str, object] = {}
@@ -52,7 +53,7 @@ class TrimRankedSelector(PackSelector):
             base = super()._select_once(con, manifest, query, budget, limit)
         finally:
             sel.load_blocks = original
-        if "ids" not in captured or not base.evidence:
+        if "ids" not in captured or not base.evidence or budget < self.min_budget:
             return base
         ids: List[int] = captured["ids"]            # type: ignore[assignment]
         blocks = captured["blocks"]                 # type: ignore[assignment]
@@ -105,9 +106,10 @@ class TrimRankedSelector(PackSelector):
         return used_chars
 
 
-def make(name: str, *, trim_lower: bool, k: Optional[int] = None, blocks: Optional[int] = None) -> Arm:
+def make(name: str, *, trim_lower: bool, k: Optional[int] = None, blocks: Optional[int] = None,
+         min_budget: int = 0) -> Arm:
     cls = type(f"TrimRanked_{name}", (TrimRankedSelector,),
-               {"trim_lower": trim_lower, "k": k, "blocks": blocks})
+               {"trim_lower": trim_lower, "k": k, "blocks": blocks, "min_budget": min_budget})
 
     def runner(pack: Path, task: Task, budgets: Sequence[int]) -> Dict[int, ArmResult]:
         out: Dict[int, ArmResult] = {}
@@ -129,3 +131,7 @@ make("e050_control", trim_lower=False)   # the product's fill, re-implemented: m
 make("e050_first1_k2", trim_lower=True, blocks=1, k=2)
 make("e050_first3_k1", trim_lower=True, blocks=3, k=1)
 make("e050_all_k1", trim_lower=True, k=1)
+# E050b (declared in NEXT_STEPS.md before any gym-dev result): first3_k1 from 2K only. On the
+# fair 197 dev issues first3_k1 cost tests at 1K (-1.4), where the budget holds three or four
+# blocks and trimmed members displace other top blocks, as the ungated test mate did.
+make("e050b_first3_k1_2k", trim_lower=True, blocks=3, k=1, min_budget=2048)

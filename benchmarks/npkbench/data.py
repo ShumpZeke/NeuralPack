@@ -44,6 +44,12 @@ SOURCES = {
         "AmazonScience/SWE-PolyBench", "d56445f9940eae4e9d2974ec66820c2f1d7754e6",
         "test.csv",
         "17ad661b20e9af1e2067fbbc2e2658a21137d56693570d1d07f966d8bc0408b7"),
+    # Added 2026-09-27: SWE-Gym (2,438 issues from 11 Python repositories SWE-bench does not
+    # use; MIT). Source of gym-dev (screening) and gym-heldout (confirmation).
+    "swe_gym": (
+        "SWE-Gym/SWE-Gym", "bb94ed9e39bbeb96a7fcbfb533b80f25a7fd59cb",
+        "data/train-00000-of-00001.parquet",
+        "60569cea74bb281f7a5579467436a2bc1932c6e0c5f2f7fa0d084392abd9ad97"),
     # Added 2026-09-26 for a second confirmation split (heldout-b); never tuned on.
     "swe_full_test": (
         "princeton-nlp/SWE-bench", "e48e2bd1e9fecd5bbd641e9414ac59da9f2e69f6",
@@ -368,9 +374,25 @@ def _docs_patch(task: "Task", ref_patch: str) -> Tuple[str, Dict]:
 POLY_EXCLUDED_REPOS = frozenset({"microsoft/vscode", "angular/angular", "google/guava"})
 #: poly-dev-b: at most this many issues per repository (fixed hash order).
 POLY_DEV_B_PER_REPO = 80
+#: gym-dev / gym-heldout: at most this many issues per SWE-Gym repository each.
+GYM_PER_REPO = 30
 
 
 def _rows(name: str) -> List[Dict[str, object]]:
+    if name in ("swegym_dev", "swegym_heldout"):
+        # gym-dev and gym-heldout, declared 2026-09-27 before any result on them: per SWE-Gym
+        # repository in a fixed hash order, the first GYM_PER_REPO issues are gym-dev
+        # (screening Python changes with more power than dev) and the next GYM_PER_REPO
+        # are gym-heldout (confirmation only). Only these rows are loaded.
+        by_repo_g: Dict[str, List[Dict[str, object]]] = {}
+        for row in _rows("swe_gym"):
+            by_repo_g.setdefault(str(row["repo"]), []).append(row)
+        chosen_g: List[Dict[str, object]] = []
+        for _repo, items in sorted(by_repo_g.items()):
+            items.sort(key=lambda row: _stable_hash("gym:" + str(row["instance_id"])))
+            chosen_g.extend(items[:GYM_PER_REPO] if name == "swegym_dev"
+                            else items[GYM_PER_REPO:2 * GYM_PER_REPO])
+        return sorted(chosen_g, key=lambda row: str(row["instance_id"]))
     if name == "polybench_heldoutb":
         # poly-heldout-b, declared 2026-09-27 before any result on it: the full SWE-PolyBench's
         # Java/JS/TS issues outside its 500-issue subset and outside poly-dev-b, minus
@@ -486,7 +508,8 @@ def split(name: str) -> List[Task]:
                    "ood-multi": "swe_multi_test", "ood-multi-sample": "swe_multi_test",
                    "ood-multi-dev": "swe_multi_test",
                    "poly-dev": "polybench500", "poly-heldout": "polybench500",
-                   "poly-dev-b": "polybench_devb", "poly-heldout-b": "polybench_heldoutb"}[base]
+                   "poly-dev-b": "polybench_devb", "poly-heldout-b": "polybench_heldoutb",
+                   "gym-dev": "swegym_dev", "gym-heldout": "swegym_heldout"}[base]
         lite = {t.instance_id for t in load("swe_lite_test")} if base == "heldout" else set()
         return [t for t in load(dataset, target)
                 if t.instance_id in wanted and t.instance_id not in lite]
@@ -560,6 +583,8 @@ def split(name: str) -> List[Task]:
         return load("polybench_devb")
     if name == "poly-heldout-b":
         return load("polybench_heldoutb")
+    if name in ("gym-dev", "gym-heldout"):
+        return load({"gym-dev": "swegym_dev", "gym-heldout": "swegym_heldout"}[name])
     if name == "long-queries":
         # Diagnostic split (declared 2026-09-27 for E043, the query-term cap): the issues of
         # dev, ood-multi-dev and the spent heldout-b/c/d whose cleaned query has more than

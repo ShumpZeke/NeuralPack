@@ -237,6 +237,20 @@ highest mean utility on the 197 runs once on `heldout-e` (HE01, 384 issues, the 
 Python split) against `npk_default`, targets fix and tests, and is promoted only if it meets
 the standard rule there. If no variant is a candidate, `heldout-e` stays unused.
 
+### E050 outcome and E050b on gym-dev (written before any gym-dev result)
+
+No E050 variant met the selection above: the 2K fix gain (+3.1 to +3.3 on the full split,
++3.5 to +3.7 on the fair 197, significant) came with utility below zero at 1K (tests -1.3 on
+the 197: trimmed members displace other top blocks when the budget holds three or four) and
+at 16K (one docs issue). `heldout-e` stays unused. E050b gates the trimming of lower-ranked
+blocks at 2K, as the test mate is gated (`e050b_first3_k1_2k`: first three non-fitting
+classes, one member each, from 2K; 1K is the product's by construction). It is screened on
+`gym-dev` (326 SWE-Gym issues from 11 Python repositories SWE-bench does not use; declared in
+`data.py` with this plan), targets fix and tests, against `npk_default`, with the standard
+rule. If it passes, it runs once on `heldout-e` (HE01) with the same rule on fix and tests;
+otherwise it is rejected and `heldout-e` stays unused. The ungated `e050_first3_k1` runs
+alongside for information only.
+
 ## Semantic evidence for code: what has been measured
 
 Dense and neural evidence has not helped code retrieval on this benchmark so far: equal-weight

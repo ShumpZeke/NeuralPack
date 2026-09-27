@@ -42,6 +42,11 @@ Splits (fixed before any NeuralPack result was observed):
   subset (disjoint from ``poly-dev`` and ``poly-heldout``), same repository exclusions,
   at most 80 per repository by a fixed hash (371 issues). Declared 2026-09-27 before any
   result on it; development only, for screening with more power than ``poly-dev``.
+* ``gym-dev`` / ``gym-heldout`` -- SWE-Gym (MIT; 11 Python repositories SWE-bench does not
+  use: pandas, MONAI, moto, mypy, dvc, dask, modin, pydantic, conan, hydra, bokeh). Per
+  repository in a fixed hash order, the first 30 issues are ``gym-dev`` (screening Python
+  changes with more power than ``dev``) and the next 30 ``gym-heldout`` (confirmation only).
+  Declared 2026-09-27 before any result on them.
 * ``poly-heldout-b`` -- the rest of the full SWE-PolyBench's Java/JS/TS issues (outside the
   500-issue subset and ``poly-dev-b``), same exclusions, at most 80 per repository by a
   fresh fixed hash. Declared 2026-09-27 before any result on it; confirmation only.
