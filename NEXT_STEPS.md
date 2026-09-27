@@ -425,6 +425,22 @@ a candidate if it passes the standard rule there on fix and tests. A candidate r
 `heldout-e` (HE01) against `npk_default`, targets fix and tests, with the standard rule;
 otherwise `heldout-e` stays unused.
 
+### Pre-declared plan for E057 (install and home paths; written before any E057 result)
+
+E057 (`e057_paths`, prototype `install_paths.py`) removes path prefixes that describe the
+reporter's environment from the retrieval query, after the other cleaning and on every line but
+the title: a prefix ending in `site-packages/` or `dist-packages/`, then a Python installation
+prefix (`.../lib/python3.8/`), then a home-directory prefix (`/Users/<name>/`, `/home/<name>/`,
+`C:\Users\<name>\`); package-relative paths such as `pandas/core/frame.py` stay. It changes 61
+of 300 `dev` and 57 of 326 `gym-dev` queries (6 of 371 on `poly-dev-b`), where the prefix words
+(`site`, `packages`, `lib`, `python3`, `local`, `usr`, `home`, `venv`, `envs`, user names) are a
+median 10-11% of the analyzed terms and are repeated per traceback frame. It is screened on top
+of the default that includes E053 and E054, on `dev` (fix, tests, docs) and `gym-dev` (fix,
+tests), with the standard rule; it is a candidate if it passes on one screen and has utility
+>= 0 at every budget and no significant loss on the other. A candidate is confirmed once on
+`gym-heldout-b` (254 SWE-Gym issues) against `npk_default`, targets fix and tests, with the
+standard rule; otherwise it is rejected and `gym-heldout-b` stays unused.
+
 ## Semantic evidence for code: what has been measured
 
 Dense and neural evidence has not helped code retrieval on this benchmark so far: equal-weight
