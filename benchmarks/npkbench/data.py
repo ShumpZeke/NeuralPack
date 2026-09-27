@@ -406,7 +406,7 @@ def split(name: str) -> List[Task]:
         dataset = {"dev": "swe_lite_test", "dev-fast": "swe_lite_test",
                    "heldout": "swe_verified_test", "ood": "swe_lite_dev",
                    "heldout-b": "swe_full_test", "heldout-b-all": "swe_full_test",
-                   "heldout-c": "swe_full_test",
+                   "heldout-c": "swe_full_test", "heldout-d": "swe_full_test",
                    "ood-multi": "swe_multi_test", "ood-multi-sample": "swe_multi_test",
                    "ood-multi-dev": "swe_multi_test"}[base]
         lite = {t.instance_id for t in load("swe_lite_test")} if base == "heldout" else set()
@@ -465,6 +465,20 @@ def split(name: str) -> List[Task]:
             items.sort(key=lambda t: _stable_hash("heldout-c:" + t.instance_id))
             chosen_c.extend(items[:max(2, round(400 * len(items) / len(rest)))])
         return sorted(chosen_c, key=lambda t: t.instance_id)
+    if name == "heldout-d":
+        # Fourth confirmation split (declared 2026-09-27, before any result on it, while
+        # heldout-c was being spent on E031/HC01): a fixed stratified 400 of
+        # heldout-b-all minus heldout-b and heldout-c.
+        spent = {t.instance_id for t in split("heldout-b")} | {t.instance_id for t in split("heldout-c")}
+        rest = [t for t in split("heldout-b-all") if t.instance_id not in spent]
+        by_repo_d: Dict[str, List[Task]] = {}
+        for task in rest:
+            by_repo_d.setdefault(task.repo, []).append(task)
+        chosen_d = []
+        for repo, items in sorted(by_repo_d.items()):
+            items.sort(key=lambda t: _stable_hash("heldout-d:" + t.instance_id))
+            chosen_d.extend(items[:max(2, round(400 * len(items) / len(rest)))])
+        return sorted(chosen_d, key=lambda t: t.instance_id)
     if name in ("heldout-b", "heldout-b-all"):
         # Second confirmation split (declared 2026-09-26, after `heldout` was spent on
         # E016b): SWE-bench test minus Verified minus Lite. `heldout-b` is a fixed,

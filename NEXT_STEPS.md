@@ -79,10 +79,9 @@ read with 4K tokens or more (M006, MH01).
    and a new encoder identity; for code it passed the rule only barely (E012b) at a large
    compile cost.
 5. **Held-out split hygiene:** `heldout` confirmed E002, E005c, E016b and E017; `heldout-b`
-   confirmed E016c (HB01); `heldout-c` is spent on E031 (HC01). 785 issues of
-   `heldout-b-all` remain unused (271 Django, 127 SymPy, 91 scikit-learn, ...); declare a
-   `heldout-d` from them in `data.split` and its criteria in this file before the next
-   confirmation.
+   confirmed E016c (HB01); `heldout-c` is spent on E031 (HC01). `heldout-d` (401 issues, a fixed
+   stratified sample of the 785 unused issues of `heldout-b-all`) was declared on
+   2026-09-27 before any result on it; declare the criteria in this file before running it.
 6. **E034 (in progress): weight the issue title's terms in the lexical channel.** The
    channel deduplicates query terms, so the title (the author's own summary) counts no more
    than a traceback or template word. Prototype `prototypes/title_weight.py` repeats title
