@@ -186,3 +186,12 @@ targets fix and tests. A candidate is promoted only if, against `npk_default`: u
 more budgets, and no target loses significantly at any budget. If two or more candidates
 pass, an arm combining them must pass the same criteria in the same run before they are
 combined in the product; otherwise only the candidate with the higher mean utility is promoted.
+
+**Dev outcome (2026-09-27, run `E034-E035-E036-dev`; the declared rule applied mechanically):**
+every arm passes the dev rule on the full dev split. Mean utility over the five budgets:
+E034 x4 11.2 > x3 10.2, so **x4** is the E034 candidate. On the 197 issues outside dev-fast,
+`e035_fused` falls to -0.14 at 8K and `e036_header2` to -0.3 at 4K (tests -1.6 at 8K,
+significant), so the candidates are **`e035_mirror_any`** (0/+2.4/+1.2/+0.8/0) and
+**`e036_header`** (+0.9/+0.9/+0.3/+0.4/+3.6). **E039 (cap 3 + title x3)** passes and goes too.
+HD01 also runs the combinations of these candidates (`prototypes/combo.py`), so that whichever
+subset passes has its combination measured in the same run.

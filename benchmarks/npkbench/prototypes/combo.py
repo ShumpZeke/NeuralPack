@@ -59,3 +59,9 @@ make("combo_title3_mate_fused", title=3, mate_rule="fused")
 make("combo_title3_header1", title=3, header_files=1)
 make("combo_title3_mate_any_header1", title=3, mate_rule="any", header_files=1)
 make("combo_title4_mate_any_header1", title=4, mate_rule="any", header_files=1)
+# HD01 (heldout-d) combinations of the candidates selected on dev by the declared rule:
+# E034 x4, E039 (cap 3 + title), E035 mirror_any, E036 header (1 file).
+make("combo_title4_header1", title=4, header_files=1)
+make("combo_title4_mate_any", title=4, mate_rule="any")
+make("combo_qtf3_title4_mate_any_header1", title=4, qtf_cap=3, mate_rule="any", header_files=1)
+make("combo_qtf3_title3_mate_any_header1", title=3, qtf_cap=3, mate_rule="any", header_files=1)
