@@ -248,3 +248,14 @@ the five budgets goes to heldout-e. HE01 runs `npk_default` and that candidate o
 (384 unused issues), targets fix and tests, and promotes it only if utility
 `d_fix + 0.99 d_tests` >= 0 at every budget, fix or tests gains significantly at one or more
 budgets, and no target loses significantly at any budget (unrounded bootstrap bounds).
+
+**HE01 re-declared for E044 (2026-09-27, before E044's full-dev run; E042 failed its dev rule,
+so heldout-e is still unused).** E044 places a second test mate (for the second-ranked
+implementation file) from 8K (`e044_second_mate_8k`) or from 4K (`e044_second_mate_4k`). On the
+full dev split (`E044-second-mate-dev`), a variant is a candidate if it passes the dev rule
+(utility >= 0 at every budget, a significant fix or tests gain, no significant loss, unrounded
+bounds); if both are, the one with the higher mean utility over the five budgets goes to
+heldout-e. HE01 runs `npk_default` and that candidate on `heldout-e` (384 unused issues),
+targets fix and tests, and promotes it only if utility `d_fix + 0.99 d_tests` >= 0 at every
+budget, fix or tests gains significantly at one or more budgets, and no target loses
+significantly at any budget.
