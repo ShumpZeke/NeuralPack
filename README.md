@@ -27,12 +27,15 @@ Lite and confirmed once on a **held-out** split (SWE-bench Verified minus Lite,
 | Standard RAG baseline: BM25 over 60-line chunks (identifier-split) | 0.101 | 0.149 | 0.217 | 0.267 | 0.321 |
 | NeuralPack before this loop's retrieval changes | 0.136 | 0.206 | 0.302 | 0.393 | 0.490 |
 | Code-first ranking (definition channel, top-block trimming, test mate from 2K) | 0.230 | 0.303 | 0.385 | 0.472 | 0.569 |
-| **Current default** (+ issue-form cleaning, title and repetition weighting) | **0.254** | **0.346** | **0.452** | **0.571** | **0.638** |
-| Current default, regression-test sites found (tests target) | 0.089 | 0.180 | 0.252 | 0.338 | 0.423 |
+| **Current default** (+ issue-form cleaning, title and repetition weighting) | **0.254** | **0.343** | **0.456** | **0.572** | **0.638** |
+| Current default, regression-test sites found (tests target) | 0.090 | 0.183 | 0.257 | 0.344 | 0.428 |
 
 The query-handling changes of the last row were decided on other fresh splits (heldout-c,
 heldout-d). On this split they add +2.3 / +4.3 / +6.8 / +9.9 / +7.0 points of fix sites
-and +3.0 to +12.0 points of regression-test sites, all significant (run R002).
+and +3.0 to +12.0 points of regression-test sites, all significant (run R002). The later
+test-file conventions and environment-dump cleaning (E047, E052; confirmed on poly-heldout
+and gym-heldout) leave this split's fix recall unchanged and add +0.1 to +0.6 points of
+regression-test sites (not significant; run R004, whose numbers the table shows).
 
 - **Against a standard RAG pipeline** (same files, budgets and gold; BM25 over fixed
   60-line chunks, filled in score order): NeuralPack finds 2.0-2.5x as many fix sites on
