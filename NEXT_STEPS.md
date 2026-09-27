@@ -116,11 +116,18 @@ channel, no trimming) on `heldout-b` (400 fresh issues), targets fix and tests.
 - E002+E005c replication: the product's fix recall must exceed `npk_nodefs`
   significantly at 1K-4K.
 
-## OM01 (queued): non-Python generalization, measurement only
+## Non-Python code (OM01, OMD01, E030)
 
-`ood-multi-sample` (114 SWE-bench Multilingual issues, 41 repositories: Rust, Ruby, Java,
-Go, C/C++, PHP, JS/TS). Arms: product, no-definitions/no-trim, and both chunk-BM25
-baselines. It answers whether NeuralPack's advantage over standard RAG holds outside
-Python, and whether the definition channel helps there (trimming and member spans are
-Python-only; the test mate's path rules miss `_test.go`, `*.spec.ts` and `spec/`). No
-default may be tuned on this split.
+On SWE-bench Multilingual (41 repositories), NeuralPack beats both chunk-BM25 baselines
+(fix +8 to +15 points on the measurement sample) and the definition channel helps, but
+absolute recall is about half of Python's (0.164 vs 0.303 at 2K). Diagnosis on
+`ood-multi-dev` only: the loss is ranking, not packing (fix sites rank at median 112-401;
+window trimming for non-Python blocks, E030, changed nothing). C/C++, JS/TS and Rust are
+weakest (3-4% of gold hunks selected at 2K). JS issues' budgets go to CONTRIBUTING.md,
+README.md and changelogs, a symptom of issue-template words; E031 (strip template
+headings, checklists and HTML comments from the query) is positive but not yet
+significant and is being re-run on the full dev split (E031b). Next ideas for non-Python
+ranking, to be developed on `ood-multi-dev` and measured on `ood-multi-sample`:
+definition extraction for modifier-prefixed declarations (`pub fn`, `export function`,
+`public static`), which DEF_RE misses (block names partly compensate for brace languages),
+and a Ruby `def ... end` splitter (Ruby is cut into 60-line windows today).
