@@ -107,3 +107,26 @@ def test_fix_commit_matching_ignores_trivial_lines():
     assert "+++ b/pkg/mod.py" not in added and "b/pkg/mod.py" not in added
     assert _distinctive({")", "else:", "return a + b + c"}) == {"return a + b + c"}
     assert _distinctive({")", "x"}) == {")", "x"}  # nothing distinctive: keep all
+
+
+def test_judge_applies_the_declared_rule(tmp_path):
+    import json
+    from benchmarks.npkbench.report import judge
+    rows = []
+    for i in range(40):
+        for budget in (1024, 2048):
+            base_fix, base_tests = 0.2, 0.1
+            rows.append({"arm": "base", "instance_id": f"t{i}", "budget": budget, "hunk_recall": base_fix})
+            rows.append({"arm": "base@tests", "instance_id": f"t{i}", "budget": budget, "hunk_recall": base_tests})
+            # candidate: +1 fix site on every issue at 2K, a tests loss on one issue at 1K
+            rows.append({"arm": "cand", "instance_id": f"t{i}", "budget": budget,
+                         "hunk_recall": base_fix + (0.5 if budget == 2048 else 0.0)})
+            rows.append({"arm": "cand@tests", "instance_id": f"t{i}", "budget": budget,
+                         "hunk_recall": base_tests - (0.1 if (budget == 1024 and i == 0) else 0.0)})
+    (tmp_path / "rows.jsonl").write_text("\n".join(json.dumps(r) for r in rows))
+    result = judge(tmp_path, "base", "cand", ("", "@tests"))
+    assert result["budgets"]["2048"]["fix"]["significant"] == "gain"
+    assert result["significant_gain"] and result["no_significant_loss"]
+    assert not result["utility_nonnegative"] and not result["passes"]   # U < 0 at 1K
+    same = judge(tmp_path, "base", "base", ("", "@tests"))
+    assert same["utility_nonnegative"] and not same["significant_gain"] and not same["passes"]

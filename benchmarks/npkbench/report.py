@@ -2,6 +2,7 @@
 
     python -m benchmarks.npkbench.report RUN_DIR
     python -m benchmarks.npkbench.report --compare RUN_A:ARM_A RUN_B:ARM_B
+    python -m benchmarks.npkbench.report --judge RUN_DIR BASE_ARM CANDIDATE_ARM [--targets tests,docs]
 """
 from __future__ import annotations
 
@@ -129,13 +130,80 @@ def paired(run_a: Path, arm_a: str, run_b: Path, arm_b: str, metric: str = "hunk
     return out
 
 
+#: Weights of the declared utility (``__init__``): fix, tests, docs.
+UTILITY_WEIGHTS = {"": 1.0, "@tests": 0.99, "@docs": 0.087}
+
+
+def judge(run: Path, base: str, candidate: str, targets=("", "@tests", "@docs")) -> Dict[str, Any]:
+    """Apply the declared decision rule to *candidate* against *base* in one run.
+
+    Per budget: paired bootstrap differences per target (unrounded bounds decide
+    significance) and the utility ``d_fix + 0.99 d_tests + 0.087 d_docs`` over the
+    targets present. The verdict fields are the rule's three conditions: utility
+    >= 0 at every budget, a significant gain on fix or tests, no significant loss.
+    """
+    rows = _read(run / "rows.jsonl")
+    table: Dict[str, Dict[str, Any]] = {}
+    by = {(r["arm"], r["instance_id"], r["budget"]): r["hunk_recall"] for r in rows}
+    budgets = sorted({r["budget"] for r in rows if r["arm"] == base})
+    gain = loss = negative = False
+    utilities = []
+    for budget in budgets:
+        entry: Dict[str, Any] = {}
+        utility = 0.0
+        for target in targets:
+            keys = sorted(i for (arm, i, b) in by if arm == base + target and b == budget
+                          and (candidate + target, i, budget) in by)
+            if not keys:
+                continue
+            mean, lo, hi = bootstrap_diff([by[(base + target, i, budget)] for i in keys],
+                                          [by[(candidate + target, i, budget)] for i in keys])
+            if math.isnan(mean):
+                continue
+            significant = "gain" if lo > 0 else "loss" if hi < 0 else ""
+            gain |= significant == "gain" and target in ("", "@tests")
+            loss |= significant == "loss"
+            entry[target or "fix"] = {"diff": mean, "ci95": [lo, hi], "significant": significant, "n": len(keys)}
+            utility += UTILITY_WEIGHTS[target] * mean
+        entry["utility"] = utility
+        negative |= utility < 0
+        utilities.append(utility)
+        table[str(budget)] = entry
+    return {"budgets": table, "utility_nonnegative": not negative, "significant_gain": gain,
+            "no_significant_loss": not loss, "passes": (not negative) and gain and not loss,
+            "mean_utility": sum(utilities) / len(utilities) if utilities else math.nan}
+
+
+def render_judgement(result: Dict[str, Any]) -> str:
+    lines = []
+    for budget, entry in result["budgets"].items():
+        cells = []
+        for target in ("fix", "@tests", "@docs"):
+            if target in entry:
+                e = entry[target]
+                mark = {"gain": "+", "loss": "-"}.get(e["significant"], " ")
+                cells.append(f"{target:>6} {e['diff'] * 100:+6.2f}{mark} [{e['ci95'][0] * 100:+.2f},{e['ci95'][1] * 100:+.2f}]")
+        lines.append(f"{budget:>6} " + "  ".join(cells) + f"   U {entry['utility'] * 100:+.2f}")
+    lines.append(f"utility >= 0 at every budget: {result['utility_nonnegative']}; significant fix/tests gain: "
+                 f"{result['significant_gain']}; no significant loss: {result['no_significant_loss']}; "
+                 f"passes: {result['passes']}; mean utility {result['mean_utility'] * 100:+.2f} points")
+    return "\n".join(lines)
+
+
 def main(argv: List[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("run", nargs="?", type=Path)
     parser.add_argument("--compare", nargs=2, metavar=("RUN_A:ARM", "RUN_B:ARM"))
     parser.add_argument("--metric", default="hunk_recall")
+    parser.add_argument("--judge", nargs=3, metavar=("RUN", "BASE_ARM", "CANDIDATE_ARM"))
+    parser.add_argument("--targets", default="tests,docs",
+                        help="extra targets for --judge (fix is always included)")
     args = parser.parse_args(argv)
-    if args.compare:
+    if args.judge:
+        run, base, candidate = args.judge
+        targets = ("", *[f"@{t}" for t in args.targets.split(",") if t])
+        print(render_judgement(judge(Path(run), base, candidate, targets)))
+    elif args.compare:
         (ra, aa), (rb, ab) = (x.rsplit(":", 1) for x in args.compare)
         print(json.dumps(paired(Path(ra), aa, Path(rb), ab, args.metric), indent=1))
     else:

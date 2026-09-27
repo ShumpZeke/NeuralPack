@@ -10,11 +10,12 @@ uv venv --python /usr/bin/python3.12 .venv && . .venv/bin/activate
 uv pip install -e '.[dev,tokenizers]' numpy==2.2.6 psutil==7.0.0 urllib3==2.7.0 click==8.5.0 \
     tiktoken==0.12.0 safetensors==0.6.2 pyarrow transformers==4.57.6
 uv pip install torch==2.8.0 --index-url https://download.pytorch.org/whl/cpu
-python -m pytest tests/ -q -p no:cacheprovider      # 1261 pass, 20 skip; one test needs a file not in this snapshot
+python -m pytest tests/ -q -p no:cacheprovider      # 1286 pass, 20 skip; one test needs a file not in this snapshot
 export NPK_BENCH_HOME=~/npk-data                     # datasets, clones, packs (never committed)
 python -m benchmarks.npkbench.run --split dev-fast --targets tests,docs --arms npk_default,npk_nodefs \
     --workers 4 --out experiments/npkbench/runs/<id>
 python -m benchmarks.npkbench.report --compare RUN_A:ARM RUN_B:ARM   # paired bootstrap
+python -m benchmarks.npkbench.report --judge RUN BASE_ARM CANDIDATE_ARM --targets tests,docs  # decision rule
 ```
 
 First runs clone the 12 SWE-bench repositories (blobless, ~2 GB) and build packs
