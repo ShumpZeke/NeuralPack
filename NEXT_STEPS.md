@@ -19,8 +19,11 @@ python -m benchmarks.npkbench.report --judge RUN BASE_ARM CANDIDATE_ARM --target
 python -m benchmarks.npkbench.report --judge-runs BASE_RUN:ARM CAND_RUN:ARM --targets tests   # across runs
 ```
 
-Unused confirmation splits: `heldout-e` (Python, 384; reserved by the declared E055 plan) and
-`poly-heldout-b` (JS/TS, 320; reserved by the declared E053/E054 plan);
+Unused confirmation splits: `heldout-e` (Python, 384; reserved by the declared E055 plan),
+`poly-heldout-b` (JS/TS, 320; reserved by the declared E053/E054 plan), and, declared later on
+2026-09-27 before any result on them, `gym-heldout-b` (Python, 254), `gym-heldout-c` (Python,
+197; both SWE-Gym, the next runs of 30 per repository after `gym-heldout`) and `poly-heldout-c`
+(JS/TS, 246);
 `gym-heldout` was spent on E052 (GH01). Larger screening splits: `gym-dev` (Python, 326) and
 `poly-dev-b` (Java/JS/TS, 371). Declare each confirmation's criteria here before its run.
 
@@ -101,8 +104,9 @@ read with 4K tokens or more (M006, MH01).
 5. **Held-out split hygiene:** spent: `heldout` (E002, E005c, E016b, E017), `heldout-b` (E016c,
    HB01), `heldout-c` (E031, HC01), `heldout-d` (E039, HD01), `poly-heldout` (E047, PH01),
    `gym-heldout` (E052, GH01). Unused: `heldout-e` (Python, 384; reserved by the declared E055
-   plan) and `poly-heldout-b` (JS/TS, 320; reserved by the declared E053/E054 plan). Declare
-   criteria here before any run on them.
+   plan), `poly-heldout-b` (JS/TS, 320; reserved by the declared E053/E054 plan),
+   `gym-heldout-b` (Python, 254), `gym-heldout-c` (Python, 197) and `poly-heldout-c` (JS/TS,
+   246). Declare criteria here before any run on them.
 8. **Done: very long queries are capped (E043).** Distinct lexical terms per issue: median
    62-82, p99 300-466, up to 4,164. A query now keeps its first 512 distinct terms (backticked
    literals always kept): synthetic Django queries of 1,000 / 20,000 identifiers take 2.2 / 4.1

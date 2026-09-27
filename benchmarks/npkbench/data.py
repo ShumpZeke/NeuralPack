@@ -379,25 +379,30 @@ GYM_PER_REPO = 30
 
 
 def _rows(name: str) -> List[Dict[str, object]]:
-    if name in ("swegym_dev", "swegym_heldout"):
+    if name in ("swegym_dev", "swegym_heldout", "swegym_heldoutb", "swegym_heldoutc"):
         # gym-dev and gym-heldout, declared 2026-09-27 before any result on them: per SWE-Gym
         # repository in a fixed hash order, the first GYM_PER_REPO issues are gym-dev
         # (screening Python changes with more power than dev) and the next GYM_PER_REPO
         # are gym-heldout (confirmation only). Only these rows are loaded.
+        # gym-heldout-b and gym-heldout-c (declared later on 2026-09-27, before any result on
+        # them, once heldout-e was the last unused Python split) are the next two runs of
+        # GYM_PER_REPO issues in the same order; confirmation only.
         by_repo_g: Dict[str, List[Dict[str, object]]] = {}
         for row in _rows("swe_gym"):
             by_repo_g.setdefault(str(row["repo"]), []).append(row)
         chosen_g: List[Dict[str, object]] = []
         for _repo, items in sorted(by_repo_g.items()):
             items.sort(key=lambda row: _stable_hash("gym:" + str(row["instance_id"])))
-            chosen_g.extend(items[:GYM_PER_REPO] if name == "swegym_dev"
-                            else items[GYM_PER_REPO:2 * GYM_PER_REPO])
+            slot = ("swegym_dev", "swegym_heldout", "swegym_heldoutb", "swegym_heldoutc").index(name)
+            chosen_g.extend(items[slot * GYM_PER_REPO:(slot + 1) * GYM_PER_REPO])
         return sorted(chosen_g, key=lambda row: str(row["instance_id"]))
-    if name == "polybench_heldoutb":
+    if name in ("polybench_heldoutb", "polybench_heldoutc"):
         # poly-heldout-b, declared 2026-09-27 before any result on it: the full SWE-PolyBench's
         # Java/JS/TS issues outside its 500-issue subset and outside poly-dev-b, minus
         # POLY_EXCLUDED_REPOS, at most POLY_DEV_B_PER_REPO per repository by a fixed hash.
         # Confirmation only (JS/TS; the Java issues outside the 500 all went to poly-dev-b).
+        # poly-heldout-c (declared later on 2026-09-27, before any result on it) is the next
+        # POLY_DEV_B_PER_REPO per repository in the same order; confirmation only.
         taken = ({row["instance_id"] for row in _rows("polybench500")}
                  | {row["instance_id"] for row in _rows("polybench_devb")})
         by_repo_h: Dict[str, List[Dict[str, object]]] = {}
@@ -407,7 +412,8 @@ def _rows(name: str) -> List[Dict[str, object]]:
         chosen_h: List[Dict[str, object]] = []
         for _repo, items in sorted(by_repo_h.items()):
             items.sort(key=lambda row: _stable_hash("poly-hb:" + str(row["instance_id"])))
-            chosen_h.extend(items[:POLY_DEV_B_PER_REPO])
+            chosen_h.extend(items[:POLY_DEV_B_PER_REPO] if name == "polybench_heldoutb"
+                            else items[POLY_DEV_B_PER_REPO:2 * POLY_DEV_B_PER_REPO])
         return sorted(chosen_h, key=lambda row: str(row["instance_id"]))
     if name == "polybench_devb":
         # poly-dev-b, declared 2026-09-27 before any result on it: the full SWE-PolyBench's
@@ -509,7 +515,9 @@ def split(name: str) -> List[Task]:
                    "ood-multi-dev": "swe_multi_test",
                    "poly-dev": "polybench500", "poly-heldout": "polybench500",
                    "poly-dev-b": "polybench_devb", "poly-heldout-b": "polybench_heldoutb",
-                   "gym-dev": "swegym_dev", "gym-heldout": "swegym_heldout"}[base]
+                   "poly-heldout-c": "polybench_heldoutc",
+                   "gym-dev": "swegym_dev", "gym-heldout": "swegym_heldout",
+                   "gym-heldout-b": "swegym_heldoutb", "gym-heldout-c": "swegym_heldoutc"}[base]
         lite = {t.instance_id for t in load("swe_lite_test")} if base == "heldout" else set()
         return [t for t in load(dataset, target)
                 if t.instance_id in wanted and t.instance_id not in lite]
@@ -583,8 +591,11 @@ def split(name: str) -> List[Task]:
         return load("polybench_devb")
     if name == "poly-heldout-b":
         return load("polybench_heldoutb")
-    if name in ("gym-dev", "gym-heldout"):
-        return load({"gym-dev": "swegym_dev", "gym-heldout": "swegym_heldout"}[name])
+    if name == "poly-heldout-c":
+        return load("polybench_heldoutc")
+    if name in ("gym-dev", "gym-heldout", "gym-heldout-b", "gym-heldout-c"):
+        return load({"gym-dev": "swegym_dev", "gym-heldout": "swegym_heldout",
+                     "gym-heldout-b": "swegym_heldoutb", "gym-heldout-c": "swegym_heldoutc"}[name])
     if name == "long-queries":
         # Diagnostic split (declared 2026-09-27 for E043, the query-term cap): the issues of
         # dev, ood-multi-dev and the spent heldout-b/c/d whose cleaned query has more than

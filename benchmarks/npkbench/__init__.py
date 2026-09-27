@@ -47,9 +47,14 @@ Splits (fixed before any NeuralPack result was observed):
   repository in a fixed hash order, the first 30 issues are ``gym-dev`` (screening Python
   changes with more power than ``dev``) and the next 30 ``gym-heldout`` (confirmation only).
   Declared 2026-09-27 before any result on them. (``gym-heldout`` spent on E052 by GH01.)
+  ``gym-heldout-b`` (254) and ``gym-heldout-c`` (197) are the next two runs of 30 per
+  repository in the same order (bokeh has none left); confirmation only, declared later on
+  2026-09-27 before any result on them.
 * ``poly-heldout-b`` -- the rest of the full SWE-PolyBench's Java/JS/TS issues (outside the
   500-issue subset and ``poly-dev-b``), same exclusions, at most 80 per repository by a
   fresh fixed hash. Declared 2026-09-27 before any result on it; confirmation only.
+  ``poly-heldout-c`` (246: material-ui, svelte, serverless, prettier) is the next 80 per
+  repository in the same order; confirmation only, declared before any result on it.
 * ``ood-multi`` -- SWE-bench Multilingual (300 issues, 41 non-Python repositories);
   ``ood-multi-sample``: at most 3 per repository, measurement only;
   ``ood-multi-dev``: the other 186, for developing non-Python handling.
