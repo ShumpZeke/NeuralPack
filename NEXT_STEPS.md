@@ -164,7 +164,11 @@ On SWE-bench Multilingual (41 repositories), NeuralPack beats both chunk-BM25 ba
 and the definition channel helps. The query handling (E031 + E039) added +8.9 to +13.5 fix
 points on the measurement sample (R003: 0.198/0.260/0.301/0.364/0.455 at 1K-16K; 0.164 at 2K
 before), so absolute recall is now about three quarters of Python's (0.260 vs 0.346 at 2K).
-The diagnosis below predates those changes. Diagnosis on
+By language at 2K (R003, issues grouped by the extension of most gold files): Java 0.44 (11
+issues), Go 0.42 (13), PHP 0.38 (10), Rust 0.29 (18), Ruby 0.22 (16), JS/TS 0.18 (18), C/C++
+0.14 (15), and 0.11 for 13 issues whose fix patch mostly edits changelogs or docs
+(`CHANGES.txt`, `CHANGELOG.md`; the multilingual reference patches include them). C/C++ and
+JS/TS remain the weakest code languages. The diagnosis below predates those changes. Diagnosis on
 `ood-multi-dev` only: the loss is ranking, not packing (fix sites rank at median 112-401;
 window trimming for non-Python blocks, E030, changed nothing). C/C++, JS/TS and Rust are
 weakest (3-4% of gold hunks selected at 2K). JS issues' budgets go to CONTRIBUTING.md,
