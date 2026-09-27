@@ -1,0 +1,529 @@
+diff --git a/benchmarks/contract_mutations.py b/benchmarks/contract_mutations.py
+index b4652ca..2758c77 100644
+--- a/benchmarks/contract_mutations.py
++++ b/benchmarks/contract_mutations.py
+@@ -353,6 +353,16 @@ MUTANTS = [
+      "tests/test_test_mate.py::test_reused_ranking_matches_a_dedicated_query"),
+     ("test_mate_gate_ignored", "npk/pack/select.py", None, None,
+      "tests/test_test_mate.py::test_default_mate_is_budget_gated"),
++    ("test_mate_best_mirror_only", "npk/pack/select.py", None, None,
++     "tests/test_test_mate.py::test_mate_can_be_a_sibling_test_module_of_the_package"),
++    ("file_header_disabled", "npk/pack/select.py", "_place_file_header", "return ordered_ids",
++     "tests/test_file_header.py::test_header_follows_the_top_block"),
++    ("file_header_budget_cap_ignored", "npk/pack/select.py", None, None,
++     "tests/test_file_header.py::test_header_is_skipped_when_it_exceeds_its_budget_share"),
++    ("title_weight_ignored", "npk/pack/select.py", "_title_terms", "return []",
++     "tests/test_title_weight.py::test_title_terms_outweigh_the_body"),
++    ("title_weight_whole_query", "npk/pack/select.py", None, None,
++     "tests/test_title_weight.py::test_title_terms_outweigh_the_body"),
+     ("query_cleaning_disabled", "npk/pack/select.py", "_strip_issue_template", "return query",
+      "tests/test_query_cleaning.py::test_template_words_no_longer_pull_the_contributing_guide"),
+     ("query_cleaning_drops_title", "npk/pack/select.py", None, None,
+@@ -479,6 +489,20 @@ def main():
+                 if source.count(target) != 1:
+                     raise ValueError("test-mate budget gate is no longer unique")
+                 changed = source.replace(target, "True if self.enable_test_mate is None")
++            elif name in ("test_mate_best_mirror_only", "file_header_budget_cap_ignored"):
++                target, replacement = {
++                    "test_mate_best_mirror_only": ("if _mate_score(impl_path, path, parts, impl_parts) >= 1.0)",
++                                                   "if _mate_score(impl_path, path, parts, impl_parts) >= 3.0)"),
++                    "file_header_budget_cap_ignored": ("header[1] > budget // FILE_HEADER_DIVISOR", "False"),
++                }[name]
++                if source.count(target) != 1:
++                    raise ValueError(f"{name} target is no longer unique")
++                changed = source.replace(target, replacement)
++            elif name == "title_weight_whole_query":
++                target = 'title, newline, body = query.strip().partition("\\n")'
++                if source.count(target) != 1:
++                    raise ValueError("title split is no longer unique")
++                changed = source.replace(target, 'title, newline, body = query.strip(), "\\n", query')
+             elif name in ("query_cleaning_drops_title", "query_cleaning_reports_cleaned_query"):
+                 target, replacement = {
+                     "query_cleaning_drops_title": ("kept = lines[:1]", "kept = []"),
+diff --git a/npk/cli.py b/npk/cli.py
+index 9c083f8..00b4190 100644
+--- a/npk/cli.py
++++ b/npk/cli.py
+@@ -18,6 +18,7 @@ from .pack import (
+ )
+ # v1 and v2 each define their own PackError; keep them distinguishable.
+ from .pack.format import PackError as PackV2Error
++from .pack.select import TITLE_WEIGHT
+ from .telemetry import analyze_traces
+ from .auditor import audit_run
+ 
+@@ -94,6 +95,12 @@ def main(argv: list[str] | None = None) -> int:
+     query.add_argument("--raw-query", action="store_true",
+                        help="retrieve with the query exactly as given (keep issue-form headings, "
+                             "checklists and HTML comments)")
++    query.add_argument("--title-weight", type=int, default=TITLE_WEIGHT,
++                       help="times the terms of a multi-line query's first line (an issue title) "
++                            "count in lexical retrieval; 1 turns the emphasis off")
++    query.add_argument("--no-file-header", action="store_true",
++                       help="do not place the top implementation file's module header (imports) "
++                            "after its top block")
+     query.add_argument("--map-share", type=float, default=0.0,
+                        help="fraction of the budget for a context map: further ranked places "
+                             "(path:start-end kind name) listed without their text")
+@@ -197,7 +204,9 @@ def main(argv: list[str] | None = None) -> int:
+                                     enable_definitions=not args.no_definitions,
+                                     enable_trim=not args.no_trim,
+                                     enable_test_mate={'auto': None, 'always': True, 'never': False}[args.test_mate],
+-                                    enable_query_cleaning=not args.raw_query)
++                                    enable_query_cleaning=not args.raw_query,
++                                    title_weight=args.title_weight,
++                                    enable_file_header=not args.no_file_header)
+             selection = selector.select(args.query, budget_tokens=args.budget,
+                                         target_model=args.target_model,
+                                         allow_escalation=not args.no_escalation,
+diff --git a/npk/pack/select.py b/npk/pack/select.py
+index 01a7b4c..bf28870 100644
+--- a/npk/pack/select.py
++++ b/npk/pack/select.py
+@@ -336,12 +336,37 @@ def _rank_lexical_terms(
+     return [row["block_id"] for row in rows]
+ 
+ 
+-def _lexical_channel(con: sqlite3.Connection, query: str, limit: int) -> List[int]:
++#: Times the terms of an issue's title (the first line of a multi-line query)
++#: count in the lexical OR (E034). 1 turns the emphasis off.
++TITLE_WEIGHT = 3
++
++
++def _title_terms(con: sqlite3.Connection, query: str, terms: Sequence[str]) -> List[str]:
++    """Query terms that occur in the first line of a multi-line query.
++
++    An issue's first line is its title: the reporter's one-line summary of the
++    topic. The body mixes that topic with reproduction code, tracebacks and
++    environment details whose words also match unrelated code and prose.
++    """
++    title, newline, body = query.strip().partition("\n")
++    if not newline or not body.strip():
++        return []
++    present = set(terms)
++    return [term for term in _lexical_terms(con, title) if term in present]
++
++
++def _lexical_channel(con: sqlite3.Connection, query: str, limit: int,
++                     title_weight: int = 1) -> List[int]:
+     try:
+         terms = _lexical_terms(con, query)
+         if not terms:
+             return []
+-        expanded = _rank_lexical_terms(con, terms, limit)
++        weighted = list(terms)
++        if title_weight > 1:
++            # bm25() sums repeated OR phrases, so a repeated term counts again.
++            weighted += [term for term in _title_terms(con, query, terms)
++                         for _ in range(title_weight - 1)]
++        expanded = _rank_lexical_terms(con, weighted, limit)
+         whole_terms = _whole_lexical_terms(query)
+         if whole_terms == terms or len(whole_terms) != 1:
+             return expanded
+@@ -442,6 +467,9 @@ TEST_MATE_DEPTH = 1000
+ #: Below it the mate displaced fix sites (held-out H001 at 1K); at and above it
+ #: the fresh heldout-b confirmed a net gain (E016c/HB01).
+ TEST_MATE_MIN_BUDGET = 2048
++#: The top implementation file's module header (imports) is placed only when it
++#: costs at most ``budget // FILE_HEADER_DIVISOR`` tokens (E036).
++FILE_HEADER_DIVISOR = 8
+ TEST_PATH = re.compile(r"(^|/)(tests?|testing)(/|$)|(^|/)test_[^/]*$|_tests?\.py$|(^|/)conftest\.py$")
+ DOC_PATH = re.compile(r"(^|/)(docs?|doc_src)(/|$)|\.(rst|md|txt)$")
+ _GENERIC_PATH_PARTS = frozenset({"tests", "test", "testing", "src", "lib", "py", "__init__", "unit", "units", "t"})
+@@ -481,43 +509,43 @@ def _test_paths(con: sqlite3.Connection) -> List[Tuple[str, frozenset]]:
+ 
+ def _test_mate(con: sqlite3.Connection, query: str, impl_path: str, exclude: Set[int],
+                test_paths: Optional[List[Tuple[str, frozenset]]] = None,
+-               deep: Optional[Sequence[int]] = None) -> Optional[int]:
+-    """Best query-matching block of the test file that mirrors *impl_path*.
+-
+-    *deep* is the lexical channel's ranking to ``TEST_MATE_DEPTH`` for a
+-    multi-word query (same MATCH and order); when it is complete enough it
+-    answers without a second full-text query.
++               deep: Optional[Sequence[int]] = None, title_weight: int = 1) -> Optional[int]:
++    """Best query-matching block among the test files that mirror *impl_path*.
++
++    Every test file that shares the implementation's module or package name
++    (mirror score >= 1) is a candidate, and the query's best lexical block
++    among them is the mate (E035): the regression test often goes to a sibling
++    test module of the package rather than the closest-named one. *deep* is the
++    lexical channel's ranking to ``TEST_MATE_DEPTH`` (same MATCH and order);
++    its candidate-file blocks, in order, answer without a second query.
+     """
+     paths = test_paths if test_paths is not None else _test_paths(con)
+     impl_parts = _path_parts(impl_path)
+-    scored = sorted(((_mate_score(impl_path, path, parts, impl_parts), path) for path, parts in paths),
+-                    key=lambda pair: (-pair[0], pair[1]))
+-    if not scored or scored[0][0] < 1.0:
+-        return None
+-    mates = [path for score, path in scored[:3] if score == scored[0][0]]
+-    terms = _lexical_terms(con, query)
+-    if not terms:
+-        return None
+-    if deep is not None:
+-        # The main lexical ranking already orders every block by the same
+-        # MATCH; its mate-file blocks, in order, are this query's result.
+-        marks = ",".join("?" * len(mates))
+-        mate_ids = {row[0] for row in con.execute(
+-            f"SELECT b.id FROM blocks b JOIN files f ON f.id=b.file_id WHERE f.path IN ({marks})", mates)}
+-        found = [b for b in deep if b in mate_ids][:5]
+-        if len(found) == 5 or len(deep) < TEST_MATE_DEPTH:
+-            return next((b for b in found if b not in exclude), None)
+-    marks = ",".join("?" * len(mates))
+-    try:
+-        rows = con.execute(
+-            "SELECT lexical.rowid FROM lexical JOIN blocks b ON b.id=lexical.rowid "
+-            "JOIN files f ON f.id=b.file_id WHERE lexical MATCH ? "
+-            f"AND f.path IN ({marks}) ORDER BY bm25(lexical,1.0,1.0,1.0),"
+-            "f.path COLLATE BINARY,b.ordinal LIMIT 5",
+-            (" OR ".join(f'"{term}"' for term in terms), *mates)).fetchall()
+-    except sqlite3.OperationalError:
++    files = sorted(path for path, parts in paths
++                   if _mate_score(impl_path, path, parts, impl_parts) >= 1.0)
++    if not files:
+         return None
+-    return next((row[0] for row in rows if row[0] not in exclude), None)
++    if deep is None:
++        deep = _lexical_channel(con, query, TEST_MATE_DEPTH, title_weight)
++    marks = ",".join("?" * len(files))
++    candidates = {row[0] for row in con.execute(
++        f"SELECT b.id FROM blocks b JOIN files f ON f.id=b.file_id WHERE f.path IN ({marks})", files)}
++    ranked = [block_id for block_id in deep if block_id in candidates]
++    if not ranked:
++        terms = _lexical_terms(con, query)
++        if not terms:
++            return None
++        try:
++            rows = con.execute(
++                "SELECT lexical.rowid FROM lexical JOIN blocks b ON b.id=lexical.rowid "
++                "JOIN files f ON f.id=b.file_id WHERE lexical MATCH ? "
++                f"AND f.path IN ({marks}) ORDER BY bm25(lexical,1.0,1.0,1.0),"
++                "f.path COLLATE BINARY,b.ordinal LIMIT 50",
++                (" OR ".join(f'"{term}"' for term in terms), *files)).fetchall()
++        except sqlite3.OperationalError:
++            return None
++        ranked = [row[0] for row in rows]
++    return next((block_id for block_id in ranked if block_id not in exclude), None)
+ 
+ 
+ def _definition_channel(con: sqlite3.Connection, query: str, limit: int,
+@@ -731,6 +759,8 @@ class PackSelector:
+         enable_trim: bool = True,
+         enable_test_mate: Optional[bool] = None,
+         enable_query_cleaning: bool = True,
++        title_weight: int = TITLE_WEIGHT,
++        enable_file_header: bool = True,
+         enable_cache: bool = True,
+         max_cache_entries: int = 128,
+     ):
+@@ -764,6 +794,12 @@ class PackSelector:
+         if type(enable_query_cleaning) is not bool:
+             raise ValueError("enable_query_cleaning must be a boolean")
+         self.enable_query_cleaning = enable_query_cleaning
++        if type(title_weight) is not int or title_weight < 1:
++            raise ValueError("title_weight must be an integer >= 1 (1 = no title emphasis)")
++        self.title_weight = title_weight
++        if type(enable_file_header) is not bool:
++            raise ValueError("enable_file_header must be a boolean")
++        self.enable_file_header = enable_file_header
+         self._test_paths_cache: Optional[List[Tuple[str, frozenset]]] = None
+         self._test_paths_key: Optional[str] = None
+         self._con: Optional[sqlite3.Connection] = None
+@@ -962,6 +998,8 @@ class PackSelector:
+                     self.enable_trim,
+                     self.enable_test_mate,
+                     self.enable_query_cleaning,
++                    self.title_weight,
++                    self.enable_file_header,
+                     self.tokenizer.sha256 if self.tokenizer is not None else None,
+                 )
+                 if cache_key in self._cache:
+@@ -1068,10 +1106,10 @@ class PackSelector:
+         if use_mate and len(_whole_lexical_terms(query)) != 1:
+             # One ranking serves the channel (its top-limit prefix) and the
+             # test-mate lookup; ORDER BY is total, so prefixes are identical.
+-            deep = _lexical_channel(con, query, max(limit, TEST_MATE_DEPTH))
++            deep = _lexical_channel(con, query, max(limit, TEST_MATE_DEPTH), self.title_weight)
+             lex = deep[:limit]
+         else:
+-            lex = _lexical_channel(con, query, limit)
++            lex = _lexical_channel(con, query, limit, self.title_weight)
+         if lex:
+             ranks["lexical"] = lex
+         if self.enable_relations:
+@@ -1108,6 +1146,8 @@ class PackSelector:
+         ordered_ids = sorted(fused, key=lambda b: -fused[b])
+         if use_mate and ordered_ids:
+             ordered_ids = self._place_test_mate(con, manifest, query, ordered_ids, fused, channels_of, deep)
++        if self.enable_file_header and ordered_ids:
++            ordered_ids = self._place_file_header(con, ordered_ids, budget, fused, channels_of)
+         blocks = {b.id: b for b in load_blocks(con, ordered_ids)}
+ 
+         evidence: List[Evidence] = []
+@@ -1150,7 +1190,8 @@ class PackSelector:
+         None); ``True``/``False`` force it on/off. Tests that exercise the code under
+         change are where a regression test goes; lexical ranking alone places
+         them far down once definitions rank first (E002). The mate is chosen
+-        structurally (path convention) and lexically within that file, never by
++        structurally (every test file mirroring the implementation's module or
++        package, E035) and lexically among those files, never by
+         demoting anything else. Held-out (E016b/H001): regression-test sites
+         found +1.1 to +4.5 points at 1K-16K, fix sites -0.3 to -1.4 points; gated
+         at 2K and above on the fresh heldout-b (HB01): tests +2.3 to +6.0, fix -0.4
+@@ -1167,7 +1208,7 @@ class PackSelector:
+         if self._test_paths_key != snapshot or self._test_paths_cache is None:
+             self._test_paths_cache, self._test_paths_key = _test_paths(con), snapshot
+         mate = _test_mate(con, query, paths[ordered_ids[position]], set(ordered_ids[:position + 1]),
+-                          self._test_paths_cache, deep)
++                          self._test_paths_cache, deep, self.title_weight)
+         if mate is None:
+             return ordered_ids
+         reordered = [b for b in ordered_ids if b != mate]
+@@ -1176,6 +1217,35 @@ class PackSelector:
+         channels_of.setdefault(mate, []).append("test_mate")
+         return reordered
+ 
++    def _place_file_header(self, con, ordered_ids: List[int], budget: int,
++                           fused: Dict[int, float], channels_of: Dict[int, List[str]]) -> List[int]:
++        """Put the top implementation file's module header right after its top block.
++
++        The header is the file's first module-level block (imports and module
++        constants). Import edits are part of many fixes, and the header shows
++        which names are in scope for a change in that file (E036). It is placed
++        only if it costs at most ``budget // FILE_HEADER_DIVISOR`` tokens and is
++        not already ranked above that block.
++        """
++        paths = dict(con.execute(
++            f"SELECT b.id, f.path FROM blocks b JOIN files f ON f.id=b.file_id "
++            f"WHERE b.id IN ({','.join('?' * len(ordered_ids))})", ordered_ids).fetchall())
++        top = next((b for b in ordered_ids
++                    if not TEST_PATH.search(paths.get(b, "")) and not DOC_PATH.search(paths.get(b, ""))), None)
++        if top is None:
++            return ordered_ids
++        header = con.execute(
++            "SELECT b.id, b.tokens FROM blocks b JOIN files f ON f.id=b.file_id "
++            "WHERE f.path=? AND b.kind='module' AND b.start_line=1", (paths[top],)).fetchone()
++        if (header is None or header[0] == top or header[1] > budget // FILE_HEADER_DIVISOR
++                or header[0] in ordered_ids[:ordered_ids.index(top)]):
++            return ordered_ids
++        reordered = [b for b in ordered_ids if b != header[0]]
++        reordered.insert(reordered.index(top) + 1, header[0])
++        fused.setdefault(header[0], 0.0)
++        channels_of.setdefault(header[0], []).append("file_header")
++        return reordered
++
+     def _admit_members(self, con, blk: Block, query: str, budget: int, evidence: List[Evidence],
+                        used_chars: int, score: float, channels: List[str], notes: List[str]) -> int:
+         """Admit the best member spans of an oversized block; return used chars.
+diff --git a/tests/test_file_header.py b/tests/test_file_header.py
+new file mode 100644
+index 0000000..4475e53
+--- /dev/null
++++ b/tests/test_file_header.py
+@@ -0,0 +1,67 @@
++"""The top implementation file's module header follows its top block (E036)."""
++import json
++import subprocess
++import sys
++
++import pytest
++
++from npk.pack import PackSelector, compile_pack
++
++QUERY = "retry backoff delay grows too fast\nbackoff_delay() doubles on every attempt."
++
++
++@pytest.fixture()
++def pack(tmp_path):
++    src = tmp_path / "src"
++    (src / "pkg").mkdir(parents=True)
++    (src / "pkg" / "throttle.py").write_text(
++        "import math\nimport random\n\nMAX_DELAY = 60\n\n\n"
++        "def backoff_delay(attempt, base):\n    '''Exponential backoff delay for a retry attempt.'''\n"
++        "    return min(MAX_DELAY, base * 2 ** attempt)\n")
++    for i in range(15):
++        (src / "pkg" / f"policy{i}.py").write_text(
++            f"def retry_policy_{i}(attempt):\n    '''Retry backoff delay grows for attempt {i}.'''\n"
++            f"    return attempt * {i + 1}\n")
++    out = tmp_path / "p.npk"
++    compile_pack(src, out)
++    return out
++
++
++def _evidence(pack, budget, **options):
++    with PackSelector(str(pack), enable_cache=False, **options) as selector:
++        return selector.select(QUERY, budget_tokens=budget, allow_escalation=False).evidence
++
++
++def test_header_follows_the_top_block(pack):
++    chosen = _evidence(pack, 300)
++    assert chosen[0].path == "pkg/throttle.py" and chosen[0].name == "backoff_delay"
++    assert chosen[1].path == "pkg/throttle.py" and chosen[1].kind == "module"
++    assert chosen[1].span.startswith("pkg/throttle.py:1-") and "file_header" in chosen[1].channels
++    plain = _evidence(pack, 300, enable_file_header=False)
++    assert plain[0].name == "backoff_delay" and plain[1].path != "pkg/throttle.py"
++    assert all("file_header" not in e.channels for e in plain)
++
++
++def test_header_is_skipped_when_it_exceeds_its_budget_share(pack):
++    header_tokens = _evidence(pack, 300)[1].tokens
++    small = header_tokens * 8 - 8   # budget // 8 < header tokens
++    chosen = _evidence(pack, small)
++    assert chosen[0].name == "backoff_delay"
++    assert all("file_header" not in e.channels for e in chosen)
++    assert any("file_header" in e.channels for e in _evidence(pack, header_tokens * 8))
++
++
++def test_file_header_flag_must_be_boolean(pack):
++    with pytest.raises(ValueError, match="enable_file_header"):
++        PackSelector(str(pack), enable_file_header="yes")
++
++
++def test_cli_no_file_header(pack):
++    def cli(*extra):
++        out = subprocess.run([sys.executable, "-m", "npk.cli", "query", str(pack), QUERY, "--budget", "300",
++                              *extra], capture_output=True, text=True, check=True).stdout
++        return [item["span"] for item in json.loads(out)["evidence"]]
++
++    assert cli() == [e.span for e in _evidence(pack, 300)]
++    assert cli("--no-file-header") == [e.span for e in _evidence(pack, 300, enable_file_header=False)]
++    assert cli() != cli("--no-file-header")
+diff --git a/tests/test_query_cleaning.py b/tests/test_query_cleaning.py
+index 6dab082..51614fe 100644
+--- a/tests/test_query_cleaning.py
++++ b/tests/test_query_cleaning.py
+@@ -74,9 +74,10 @@ def test_query_that_would_become_empty_is_used_unchanged():
+ 
+ 
+ def test_template_words_no_longer_pull_the_contributing_guide(pack):
+-    with PackSelector(str(pack), enable_cache=False) as selector:
++    # Title emphasis (E034) alone also demotes the guide here; isolate cleaning.
++    with PackSelector(str(pack), enable_cache=False, title_weight=1) as selector:
+         cleaned = selector.select(QUERY, budget_tokens=10**6, allow_escalation=False).evidence
+-    with PackSelector(str(pack), enable_cache=False, enable_query_cleaning=False) as selector:
++    with PackSelector(str(pack), enable_cache=False, enable_query_cleaning=False, title_weight=1) as selector:
+         raw = selector.select(QUERY, budget_tokens=10**6, allow_escalation=False).evidence
+     assert raw[0].path == "CONTRIBUTING.md"
+     assert cleaned[0].path == "pkg/cache.py"
+diff --git a/tests/test_test_mate.py b/tests/test_test_mate.py
+index b6fecc5..4dd8687 100644
+--- a/tests/test_test_mate.py
++++ b/tests/test_test_mate.py
+@@ -85,3 +85,29 @@ def test_mate_sees_test_files_added_by_an_update(tmp_path):
+         update_pack(pack, src)
+         after = selector.select(QUERY, budget_tokens=10**6, allow_escalation=False).evidence
+     assert any("test_mate" in e.channels and e.path == "tests/test_throttle.py" for e in after)
++
++
++def test_mate_can_be_a_sibling_test_module_of_the_package(tmp_path):
++    # E035: every test file sharing the implementation's module or package name is a
++    # candidate; the query's best lexical block among them wins, not the closest name.
++    src = tmp_path / "src"
++    (src / "pkg" / "cache").mkdir(parents=True)
++    (src / "tests" / "cache").mkdir(parents=True)
++    (src / "pkg" / "cache" / "backends.py").write_text(
++        "def evict_expired(entries, now):\n    '''Evict expired entries from the file backend.'''\n"
++        "    return [e for e in entries if e.deadline > now]\n")
++    (src / "tests" / "cache" / "test_backends.py").write_text(
++        "def test_backend_names():\n    assert sorted(['file', 'memory']) == ['file', 'memory']\n")
++    (src / "tests" / "cache" / "test_expiry.py").write_text(
++        "def test_expired_entries_are_evicted():\n    '''expired entries are evicted by the file backend'''\n"
++        "    assert True\n")
++    for i in range(10):
++        (src / "pkg" / f"other{i}.py").write_text(f"def unrelated_{i}(value):\n    return value\n")
++    pack = tmp_path / "p.npk"
++    compile_pack(src, pack)
++    query = "Expired entries are not evicted by the file backend\nevict_expired() keeps expired entries."
++    with PackSelector(str(pack), enable_cache=False, enable_test_mate=True) as selector:
++        chosen = selector.select(query, budget_tokens=10**6, allow_escalation=False).evidence
++    assert chosen[0].path == "pkg/cache/backends.py"
++    mate = [e for e in chosen if "test_mate" in e.channels]
++    assert [e.path for e in mate] == ["tests/cache/test_expiry.py"]
+diff --git a/tests/test_title_weight.py b/tests/test_title_weight.py
+new file mode 100644
+index 0000000..633579a
+--- /dev/null
++++ b/tests/test_title_weight.py
+@@ -0,0 +1,82 @@
++"""The terms of an issue's title count more in lexical retrieval (E034)."""
++import json
++import subprocess
++import sys
++
++import pytest
++
++from npk.pack import PackSelector, compile_pack
++
++TITLE = "Legend loses its draggable state after pickling"
++BODY = """I set up a figure and saved it, then loaded it in a new session.
++
++Environment: Python 3.11 on Linux, installed with pip in a virtual environment.
++Steps: create a figure, save the figure, load the figure, show the figure.
++"""
++QUERY = TITLE + "\n" + BODY
++
++
++def _corpus(root):
++    (root / "pkg").mkdir()
++    (root / "pkg" / "legend.py").write_text(
++        "class Legend:\n"
++        "    '''A legend; its draggable state must survive pickling.'''\n"
++        "    def set_draggable(self, state):\n"
++        "        self._draggable = state\n")
++    (root / "pkg" / "session.py").write_text(
++        "def load_figure(path):\n"
++        "    '''Load a saved figure in a new session: set up the figure, show the figure.'''\n"
++        "    figure = open(path).read()\n"
++        "    return figure\n")
++    (root / "INSTALL.md").write_text(
++        "# Install\n\nCreate a virtual environment on Linux, then install with pip.\n"
++        "Python 3.11 is supported.\n")
++    for i in range(20):
++        (root / "pkg" / f"mod{i}.py").write_text(
++            f"def helper_{i}(value):\n    '''Unrelated helper {i}.'''\n    return value + {i}\n")
++
++
++@pytest.fixture()
++def pack(tmp_path):
++    src = tmp_path / "src"
++    src.mkdir()
++    _corpus(src)
++    out = tmp_path / "p.npk"
++    compile_pack(src, out)
++    return out
++
++
++def _top(pack, query, **options):
++    with PackSelector(str(pack), enable_cache=False, **options) as selector:
++        return [e.path for e in selector.select(query, budget_tokens=10**6, allow_escalation=False).evidence]
++
++
++def test_title_terms_outweigh_the_body(pack):
++    assert _top(pack, QUERY, title_weight=1)[0] != "pkg/legend.py"
++    assert _top(pack, QUERY)[0] == "pkg/legend.py"
++
++
++def test_single_line_query_is_unchanged(pack):
++    assert _top(pack, TITLE) == _top(pack, TITLE, title_weight=1)
++    assert _top(pack, TITLE + "\n\n   \n") == _top(pack, TITLE + "\n\n   \n", title_weight=1)
++
++
++@pytest.mark.parametrize("weight", [0, -1, 2.0, "3", True])
++def test_title_weight_must_be_a_positive_integer(pack, weight):
++    with pytest.raises(ValueError, match="title_weight"):
++        PackSelector(str(pack), title_weight=weight)
++
++
++def test_cli_title_weight(pack):
++    def cli(*extra):
++        out = subprocess.run([sys.executable, "-m", "npk.cli", "query", str(pack), QUERY, "--budget", "120",
++                              *extra], capture_output=True, text=True, check=True).stdout
++        return [item["span"] for item in json.loads(out)["evidence"]]
++
++    with PackSelector(str(pack), enable_cache=False, title_weight=1) as selector:
++        flat = [e.span for e in selector.select(QUERY, budget_tokens=120).evidence]
++    with PackSelector(str(pack), enable_cache=False) as selector:
++        weighted = [e.span for e in selector.select(QUERY, budget_tokens=120).evidence]
++    assert flat != weighted
++    assert cli("--title-weight", "1") == flat
++    assert cli() == weighted
