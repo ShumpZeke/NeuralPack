@@ -13,7 +13,7 @@ image links (``![...](...)``, ``<img ...>``) and GitHub attachment URLs are
 dropped; a GitHub ``blob``/``tree``/``raw`` link keeps only the repository path
 it points to (``dask/dataframe/core.py``); other GitHub links (issues, pull
 requests, commits) are dropped; any other URL keeps its path and fragment words
-without the scheme and host. The caller's query is reported unchanged.
+without the scheme, host and query string. The caller's query is reported unchanged.
 """
 from __future__ import annotations
 
@@ -47,7 +47,8 @@ def rewrite_url(match: "re.Match[str]") -> str:
         if len(parts) > 4 and parts[2] in ("blob", "tree", "raw"):
             return " " + "/".join(parts[4:]).split("#", 1)[0] + " "
         return " "
-    return " " + rest.replace("/", " ").replace("#", " ") + " "
+    path, _, fragment = rest.partition("#")
+    return " " + path.split("?", 1)[0].replace("/", " ") + " " + fragment + " "
 
 
 def clean_urls(text: str) -> str:
