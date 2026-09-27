@@ -1,0 +1,42 @@
+{
+ "split": "dev-fast",
+ "arms": [
+  "npk_default",
+  "e039_qtf_cap2",
+  "e039_qtf_cap3",
+  "e039_qtf_cap3_title3"
+ ],
+ "budgets": [
+  1024,
+  2048,
+  4096,
+  8192,
+  16384
+ ],
+ "tasks": 103,
+ "targets": [
+  "fix",
+  "tests",
+  "docs"
+ ],
+ "ephemeral_packs": false,
+ "load": [
+  "benchmarks.npkbench.prototypes.query_tf"
+ ],
+ "environment": {
+  "git_commit": "4ad091a073367759ef39847a19ac7b41f49b60d0",
+  "git_dirty": false,
+  "python": "3.12.3",
+  "sqlite": "3.45.1",
+  "platform": "Linux-6.18.44-fc-v37-x86_64-with-glibc2.39",
+  "cpus": 4,
+  "bench_version": "npkbench-1.1"
+ },
+ "started_unix": 1790475541.9721227,
+ "compiler_fingerprints": {
+  "npk_default": "5effbb3d57dcedd5",
+  "e039_qtf_cap2": "5effbb3d57dcedd5",
+  "e039_qtf_cap3": "5effbb3d57dcedd5",
+  "e039_qtf_cap3_title3": "5effbb3d57dcedd5"
+ }
+}
