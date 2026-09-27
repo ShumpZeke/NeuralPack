@@ -98,6 +98,9 @@ a gold file); git co-change history for the test mate (the test file that most o
 changed with the top implementation file in the 3,000 commits before the base is a gold
 test file in 35/103 dev-fast issues, vs 36 for path mirroring and 49 for mirror plus lexical
 rank; 52 vs 50 when given the true fix file), so it does not justify adding history to packs;
+compositional name matches (a definition such as `_print_Product` whose name parts all occur
+in the issue and include a code name it mentions: 13 of 153 dev-fast fix hunks covered, 6 of
+them missed at 4K, about 13 candidate blocks per issue, so at most a few hunks);
 skipping per-file `realpath` in scans (a test pins resolution-before-read,
 which matters for Windows reparse points; saving ~0.3 s per Django update).
 
