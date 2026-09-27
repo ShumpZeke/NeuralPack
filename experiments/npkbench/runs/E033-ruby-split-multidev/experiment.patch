@@ -1,0 +1,139 @@
+From d7303daa3bab9fbf3dbd01e3ef89d3e8b23c5865 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Sun, 27 Sep 2026 01:08:15 +0000
+Subject: [PATCH] E033 (experiment): split Ruby at def/class/module ... end
+
+---
+ npk/pack/compile.py      | 63 ++++++++++++++++++++++++++++++++++++++++
+ tests/test_ruby_split.py | 38 ++++++++++++++++++++++++
+ 2 files changed, 101 insertions(+)
+ create mode 100644 tests/test_ruby_split.py
+
+diff --git a/npk/pack/compile.py b/npk/pack/compile.py
+index 2d021f5..8882b05 100644
+--- a/npk/pack/compile.py
++++ b/npk/pack/compile.py
+@@ -600,6 +600,67 @@ def _split_braces(source: str, language: str) -> List[RawBlock]:
+     return blocks or _split_lines(source)
+ 
+ 
++RUBY_DEF_RE = re.compile(r"^(?P<indent>[ \t]*)(?:(?:private|protected|public|module_function)\s+)?"
++                         r"(?P<kind>def|class|module)\s+(?P<name>(?:self\.)?[A-Za-z_][\w:.]*[?!=]?)")
++
++
++def _split_ruby(source: str) -> List[RawBlock]:
++    """Split Ruby by ``def``/``class``/``module`` ... ``end`` (matched by indentation).
++
++    Methods become blocks named ``Outer.method``; the remaining lines of each
++    class or module (headers, constants, attr declarations) become context
++    blocks. A definition whose ``end`` cannot be found at its own indentation
++    (irregular formatting, endless ``def x = ...``) spans only its line, and a
++    file without recognizable definitions falls back to line windows.
++    """
++    lines = _source_lines(source)
++    spans = []  # (start, end, kind, name, indent)
++    for index, line in enumerate(lines):
++        match = RUBY_DEF_RE.match(line)
++        if not match:
++            continue
++        indent = match.group("indent")
++        end = index
++        if not re.search(r"\bend\s*$", line) and "=" not in line.split(match.group("name"), 1)[1][:3]:
++            closer = re.compile(rf"^{re.escape(indent)}end\b")
++            for probe in range(index + 1, len(lines)):
++                if closer.match(lines[probe]):
++                    end = probe
++                    break
++        spans.append((index, end, match.group("kind"), match.group("name"), len(indent)))
++    if not spans:
++        return _split_lines(source)
++
++    def owners(start: int, indent: int) -> List[str]:
++        return [name for s, e, kind, name, ind in spans
++                if kind in ("class", "module") and s < start <= e and ind < indent]
++
++    blocks: List[RawBlock] = []
++    covered = [False] * len(lines)
++    methods = [sp for sp in spans if sp[2] == "def" and sp[1] >= sp[0]]
++    # Outermost methods only: a def nested in another def stays inside it.
++    outer = [m for m in methods if not any(o is not m and o[0] < m[0] <= o[1] for o in methods)]
++    for start, end, _kind, name, indent in outer:
++        qualified = ".".join(owners(start, indent) + [name.removeprefix("self.")])
++        text = "\n".join(lines[start:end + 1])
++        blocks.append(RawBlock(0, "function", qualified, start + 1, end + 1, text))
++        for i in range(start, end + 1):
++            covered[i] = True
++    run_start = None
++    for i in range(len(lines) + 1):
++        inside = i < len(lines) and not covered[i]
++        if inside and run_start is None:
++            run_start = i
++        if not inside and run_start is not None:
++            text = "\n".join(lines[run_start:i])
++            if text.strip():
++                context = owners(i - 1, 10**6)  # classes/modules open at the run's last line
++                blocks.append(RawBlock(0, "context", ".".join(context) or None, run_start + 1, i, text))
++            run_start = None
++    blocks.sort(key=lambda b: b.start_line)
++    return blocks
++
++
+ def _split_lines(source: str, window: int = 60) -> List[RawBlock]:
+     lines = _source_lines(source)
+     blocks = []
+@@ -689,6 +750,8 @@ def split_source(text: str, language: str, *, python_members: bool = False) -> L
+         blocks = _split_markdown(text)
+     elif language == "rst":
+         blocks = _split_rst(text)
++    elif language == "ruby":
++        blocks = _split_ruby(text)
+     elif language in BRACE_LANGUAGES:
+         blocks = _split_braces(text, language)
+     else:
+diff --git a/tests/test_ruby_split.py b/tests/test_ruby_split.py
+new file mode 100644
+index 0000000..2036483
+--- /dev/null
++++ b/tests/test_ruby_split.py
+@@ -0,0 +1,38 @@
++"""Ruby files split at def/class/module ... end (E033)."""
++from npk.pack.compile import split_source
++
++SOURCE = '''require "json"
++
++module Fluent
++  class Parser
++    DEFAULT = 1
++
++    def self.from_config(conf)
++      new(conf)
++    end
++
++    def parse(text)
++      text.split.map do |t|
++        t.strip
++      end
++    end
++  end
++end
++'''
++
++
++def test_methods_become_named_blocks_and_every_line_is_kept():
++    blocks = split_source(SOURCE, "ruby")
++    names = {b.name for b in blocks if b.kind == "function"}
++    assert names == {"Fluent.Parser.from_config", "Fluent.Parser.parse"}
++    parse = next(b for b in blocks if b.name == "Fluent.Parser.parse")
++    assert (parse.start_line, parse.end_line) == (11, 15)  # the do...end inside stays in the method
++    covered = sorted(i for b in blocks for i in range(b.start_line, b.end_line + 1))
++    assert len(covered) == len(set(covered))
++    lines = SOURCE.split("\n")
++    assert all(i + 1 in set(covered) for i, line in enumerate(lines) if line.strip())
++
++
++def test_ruby_without_definitions_falls_back_to_windows():
++    blocks = split_source("puts 1\nputs 2\n", "ruby")
++    assert [b.kind for b in blocks] == ["chunk"]
+-- 
+2.43.0
+
