@@ -106,6 +106,9 @@ ARMS: Dict[str, Arm] = {
     # merge and E016c's promotion used npk_default for mate-off.
     "npk_mate": Arm("npk_mate", selector_options={"enable_test_mate": True}),
     "npk_nomate": Arm("npk_nomate", selector_options={"enable_test_mate": False}),
+    # The product before E031: retrieval reads issue-form scaffolding too. Every
+    # product arm in runs made before E031's promotion (2026-09-27) is raw-query.
+    "npk_rawquery": Arm("npk_rawquery", selector_options={"enable_query_cleaning": False}),
     "npk_members": Arm("npk_members", compile_options={"python_members": True}),
     "oracle_blocks": Arm("oracle_blocks", runner=_oracle_blocks),
 }

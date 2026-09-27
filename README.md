@@ -12,7 +12,7 @@ Your question → local search → selected passages → your chosen AI answers
 The compiler and default runtime use **zero generative LLM calls** and require
 no API key. The final answering model belongs to your application.
 
-## Current evidence: NPK-Bench (2026-09-26)
+## Current evidence: NPK-Bench (2026-09-27)
 
 Measured on [NPK-Bench](benchmarks/npkbench/__init__.py), which was built for this
 purpose. Queries are real SWE-bench issue reports, which NeuralPack's developers
@@ -28,6 +28,9 @@ Lite and confirmed once on a **held-out** split (SWE-bench Verified minus Lite,
 | NeuralPack before this loop's retrieval changes | 0.136 | 0.206 | 0.302 | 0.393 | 0.490 |
 | **Current default** (definition channel, top-block trimming, test mate from 2K) | **0.230** | **0.303** | **0.385** | **0.472** | **0.569** |
 | Current default, regression-test sites found (tests target) | 0.058 | 0.143 | 0.194 | 0.256 | 0.303 |
+
+The held-out rows were measured before issue-form cleaning (below), which adds up to 1.2
+more points of fix sites on a fresh split.
 
 - **Against a standard RAG pipeline** (same files, budgets and gold; BM25 over fixed
   60-line chunks, filled in score order): NeuralPack finds 1.6-2.1x as many fix sites
@@ -61,6 +64,16 @@ Lite and confirmed once on a **held-out** split (SWE-bench Verified minus Lite,
   issues) it finds +5.7 / +6.0 / +3.7 / +2.3 points more regression-test sites at
   2K-16K (all significant) for 0.4-1.1 points of fix sites. Below 2K the trade was even
   on held-out, so it stays off there.
+- **Issue-form cleaning** (default; `enable_query_cleaning=False` or `--raw-query` turn
+  it off): issue templates wrap the reporter's words in headings ("Steps to reproduce",
+  "Expected behavior"), checklists and HTML-comment instructions, and those words match
+  CONTRIBUTING guides and changelogs better than code. Short headings (up to six words),
+  checklist lines and HTML comments are removed before retrieval; the first line (the
+  issue title) is always kept, and the selection reports the caller's query unchanged.
+  On a fresh held-out split (heldout-c, 400 issues) fix sites rise +0.7 / +0.9 / +1.2
+  points at 4K / 8K / 16K and regression-test sites +0.4 at 1K and +1.4 at 16K (all
+  significant), with no significant loss at any budget. On the multilingual development
+  split the effect was mixed (fix -0.3 to +1.4 points).
 - **Robust ingestion:** as received, 46 of 103 benchmark snapshots failed to compile
   because a single binary, non-UTF-8, or credential-like file aborted the build (for
   example, every Django snapshot). Files that were never indexed are now skipped and

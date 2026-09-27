@@ -38,11 +38,12 @@ Do not edit by hand.
 | E024 | 2026-09-26 | Bulk integrity leaves (one ordered scan per table) and batched framing | **rejected** | Correct but not worth its complexity. Digests are byte-identical (4 Django packs; new equality test across all local tables; two mutants killed), but paired compile timing gives 1.018x (12.86 -> 12.64 s median) and verify ~3% (9.4-9.8 s -> 8.8-9.3 s). The cold-pack microbenchmark (1.4 s -> 0.5 s) overstated the in-compile gain because sealing reads hot pages; verify is dominated by the deliberate FTS source-parity rebuild. Not merged: +40 lines in integrity-critical code for ~2%. |
 | E025 | 2026-09-26 | Parameter sweep: BM25 field weights (E025), candidate depth (E026), RRF constant (E027) | **rejected** | Defaults sit near a local optimum; no setting passes the rule. Field weights: name x2 / path x2 / both x2 change fix by at most +3.2 points (both x2 at 16K, the only significant cell) while costing tests -1.7 at 4K (utility -1.4); halving name/path weights loses up to -2.4. Candidate depth: 30 hurts (fix -3.4 at 4K, significant); 120 and 240 give +0.5 to +1.9 points, never significant (utility +0.2 to +3.1). RRF k=20 costs 1 point at 1-2K; k=120 is identical. A reimplementation control reproduced the product exactly. Held-out was not consulted. |
 | E030 | 2026-09-27 | Top-block trimming for every language (ranked line windows of an oversized non-Python top block) | **rejected** | No effect on ood-multi-dev: fix +0.4/-0.1 points at 512/1K for 20-line windows (2 wins/2 losses), -0.1/-0.1 for 40-line windows, identical from 2K; tests +0.6 at 512-1K (one task). Trimming helps only when the top-ranked block holds the fix; outside Python the fix sites rank at median 112-401, so the non-Python gap is ranking, not packing. |
-| E031 | 2026-09-27 | Strip issue-template structure (short headings, checklists, HTML comments) from queries | **running** | Passes the dev rule narrowly on the full dev split (E031b, 300 issues): fix +0.2/+0.1/+0.4/+1.6/+0.2 points (7 wins/1 loss at 8K), tests +0.8/+0.7/+1.1 [+0.1,+2.5]/+0.6/0.0, docs 0/-1.3/0/+3.9/+2.6; utility +1.0/+0.7/+1.6/+2.5/+0.4, no significant loss. Earlier: dev-fast all-wins but not significant; ood-multi-dev mixed. Confirmation HC01 on heldout-c queued with criteria declared in NEXT_STEPS.md. |
+| E031 | 2026-09-27 | Strip issue-template structure (short headings, checklists, HTML comments) from queries | **kept** | Promoted after the fresh heldout-c confirmation (HC01, criteria declared before the run): fix +0.7/+0.9/+1.2 points at 4K/8K/16K and tests +0.4 (1K) / +1.4 (16K), all significant; utility +0.25 to +2.57, no significant loss. Dev (E031b, 300): utility +1.0/+0.7/+1.6/+2.5/+0.4. Mixed on multilingual dev (utility -0.9 at 4K), which is not part of the rule. Product form: PackSelector(enable_query_cleaning=True) by default, CLI --raw-query to disable; cleaning applies once before every channel and Selection.query keeps the caller's text. The product form equals the evaluated prototype on all 515 dev-fast selections; three new mutants (cleaning disabled, title dropped, cleaned query reported) are killed. Benchmark arm npk_rawquery is the previous product. |
 | E032 | 2026-09-27 | Bare member names and modifier-prefixed declarations as definition symbols | **rejected** | Mixed outside Python and no effect on Python. ood-multi-dev vs the product (OMD01): fix -0.4/+0.3/-1.2/-0.4/+0.3 points (none significant; wins and losses balanced), tests +0.3 to +0.6; utility -0.1/+0.7/-1.2/+0.2/+0.6 (negative at 1K and 4K). By language at 2K: JS/TS +4.3, Java +1.5, PHP +0.3, Rust -4.8, others 0. dev-fast (Python): all 515 selections identical. More definition candidates displace lexical ones in some languages; a language-specific form would need more data per language than ood-multi-dev has. |
 | E033 | 2026-09-27 | Ruby splitter: def/class/module ... end blocks (matched by indentation) instead of 60-line windows | **rejected** | Fails the rule on the 28 Ruby issues of ood-multi-dev: fix +8.3 (1K, 5 wins/1 loss) / -0.4 / -1.4 / -3.6 / -10.9 [-22.8,-0.8] points (the 16K loss is significant: small method blocks lose the incidental coverage of neighboring hunks that windows gave); tests +0.9 / +8.3 / +8.3 / +20.4 [+7.4,+37.0] / +5.6 (minitest methods become findable units); utility +9.2/+7.9/+6.8/+16.6/-5.4. Promising for tests, but 28 issues are too few to tune a variant without fitting noise; a class-level-block design with member trimming (as for Python) would need a larger Ruby dev set. |
 | H001 | 2026-09-26 | Held-out confirmation: test mate (E016b), top-block trimming (E005c), context map (E017) | **kept** | E005c confirmed: trimming vs no trimming, fix +3.8 points at 1K (significant), identical at >=2K; utility +2.9/0/0/0/0. E017 confirmed: located fix recall with a 25% map +9.6/+12.3/+13.0/+11.4/+7.2 points over the default's full text, tests +5.3/+5.2/+7.7/+8.0/+8.2 (all CIs exclude zero). E016b confirmed only as a tradeoff: tests up at every budget, fix down 0.3-1.4 points; the 1K utility is -0.012 points with a significant fix loss, so it ships opt-in. Full current default on held-out (definition channel + trimming): fix 0.230/0.309/0.399/0.475/0.575 at 1K-16K (before this loop 0.136/0.206/0.302/0.393/0.490). |
 | HB01 | 2026-09-26 | Confirmation on heldout-b: budget-gated test mate (E016c) and replication of E002+E005c | **kept** | E016c passes (see its record). The definition channel and trimming replicate on fresh data: fix +6.5/+5.8/+9.0/+8.0/+8.3 points at 1K-16K over no-definitions/no-trim (all CIs exclude zero); tests -1.9 to -3.3 (the known tradeoff). Product on heldout-b (mate off): fix 0.178/0.244/0.348/0.428/0.526. |
+| HC01 | 2026-09-27 | Confirmation on heldout-c: issue-form cleaning of queries (E031) | **kept** | E031 passes all three criteria on 400 unused issues (0 errors). e031_clean vs product: fix -0.2 [-0.7,+0.2] / +0.4 [-0.3,+1.2] / +0.7 [+0.2,+1.3] / +0.9 [+0.3,+1.7] / +1.2 [+0.4,+2.3] points at 1K-16K (16 wins/2 losses at 16K); tests +0.4 [+0.0,+0.9] / +0.1 / +0.6 / +0.9 / +1.4 [+0.2,+2.7]; utility +0.25/+0.54/+1.26/+1.86/+2.57. Product on heldout-c (raw query): fix 0.194/0.259/0.350/0.411/0.496, tests 0.039/0.099/0.126/0.181/0.256. |
 | M000 | 2026-09-26 | Baseline: conversation memory (LongMemEval-S dev, 100 questions) | **kept** | Reference point for the second workload family. Weak spots: multi-session aggregation and implicit preferences. |
 | M001 | 2026-09-26 | Source-diverse packing (per-file score decay) for multi-session memory questions | **rejected** | Turn recall falls 10-16 points: fused RRF scores are nearly flat (1/60..1/120), so any per-file decay reorders almost the whole ranking toward weakly matching fresh sessions. Session coverage rises but evidence turns are lost. |
 | M002 | 2026-09-26 | Relevance-density ordering (fused score / tokens^alpha) before greedy fill | **rejected** | Aggregate gain is a disguised role prior: it comes from LongMemEval's composition (842/896 evidence turns are user turns) and collapses the question type whose evidence is in long assistant turns (1K: 0.833 -> 0.333). Not a default. Pursue finer units for long turns instead. |
@@ -1503,10 +1504,38 @@ Do not edit by hand.
 
 ## E031 — Strip issue-template structure (short headings, checklists, HTML comments) from queries
 
-- **Status:** running
-- **Hypothesis:** Issue-form structure words (Steps to reproduce, Expected Behavior) are rare in code but common in CONTRIBUTING/README/CHANGELOG, which then outrank code (multilingual dev: CONTRIBUTING.md and README.md fill 35 JS selections at 2K). Dropping the structure, keeping the title and all content lines, should help.
-- **Run:** experiments/npkbench/runs/E031b-query-clean-dev, experiments/npkbench/runs/E031-query-clean-devfast, experiments/npkbench/runs/E031-query-clean-multidev
-- **Decision:** Passes the dev rule narrowly on the full dev split (E031b, 300 issues): fix +0.2/+0.1/+0.4/+1.6/+0.2 points (7 wins/1 loss at 8K), tests +0.8/+0.7/+1.1 [+0.1,+2.5]/+0.6/0.0, docs 0/-1.3/0/+3.9/+2.6; utility +1.0/+0.7/+1.6/+2.5/+0.4, no significant loss. Earlier: dev-fast all-wins but not significant; ood-multi-dev mixed. Confirmation HC01 on heldout-c queued with criteria declared in NEXT_STEPS.md.
+- **Status:** kept
+- **Hypothesis:** Issue forms wrap the reporter's words in section headings, checklists and HTML-comment instructions; those words are rare in code but common in CONTRIBUTING.md, READMEs and changelogs, which then outrank code. Removing them before retrieval (title always kept) should move code up without losing anything the reporter wrote.
+- **Run:** experiments/npkbench/runs/HC01-query-clean-heldout-c, experiments/npkbench/runs/E031b-query-clean-dev, experiments/npkbench/runs/E031-query-clean-devfast, experiments/npkbench/runs/E031-query-clean-multidev
+- **Files changed:** `npk/pack/select.py`, `npk/cli.py`, `tests/test_query_cleaning.py`, `benchmarks/contract_mutations.py`, `benchmarks/npkbench/arms.py`, `README.md`, `CURRENT_ARCHITECTURE.md`, `NEXT_STEPS.md`
+- **Results:**
+
+```json
+{
+ "dev_utility_points": [
+  1.0,
+  0.7,
+  1.6,
+  2.5,
+  0.4
+ ],
+ "equivalence_dev_fast": "515/515 identical",
+ "heldout_c_utility_points": [
+  0.25,
+  0.54,
+  1.26,
+  1.86,
+  2.57
+ ],
+ "mutants": {
+  "query_cleaning_disabled": "killed",
+  "query_cleaning_drops_title": "killed",
+  "query_cleaning_reports_cleaned_query": "killed"
+ }
+}
+```
+
+- **Decision:** Promoted after the fresh heldout-c confirmation (HC01, criteria declared before the run): fix +0.7/+0.9/+1.2 points at 4K/8K/16K and tests +0.4 (1K) / +1.4 (16K), all significant; utility +0.25 to +2.57, no significant loss. Dev (E031b, 300): utility +1.0/+0.7/+1.6/+2.5/+0.4. Mixed on multilingual dev (utility -0.9 at 4K), which is not part of the rule. Product form: PackSelector(enable_query_cleaning=True) by default, CLI --raw-query to disable; cleaning applies once before every channel and Selection.query keeps the caller's text. The product form equals the evaluated prototype on all 515 dev-fast selections; three new mutants (cleaning disabled, title dropped, cleaned query reported) are killed. Benchmark arm npk_rawquery is the previous product.
 
 ## E032 — Bare member names and modifier-prefixed declarations as definition symbols
 
@@ -1540,6 +1569,59 @@ Do not edit by hand.
 - **Hypothesis:** Criteria declared in NEXT_STEPS.md (commit c5ebfe0) before the run.
 - **Run:** experiments/npkbench/runs/HB01-heldout-b
 - **Decision:** E016c passes (see its record). The definition channel and trimming replicate on fresh data: fix +6.5/+5.8/+9.0/+8.0/+8.3 points at 1K-16K over no-definitions/no-trim (all CIs exclude zero); tests -1.9 to -3.3 (the known tradeoff). Product on heldout-b (mate off): fix 0.178/0.244/0.348/0.428/0.526.
+
+## HC01 — Confirmation on heldout-c: issue-form cleaning of queries (E031)
+
+- **Status:** kept
+- **Hypothesis:** Criteria declared in NEXT_STEPS.md (commit a97b080) before the run: utility d_fix + 0.99 d_tests >= 0 at every budget, a significant fix or tests gain at one or more budgets, and no significant loss for any target at any budget.
+- **Run:** experiments/npkbench/runs/HC01-query-clean-heldout-c
+- **Results:**
+
+```json
+{
+ "heldout_c_fix_1K_16K": {
+  "clean": [
+   0.1922,
+   0.2631,
+   0.3572,
+   0.4203,
+   0.508
+  ],
+  "raw": [
+   0.1938,
+   0.2588,
+   0.3504,
+   0.4111,
+   0.4957
+  ]
+ },
+ "heldout_c_tests_1K_16K": {
+  "clean": [
+   0.043,
+   0.1004,
+   0.1317,
+   0.1905,
+   0.2697
+  ],
+  "raw": [
+   0.0389,
+   0.0993,
+   0.1257,
+   0.1809,
+   0.2562
+  ]
+ },
+ "utility_points": [
+  0.25,
+  0.54,
+  1.26,
+  1.86,
+  2.57
+ ]
+}
+```
+
+- **Decision:** E031 passes all three criteria on 400 unused issues (0 errors). e031_clean vs product: fix -0.2 [-0.7,+0.2] / +0.4 [-0.3,+1.2] / +0.7 [+0.2,+1.3] / +0.9 [+0.3,+1.7] / +1.2 [+0.4,+2.3] points at 1K-16K (16 wins/2 losses at 16K); tests +0.4 [+0.0,+0.9] / +0.1 / +0.6 / +0.9 / +1.4 [+0.2,+2.7]; utility +0.25/+0.54/+1.26/+1.86/+2.57. Product on heldout-c (raw query): fix 0.194/0.259/0.350/0.411/0.496, tests 0.039/0.099/0.126/0.181/0.256.
 
 ## M000 — Baseline: conversation memory (LongMemEval-S dev, 100 questions)
 

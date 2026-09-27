@@ -248,6 +248,39 @@ def _symbol_channel(con: sqlite3.Connection, query: str, limit: int) -> List[int
     return [r["block_id"] for r in rows]
 
 
+#: Issue-form scaffolding removed from queries before retrieval (E031).
+_TEMPLATE_COMMENT = re.compile(r"<!--.*?(?:-->|\Z)", re.S)
+_TEMPLATE_CHECKLIST = re.compile(r"^\s*[-*+]\s*\[[ xX]\]")
+_TEMPLATE_HEADING = re.compile(r"^\s*(?:#{1,6}\s+(?P<h>.+?)\s*#*|\*\*(?P<b>[^*]+)\*\*\s*:?)\s*$")
+TEMPLATE_HEADING_MAX_WORDS = 6
+
+
+def _strip_issue_template(query: str) -> str:
+    """The query without issue-form scaffolding.
+
+    GitHub issue forms wrap the reporter's words in section headings ("Steps
+    to reproduce", "Expected behavior"), checklists ("- [x] I searched the
+    existing issues") and HTML-comment instructions. Those words are rare in
+    code but common in CONTRIBUTING.md, READMEs and changelogs, which then
+    outrank the code. HTML comments, checklist lines and heading lines of at
+    most ``TEMPLATE_HEADING_MAX_WORDS`` words (markdown ``#`` headings or
+    bold-only lines) are removed; the first line, an issue's title, is always
+    kept, and a query that would become empty is used unchanged.
+    """
+    text = _TEMPLATE_COMMENT.sub(" ", query)
+    lines = text.split("\n")
+    kept = lines[:1]
+    for line in lines[1:]:
+        if _TEMPLATE_CHECKLIST.match(line):
+            continue
+        heading = _TEMPLATE_HEADING.match(line)
+        if heading and len((heading.group("h") or heading.group("b") or "").split()) <= TEMPLATE_HEADING_MAX_WORDS:
+            continue
+        kept.append(line)
+    cleaned = "\n".join(kept)
+    return cleaned if cleaned.strip() else query
+
+
 def _explicit_literals(query: str) -> List[str]:
     """Atomic inline code references override prose stopwords/length filters.
 
@@ -697,6 +730,7 @@ class PackSelector:
         enable_definitions: bool = True,
         enable_trim: bool = True,
         enable_test_mate: Optional[bool] = None,
+        enable_query_cleaning: bool = True,
         enable_cache: bool = True,
         max_cache_entries: int = 128,
     ):
@@ -727,6 +761,9 @@ class PackSelector:
         if enable_test_mate is not None and type(enable_test_mate) is not bool:
             raise ValueError("enable_test_mate must be None (budget-gated), True or False")
         self.enable_test_mate = enable_test_mate
+        if type(enable_query_cleaning) is not bool:
+            raise ValueError("enable_query_cleaning must be a boolean")
+        self.enable_query_cleaning = enable_query_cleaning
         self._test_paths_cache: Optional[List[Tuple[str, frozenset]]] = None
         self._test_paths_key: Optional[str] = None
         self._con: Optional[sqlite3.Connection] = None
@@ -924,6 +961,7 @@ class PackSelector:
                     self.enable_definitions,
                     self.enable_trim,
                     self.enable_test_mate,
+                    self.enable_query_cleaning,
                     self.tokenizer.sha256 if self.tokenizer is not None else None,
                 )
                 if cache_key in self._cache:
@@ -940,13 +978,16 @@ class PackSelector:
             except (KeyError, ValueError) as exc:
                 raise PackError("artifact has invalid available-token metadata; recompile") from exc
 
-            sel = self._select_once(con, manifest, query, budget, self.candidate_limit)
+            # Retrieval reads the reporter's words; the selection reports the
+            # caller's query unchanged.
+            retrieval_query = _strip_issue_template(query) if self.enable_query_cleaning else query
+            sel = self._select_once(con, manifest, retrieval_query, budget, self.candidate_limit)
             escalations: List[str] = []
 
             # Escalation ladder -- deterministic and local at every rung.
             if allow_escalation and (sel.seed_failed or not sel.evidence):
                 escalations.append("widen_retrieval")
-                sel = self._select_once(con, manifest, query, budget,
+                sel = self._select_once(con, manifest, retrieval_query, budget,
                                         self.candidate_limit * 4)
 
             if allow_escalation and self.enable_dependency_expansion and sel.evidence:
@@ -955,13 +996,14 @@ class PackSelector:
                     limit=self.candidate_limit)
                 if extra:
                     escalations.append("expand_dependencies")
-                    sel = self._assemble(con, query, sel, extra, budget)
+                    sel = self._assemble(con, retrieval_query, sel, extra, budget)
 
             if self.resolve_conflicts and len(sel.evidence) > 1:
-                sel = self._drop_contradictions(con, sel, query)
+                sel = self._drop_contradictions(con, sel, retrieval_query)
 
             self._enforce_final_budget(sel, budget)
-            sel.risk_band = self._risk({ch: [] for ch in sel.channels_used}, sel.evidence, query)
+            sel.risk_band = self._risk({ch: [] for ch in sel.channels_used}, sel.evidence, retrieval_query)
+            sel.query = query
 
             if not sel.evidence:
                 # Nothing survived. Report an explicit failure rather than an

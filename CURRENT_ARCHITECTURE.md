@@ -125,7 +125,8 @@ NPK-Bench evidence recorded in [EXPERIMENTS.md](experiments/npkbench/EXPERIMENTS
 source tree ──scan──▶ files ──split──▶ blocks ──index──▶ project.npk (SQLite v8)
   (unindexable never-indexed files are skipped and listed in manifest skipped_sources)
                                                             │
-query ──analyze──▶ terms ──FTS5 bm25 top-60───────────┐     │
+query ──strip issue-form scaffolding (E031)
+      ──analyze──▶ terms ──FTS5 bm25 top-60───────────┐     │
       ├─raise-intent──▶ relation sites ───────────────┤     │
       └─named code entities──▶ defining blocks ───────┴─RRF─▶ greedy fill ──▶ Selection
                                   (if the top block alone exceeds the budget,
@@ -163,3 +164,11 @@ query ──analyze──▶ terms ──FTS5 bm25 top-60───────�
   the mate lookup; parsed test paths are cached per artifact snapshot. Always-on on
   held-out: tests +1.1 to +4.5 points, fix -0.3 to -1.4 (even trade at 1K). Gated at 2K
   and above on the fresh heldout-b: tests +2.3 to +6.0, fix -0.4 to -1.1.
+- **Issue-form cleaning (E031, `enable_query_cleaning`, `--raw-query`):** before any channel
+  runs, HTML comments, checklist lines (`- [x] ...`) and heading lines of at most six words
+  (markdown `#` or bold-only) are removed from the query; the first line is always kept,
+  a query that would become empty is used as given, and `Selection.query` stays the
+  caller's text. Template words ("steps to reproduce", "expected behavior") otherwise
+  pull CONTRIBUTING guides, READMEs and changelogs above code. Fresh heldout-c (HC01, 400
+  issues): fix +0.7/+0.9/+1.2 points at 4K/8K/16K and tests +0.4 (1K) and +1.4 (16K), all
+  significant; no significant loss at any budget.

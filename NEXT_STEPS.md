@@ -23,11 +23,11 @@ have ~20 GB free. Record every experiment with `benchmarks.npkbench.expdb.append
 
 ## Evidence discipline that must not be relaxed
 
-- Contract mutations: 169 mutants. The 168 at 3b5f9f5 (159 at the base commit plus 9 added
+- Contract mutations: 172 mutants. The 168 at 3b5f9f5 (159 at the base commit plus 9 added
   in this loop for source-policy skips, the definition channel, top-block trimming and the
   test mate) are all killed (`experiments/npkbench/contract-mutations-3b5f9f5.json`; commit
-  8eb6b27 misstates the added count as 13); `test_mate_gate_ignored` (E016c) was killed when
-  added. Add a mutant for every new guard or ranking rule.
+  8eb6b27 misstates the added count as 13); `test_mate_gate_ignored` (E016c) and the three
+  query-cleaning mutants (E031) were killed when added (172 in total). Add a mutant for every new guard or ranking rule.
 
 - Decide on `dev`/`dev-fast`; confirm once on `heldout`; never tune on `heldout`.
 - Apply the declared decision rule in `benchmarks/npkbench/__init__.py`: frequency-weighted
@@ -79,7 +79,7 @@ read with 4K tokens or more (M006, MH01).
    and a new encoder identity; for code it passed the rule only barely (E012b) at a large
    compile cost.
 5. **Held-out split hygiene:** `heldout` confirmed E002, E005c, E016b and E017; `heldout-b`
-   confirmed E016c (HB01); `heldout-c` is spent on E031 (HC01). `heldout-d` (401 issues, a fixed
+   confirmed E016c (HB01); `heldout-c` is spent on E031 (HC01, passed). `heldout-d` (401 issues, a fixed
    stratified sample of the 785 unused issues of `heldout-b-all`) was declared on
    2026-09-27 before any result on it; declare the criteria in this file before running it.
 6. **E034 (in progress): weight the issue title's terms in the lexical channel.** The
@@ -144,7 +144,8 @@ weakest (3-4% of gold hunks selected at 2K). JS issues' budgets go to CONTRIBUTI
 README.md and changelogs, a symptom of issue-template words; E031 (strip template
 headings, checklists and HTML comments from the query) is positive but not yet
 significant on multilingual dev; on the full Python dev split (E031b) it passed the rule
-narrowly and is being confirmed on `heldout-c` (HC01). Two structural ideas were tried on
+narrowly, and the fresh `heldout-c` confirmed it (HC01), so it is now the default
+(`enable_query_cleaning`, `--raw-query`). Two structural ideas were tried on
 `ood-multi-dev` and rejected: definition symbols for bare members and modifier-prefixed
 declarations (E032: JS/TS +4.3 and Java +1.5 at 2K, Rust -4.8, Python unchanged) and a Ruby
 `def ... end` splitter (E033: tests +20 at 8K but fix -10.9 at 16K on 28 issues). Both need
@@ -161,3 +162,7 @@ utility `d_fix + 0.99 d_tests` is >= 0 at every budget, fix or tests gains signi
 one or more budgets, and no target loses significantly at any budget. Dev evidence (E031b,
 300 issues): utility +1.0/+0.7/+1.6/+2.5/+0.4 points, tests +1.1 at 4K (significant), no
 significant losses.
+
+**Outcome (2026-09-27): passed; E031 is the default.** heldout-c: fix +0.7/+0.9/+1.2 points
+at 4K/8K/16K and tests +0.4 (1K) / +1.4 (16K), all significant; utility
++0.25/+0.54/+1.26/+1.86/+2.57; no significant loss. `npk_rawquery` is the previous product.

@@ -353,6 +353,12 @@ MUTANTS = [
      "tests/test_test_mate.py::test_reused_ranking_matches_a_dedicated_query"),
     ("test_mate_gate_ignored", "npk/pack/select.py", None, None,
      "tests/test_test_mate.py::test_default_mate_is_budget_gated"),
+    ("query_cleaning_disabled", "npk/pack/select.py", "_strip_issue_template", "return query",
+     "tests/test_query_cleaning.py::test_template_words_no_longer_pull_the_contributing_guide"),
+    ("query_cleaning_drops_title", "npk/pack/select.py", None, None,
+     "tests/test_query_cleaning.py::test_first_line_and_long_headings_are_kept"),
+    ("query_cleaning_reports_cleaned_query", "npk/pack/select.py", None, None,
+     "tests/test_query_cleaning.py::test_selection_reports_the_callers_query"),
     ("test_mate_paths_never_refreshed", "npk/pack/select.py", "_place_test_mate",
      "self._test_paths_key = manifest.get('root_sha256', '')",
      "tests/test_test_mate.py::test_mate_sees_test_files_added_by_an_update"),
@@ -473,6 +479,14 @@ def main():
                 if source.count(target) != 1:
                     raise ValueError("test-mate budget gate is no longer unique")
                 changed = source.replace(target, "True if self.enable_test_mate is None")
+            elif name in ("query_cleaning_drops_title", "query_cleaning_reports_cleaned_query"):
+                target, replacement = {
+                    "query_cleaning_drops_title": ("kept = lines[:1]", "kept = []"),
+                    "query_cleaning_reports_cleaned_query": ("            sel.query = query\n", ""),
+                }[name]
+                if source.count(target) != 1:
+                    raise ValueError("query-cleaning guard is no longer unique")
+                changed = source.replace(target, replacement)
             elif name == "known_compound_vocabulary_guard_bypassed":
                 target = "return whole or expanded"
                 if source.count(target) != 1:
