@@ -143,13 +143,14 @@ includes the pack rebuilds a compile-side change forces on the benchmark.
 | 6 | H6/E006 | Rejected as gaming: tests collapse, docs -14 to -40 points (docs-3) |
 | 7 | H10 | Folded into E005c (member spans instead of elision markers) |
 | 8 | H9/E017 | **Kept as opt-in** context map: a 25% map at 2K locates as much as full text at 4K |
-| 9 | H8/E010 | Inconclusive: speed gain small; ranking unchanged |
+| 9 | H8/E010, E043 | E010 inconclusive (speed gain small, ranking unchanged); for pathological lengths a 512-term cap (E043) is **kept**: 20,000 pasted identifiers 114 s -> 4 s on Django |
 | 10 | H14/E014, E024 | E014 **kept** (updates 1.5-2.5x faster); bulk integrity (E024) rejected: ~2% in real compiles |
 | 11 | H13/E013 | Rejected |
 | 12 | H17/M000-M006 | Workload built; lexical tweaks rejected (M001-M003, M005); dense via the shipped semantic/hybrid mode **kept** as the documented memory configuration (+4 to +7 points) |
-| 13 | H11/E012, E012b | Equal-weight fusion rejected for code (-9 to -11 fix at 1-2K); one-channel bge form passes the rule barely but needs dense vectors (inconclusive, cost) |
-| 14 | H12 | Not run; superseded by query-segmentation and entity experiments (E022, E023: no gain) |
+| 13 | H11/E012, E012b, E038 | Equal-weight fusion rejected for code (-9 to -11 fix at 1-2K); one-channel bge form passes the rule barely but needs dense vectors (inconclusive, cost); cheap static Model2Vec vectors lose fix recall (E038, rejected) |
+| 14 | H12 | Not run; superseded by query-side experiments: segmentation and entities (E022, E023: no gain), then issue-form cleaning (E031, **kept**) and title/repetition weighting (E039, **kept**; held-out fix +2.3 to +9.9 points) |
 | 15 | H16 | Not done: removing Product B is a user-visible deletion outside the evidence loop |
 
-Added during the loop and kept: the docs-3 target and decision rule (E015/E015b), the test
-mate (E016b, pending held-out H001).
+Added during the loop and kept: the docs-3 target and decision rule (E015/E015b), the
+budget-gated test mate (E016b/E016c), issue-form cleaning (E031), title and repetition
+weighting (E039) and the query-term cap (E043).
