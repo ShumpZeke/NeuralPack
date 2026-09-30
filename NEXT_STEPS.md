@@ -19,12 +19,12 @@ python -m benchmarks.npkbench.report --judge RUN BASE_ARM CANDIDATE_ARM --target
 python -m benchmarks.npkbench.report --judge-runs BASE_RUN:ARM CAND_RUN:ARM --targets tests   # across runs
 ```
 
-Unused confirmation splits: `heldout-e` (Python, 384; reserved by the declared E055 plan) and,
-declared later on 2026-09-27 before any result on them, `gym-heldout-b` (Python, 254),
-`gym-heldout-c` (Python, 197; both SWE-Gym, the next runs of 30 per repository after
-`gym-heldout`) and `poly-heldout-c` (JS/TS, 246). `gym-heldout` was spent on E052 (GH01) and
-`poly-heldout-b` on E053/E054 (PHB01). Larger screening splits: `gym-dev` (Python, 326) and
-`poly-dev-b` (Java/JS/TS, 371). Declare each confirmation's criteria here before its run.
+Unused confirmation splits, declared on 2026-09-27 before any result on them: `gym-heldout-b`
+(Python, 254; reserved by the declared E057 plan), `gym-heldout-c` (Python, 197; both SWE-Gym,
+the next runs of 30 per repository after `gym-heldout`) and `poly-heldout-c` (JS/TS, 246).
+Spent: `gym-heldout` on E052 (GH01), `poly-heldout-b` on E053/E054 (PHB01) and `heldout-e` on
+E055b (HE01, failed). Larger screening splits: `gym-dev` (Python, 326) and `poly-dev-b`
+(Java/JS/TS, 371). Declare each confirmation's criteria here before its run.
 
 First runs clone the 12 SWE-bench repositories (blobless, ~2 GB) and build packs
 (~15 s each for Django). Use `--ephemeral-packs` on `heldout` (407 tasks) unless you
@@ -102,9 +102,10 @@ read with 4K tokens or more (M006, MH01).
    compile cost.
 5. **Held-out split hygiene:** spent: `heldout` (E002, E005c, E016b, E017), `heldout-b` (E016c,
    HB01), `heldout-c` (E031, HC01), `heldout-d` (E039, HD01), `poly-heldout` (E047, PH01),
-   `gym-heldout` (E052, GH01), `poly-heldout-b` (E053/E054, PHB01). Unused: `heldout-e` (Python,
-   384; reserved by the declared E055 plan), `gym-heldout-b` (Python, 254), `gym-heldout-c`
-   (Python, 197) and `poly-heldout-c` (JS/TS, 246). Declare criteria here before any run on them.
+   `gym-heldout` (E052, GH01), `poly-heldout-b` (E053/E054, PHB01), `heldout-e` (E055b, HE01,
+   failed). Unused: `gym-heldout-b` (Python, 254; reserved by the declared E057 plan),
+   `gym-heldout-c` (Python, 197) and `poly-heldout-c` (JS/TS, 246). Declare criteria here
+   before any run on them.
 8. **Done: very long queries are capped (E043).** Distinct lexical terms per issue: median
    62-82, p99 300-466, up to 4,164. A query now keeps its first 512 distinct terms (backticked
    literals always kept): synthetic Django queries of 1,000 / 20,000 identifiers take 2.2 / 4.1
@@ -436,6 +437,20 @@ their dev results. Per the plan, HE01 runs once on `heldout-e` (384 issues) with
 tests; E055b is promoted only if it meets the standard rule there (utility `d_fix + 0.99 d_tests`
 >= 0 at every budget, a significant fix or tests gain at one or more budgets, no significant loss
 at any budget). HE01 runs on the current default, which now includes E053 and E054.
+
+### HE01 outcome: E055b rejected (heldout-e now spent)
+
+E055b did not replicate on `heldout-e` (384 fresh Python issues; control identical 1,920/1,920, 172
+selections change): fix +0.00 / +0.32 / +0.06 / +0.30 / -0.04 at 1K-16K and tests +0.00 / -0.13 /
+-0.18 / -0.18 / -0.39, none significant, utility -0.12 at 4K and -0.43 at 16K (mean -0.05). Its
+dev and gym-dev gains (+1.5 at 4K on dev, +0.6 on gym-dev) came from splits on which the
+opportunity had been measured and the channel shaped, which is why the plan reserved a fresh
+split; the gate worked. The product form (branch `exp/e055p`) is not merged; its patch is saved in
+`experiments/npkbench/runs/HE01-heldout-e/e055b-product.patch`. Traceback frames are not pursued
+further (the existing lexical and definition channels already see the frame names; the extra
+ranked blocks displace about as many sites as they add). The default on `heldout-e` (current
+product, E053 + E054): fix 0.214 / 0.296 / 0.397 / 0.475 / 0.560, tests 0.110 / 0.212 / 0.278 /
+0.357 / 0.437 at 1K-16K, a further fresh Python measurement of the default (SWE-bench full).
 
 ### E053 + E054 merged
 

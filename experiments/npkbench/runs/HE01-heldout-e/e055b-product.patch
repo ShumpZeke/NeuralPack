@@ -1,0 +1,299 @@
+diff --git a/benchmarks/contract_mutations.py b/benchmarks/contract_mutations.py
+index 057457c..3f225fe 100644
+--- a/benchmarks/contract_mutations.py
++++ b/benchmarks/contract_mutations.py
+@@ -378,6 +378,14 @@ MUTANTS = [
+      "tests/test_query_cleaning.py::test_version_listing_no_longer_pulls_the_version_module"),
+     ("environment_booleans_counted", "npk/pack/select.py", None, None,
+      "tests/test_query_cleaning.py::test_configuration_and_code_are_kept"),
++    ("traceback_channel_ignored", "npk/pack/select.py", "_traceback_channel", "return []",
++     "tests/test_traceback_frames.py::test_frame_function_leads_the_selection_from_2k_only"),
++    ("traceback_channel_ungated", "npk/pack/select.py", None, None,
++     "tests/test_traceback_frames.py::test_frame_function_leads_the_selection_from_2k_only"),
++    ("traceback_frame_line_ignored", "npk/pack/select.py", None, None,
++     "tests/test_traceback_frames.py::test_the_frame_line_picks_among_same_named_functions"),
++    ("traceback_site_packages_prefix_kept", "npk/pack/select.py", None, None,
++     "tests/test_traceback_frames.py::test_frame_paths_resolve_by_path_suffix"),
+     ("url_scaffolding_kept", "npk/pack/select.py", "_strip_urls", "return line",
+      "tests/test_query_cleaning.py::test_link_scaffolding_no_longer_pulls_the_readme"),
+     ("github_source_link_path_dropped", "npk/pack/select.py", None, None,
+@@ -533,6 +541,20 @@ def main():
+                 if source.count(target) != 1:
+                     raise ValueError("URL title rule is no longer unique")
+                 changed = source.replace(target, "[_strip_urls(line) for line in lines]")
++            elif name in ("traceback_channel_ungated", "traceback_frame_line_ignored",
++                          "traceback_site_packages_prefix_kept"):
++                target, replacement = {
++                    "traceback_channel_ungated": (
++                        "if self.enable_traceback_frames and budget >= TRACEBACK_MIN_BUDGET:",
++                        "if self.enable_traceback_frames:"),
++                    "traceback_frame_line_ignored": (
++                        "rows = [r for r in rows if r[1] <= line <= r[2]] or rows", "rows = rows"),
++                    "traceback_site_packages_prefix_kept": (
++                        'for marker in ("/site-packages/", "/dist-packages/"):', "for marker in ():"),
++                }[name]
++                if source.count(target) != 1:
++                    raise ValueError("traceback target is no longer unique")
++                changed = source.replace(target, replacement)
+             elif name == "environment_booleans_counted":
+                 target = 'r"\\d+\\.\\d+|^(None|not installed)$"'
+                 if source.count(target) != 1:
+diff --git a/npk/cli.py b/npk/cli.py
+index ad49ba2..b0dc0e1 100644
+--- a/npk/cli.py
++++ b/npk/cli.py
+@@ -98,6 +98,9 @@ def main(argv: list[str] | None = None) -> int:
+     query.add_argument("--no-release-notes-last", action="store_true",
+                        help="rank changelogs, release notes and release blog posts like any other file "
+                             "(by default they go behind all other candidates)")
++    query.add_argument("--no-traceback-frames", action="store_true",
++                       help="do not rank the functions named by a pasted traceback as their own channel "
++                            "(by default they are fused from a 2048-token budget up)")
+     query.add_argument("--title-weight", type=int, default=TITLE_WEIGHT,
+                        help="times the terms of a multi-line query's first line (an issue title) "
+                             "count in lexical retrieval; 1 turns the emphasis off")
+@@ -209,6 +212,7 @@ def main(argv: list[str] | None = None) -> int:
+                                     enable_test_mate={'auto': None, 'always': True, 'never': False}[args.test_mate],
+                                     enable_query_cleaning=not args.raw_query,
+                                     demote_release_notes=not args.no_release_notes_last,
++                                    enable_traceback_frames=not args.no_traceback_frames,
+                                     title_weight=args.title_weight,
+                                     tf_cap=args.tf_cap)
+             selection = selector.select(args.query, budget_tokens=args.budget,
+diff --git a/npk/pack/select.py b/npk/pack/select.py
+index be8d1f0..7d839e0 100644
+--- a/npk/pack/select.py
++++ b/npk/pack/select.py
+@@ -553,6 +553,101 @@ def _query_entities(query: str) -> List[str]:
+     return list(dict.fromkeys(names))
+ 
+ 
++#: Traceback frames (E055b): the functions a pasted Python traceback passes through,
++#: innermost first, form their own ranked channel, fused by RRF ahead of the others.
++#: Frames are read in the formats users paste (CPython ``File "p", line N, in f``,
++#: IPython 8 ``File p:N, in f(``, IPython 7 ``p in f(``, pytest ``p:N: in f``). A frame's
++#: path resolves to the pack file with the longest matching path suffix (after
++#: ``site-packages/``), its function to that file's defining blocks (the frame's line
++#: chooses among same-named definitions; a ``Class.method`` qualifier picks the class's
++#: blocks), and a ``<module>``/comprehension frame to the block containing its line.
++#: Frames outside the repository resolve to nothing. From ``TRACEBACK_MIN_BUDGET`` up
++#: only: below it the frame blocks displaced as many fix sites as they added (dev).
++#: gym-dev: fix +0.6 / +0.7 at 2K / 4K (E055b).
++TRACEBACK_MIN_BUDGET = 2048
++_FRAME_PY = r"\.pyx?"
++_FRAME_PATTERNS = (
++    re.compile(r'File "(?P<path>[^"\n]+?' + _FRAME_PY + r')", line (?P<line>\d+)(?:, in (?P<func>[\w<>.]+))?'),
++    re.compile(r'File (?P<path>[^\s"]+?' + _FRAME_PY + r'):(?P<line>\d+)(?:, in (?P<func>[\w<>.]+))?'),
++    re.compile(r'^[ \t]*(?P<path>(?:~|/|[A-Za-z]:\\)\S*?' + _FRAME_PY + r') in (?P<func>[\w<>.]+)\(', re.M),
++    re.compile(r'^[ \t]*(?P<path>[^\s:"]+?' + _FRAME_PY + r'):(?P<line>\d+): in (?P<func>[\w<>.]+)', re.M),
++)
++#: A frame whose function has more definitions than this in its file, and no line to
++#: choose among them, is skipped.
++FRAME_MAX_SAME_NAME = 3
++
++
++def _traceback_frames(text: str) -> List[Tuple[str, Optional[int], Optional[str]]]:
++    """``(path, line, function)`` of every traceback frame, in text order (innermost last)."""
++    found: Dict[int, Tuple[str, Optional[int], Optional[str]]] = {}
++    for pattern in _FRAME_PATTERNS:
++        for match in pattern.finditer(text):
++            line = match.groupdict().get("line")
++            found.setdefault(match.start(), (match.group("path"), int(line) if line else None, match.group("func")))
++    return [found[k] for k in sorted(found)]
++
++
++def _frame_file(path: str, by_name: Dict[str, List[str]]) -> Optional[str]:
++    """The pack file a frame path names: the longest match on a path boundary."""
++    tail = path.replace("\\", "/")
++    for marker in ("/site-packages/", "/dist-packages/"):
++        if marker in tail:
++            tail = tail.rsplit(marker, 1)[1]
++            break
++    else:
++        while tail.startswith("./"):
++            tail = tail[2:]
++        tail = tail.lstrip("/")
++    best = None
++    for candidate in by_name.get(tail.rsplit("/", 1)[-1], ()):
++        if (candidate == tail or ("/" in candidate and tail.endswith("/" + candidate))
++                or ("/" in tail and candidate.endswith("/" + tail))):
++            if best is None or len(candidate) > len(best):
++                best = candidate
++    return best
++
++
++def _frame_blocks(con: sqlite3.Connection, path: str, line: Optional[int], func: Optional[str]) -> List[int]:
++    if func and not func.startswith("<"):
++        qualifier, _, name = func.rpartition(".")
++        rows = con.execute(
++            "SELECT b.id, b.start_line, b.end_line, b.name FROM symbols s JOIN blocks b ON b.id=s.block_id "
++            "JOIN files f ON f.id=b.file_id WHERE s.is_def=1 AND s.name=? AND f.path=? "
++            "ORDER BY b.start_line", (name, path)).fetchall()
++        if qualifier:
++            owner = qualifier.rsplit(".", 1)[-1]
++            rows = [r for r in rows if r[3] == owner] or rows
++        if line is not None:
++            rows = [r for r in rows if r[1] <= line <= r[2]] or rows
++        return [] if len(rows) > FRAME_MAX_SAME_NAME else [r[0] for r in rows]
++    if line is None:
++        return []
++    return [r[0] for r in con.execute(
++        "SELECT b.id FROM blocks b JOIN files f ON f.id=b.file_id WHERE f.path=? AND b.start_line<=? "
++        "AND b.end_line>=? ORDER BY b.start_line", (path, line, line))]
++
++
++def _traceback_channel(con: sqlite3.Connection, query: str, limit: int) -> List[int]:
++    """Blocks defining the functions of the query's traceback frames, innermost first."""
++    frames = _traceback_frames(query)
++    if not frames:
++        return []
++    by_name: Dict[str, List[str]] = {}
++    for (path,) in con.execute("SELECT path FROM files"):
++        if path.endswith((".py", ".pyx", ".pyi")):
++            by_name.setdefault(path.rsplit("/", 1)[-1], []).append(path)
++    ranked: List[int] = []
++    for path, line, func in reversed(frames):
++        resolved = _frame_file(path, by_name)
++        if resolved is None:
++            continue
++        blocks = [b for b in _frame_blocks(con, resolved, line, func) if b not in ranked]
++        ranked.extend(blocks)
++        if len(ranked) >= limit:
++            break
++    return ranked[:limit]
++
++
+ #: Lexical ranking depth reused by the test-mate lookup.
+ TEST_MATE_DEPTH = 1000
+ #: Default (``enable_test_mate=None``): place the test mate from this budget up.
+@@ -894,6 +989,7 @@ class PackSelector:
+         enable_test_mate: Optional[bool] = None,
+         enable_query_cleaning: bool = True,
+         demote_release_notes: bool = True,
++        enable_traceback_frames: bool = True,
+         title_weight: int = TITLE_WEIGHT,
+         tf_cap: int = TF_CAP,
+         enable_cache: bool = True,
+@@ -932,6 +1028,9 @@ class PackSelector:
+         if type(demote_release_notes) is not bool:
+             raise ValueError("demote_release_notes must be a boolean")
+         self.demote_release_notes = demote_release_notes
++        if type(enable_traceback_frames) is not bool:
++            raise ValueError("enable_traceback_frames must be a boolean")
++        self.enable_traceback_frames = enable_traceback_frames
+         if type(title_weight) is not int or title_weight < 1:
+             raise ValueError("title_weight must be an integer >= 1 (1 = no title emphasis)")
+         self.title_weight = title_weight
+@@ -1137,6 +1236,7 @@ class PackSelector:
+                     self.enable_test_mate,
+                     self.enable_query_cleaning,
+                     self.demote_release_notes,
++                    self.enable_traceback_frames,
+                     self.title_weight,
+                     self.tf_cap,
+                     self.tokenizer.sha256 if self.tokenizer is not None else None,
+@@ -1235,6 +1335,11 @@ class PackSelector:
+         ranks: Dict[str, List[int]] = {}
+         notes: List[str] = []
+ 
++        if self.enable_traceback_frames and budget >= TRACEBACK_MIN_BUDGET:
++            # First in fusion order: on equal fused scores a frame block keeps its place (E055b).
++            frames = _traceback_channel(con, query, limit)
++            if frames:
++                ranks["traceback"] = frames
+         if self.retrieval == "hybrid":
+             sym = _symbol_channel(con, query, limit)
+             if sym:
+diff --git a/tests/test_traceback_frames.py b/tests/test_traceback_frames.py
+new file mode 100644
+index 0000000..e0b65d2
+--- /dev/null
++++ b/tests/test_traceback_frames.py
+@@ -0,0 +1,87 @@
++"""Traceback frames rank the functions a failure passed through, from 2K (E055b)."""
++import importlib
++
++import pytest
++
++from npk.pack import PackSelector, compile_pack
++from npk.pack.format import open_pack
++
++selection = importlib.import_module("npk.pack.select")
++
++TRACEBACK = """Wrong result for negative values
++Calling it on negative values returns the wrong result.
++
++Traceback (most recent call last):
++  File "/home/u/venv/lib/python3.8/site-packages/pkg/ops/base.py", line {line}, in __call__
++TypeError: unsupported operand type(s)
++"""
++
++
++def test_frames_are_read_in_every_pasted_format():
++    text = ('  File "/x/site-packages/pkg/a.py", line 3, in run\n'
++            "File ~/lib/site-packages/pkg/b.py:7, in Model.fit(self)\n"
++            "~/env/lib/python3.9/site-packages/pkg/c.py in helper(x)\n"
++            "pkg/d.py:12: in test_thing\n"
++            '  File "<stdin>", line 1, in <module>\n')
++    assert selection._traceback_frames(text) == [
++        ("/x/site-packages/pkg/a.py", 3, "run"), ("~/lib/site-packages/pkg/b.py", 7, "Model.fit"),
++        ("~/env/lib/python3.9/site-packages/pkg/c.py", None, "helper"), ("pkg/d.py", 12, "test_thing")]
++
++
++def test_frame_paths_resolve_by_path_suffix():
++    by_name = {"core.py": ["src/pkg/core.py", "other/core.py"], "__init__.py": ["__init__.py", "src/pkg/__init__.py"]}
++    resolve = selection._frame_file
++    assert resolve("/home/u/venv/lib/python3.8/site-packages/pkg/core.py", by_name) == "src/pkg/core.py"
++    assert resolve("C:\\env\\Lib\\site-packages\\pkg\\core.py", by_name) == "src/pkg/core.py"
++    assert resolve("/home/u/checkout/src/pkg/core.py", by_name) == "src/pkg/core.py"
++    assert resolve("/usr/lib/python3/site-packages/numpy/__init__.py", by_name) is None   # another library
++    assert resolve("script.py", by_name) is None
++
++
++def _pack(tmp_path, n_callables=12, fillers=30):
++    src = tmp_path / "src"
++    (src / "pkg" / "ops").mkdir(parents=True)
++    (src / "pkg" / "ops" / "base.py").write_text(
++        "import math\n\n\n"
++        "class Scaler:\n    def __call__(self, value):\n        return value * self.factor\n\n\n"
++        "class Converter:\n    offset = 1\n\n    def __call__(self, value):\n"
++        "        return value + self.offset\n")
++    for i in range(n_callables):          # __call__ is defined too often for the definition channel
++        (src / "pkg" / "ops" / f"base_thing{i}.py").write_text(
++            f"class Thing{i}:\n    def __call__(self, value):\n        return value - {i}\n")
++    prose = ("    Negative values: the wrong result for negative values when calling __call__ on a value\n"
++             "    returns a wrong result from the base ops of pkg.\n")
++    for i in range(fillers):              # blocks that match the issue better and fill a 2K budget
++        (src / "pkg" / "ops" / f"base_notes{i}.py").write_text(
++            f"def describe_{i}():\n    '''\n" + prose * 6 + f"    '''\n    return {i}\n")
++    pack = tmp_path / "p.npk"
++    compile_pack(src, pack)
++    return pack
++
++
++def _ids(pack, query, budget, **options):
++    with PackSelector(str(pack), enable_cache=False, **options) as selector:
++        return [e.span for e in selector.select(query, budget_tokens=budget, allow_escalation=False).evidence]
++
++
++def test_the_frame_line_picks_among_same_named_functions(tmp_path):
++    pack = _pack(tmp_path)
++    with open_pack(pack) as con:
++        ranked = selection._traceback_channel(con, TRACEBACK.format(line=13), 60)
++        rows = con.execute("SELECT id, name FROM blocks WHERE id IN (%s)" % ",".join("?" * len(ranked)),
++                           ranked).fetchall()
++    assert [name for _, name in rows] == ["Converter"]
++
++
++def test_frame_function_leads_the_selection_from_2k_only(tmp_path):
++    pack = _pack(tmp_path)
++    query = TRACEBACK.format(line=13)
++    assert _ids(pack, query, 2048)[0] == "pkg/ops/base.py:9-13"     # the innermost frame's function
++    assert _ids(pack, query, 2048, enable_traceback_frames=False)[0] != "pkg/ops/base.py:9-13"
++    assert _ids(pack, query, 1024) == _ids(pack, query, 1024, enable_traceback_frames=False)
++
++
++def test_option_is_validated(tmp_path):
++    pack = _pack(tmp_path, n_callables=0, fillers=0)
++    with pytest.raises(ValueError):
++        PackSelector(str(pack), enable_traceback_frames="yes")
