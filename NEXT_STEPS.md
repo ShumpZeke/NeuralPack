@@ -10,7 +10,7 @@ uv venv --python /usr/bin/python3.12 .venv && . .venv/bin/activate
 uv pip install -e '.[dev,tokenizers]' numpy==2.2.6 psutil==7.0.0 urllib3==2.7.0 click==8.5.0 \
     tiktoken==0.12.0 safetensors==0.6.2 pyarrow transformers==4.57.6
 uv pip install torch==2.8.0 --index-url https://download.pytorch.org/whl/cpu
-python -m pytest tests/ -q -p no:cacheprovider      # 1306 pass, 20 skip; one test needs a file not in this snapshot
+python -m pytest tests/ -q -p no:cacheprovider      # 1322 pass, 20 skip; tests/test_click_tasks.py (2 tests) needs a file not in this snapshot
 export NPK_BENCH_HOME=~/npk-data                     # datasets, clones, packs (never committed)
 python -m benchmarks.npkbench.run --split dev-fast --targets tests,docs --arms npk_default,npk_nodefs \
     --workers 4 --out experiments/npkbench/runs/<id>
@@ -19,12 +19,12 @@ python -m benchmarks.npkbench.report --judge RUN BASE_ARM CANDIDATE_ARM --target
 python -m benchmarks.npkbench.report --judge-runs BASE_RUN:ARM CAND_RUN:ARM --targets tests   # across runs
 ```
 
-Unused confirmation splits, declared on 2026-09-27 before any result on them: `gym-heldout-b`
-(Python, 254), `gym-heldout-c` (Python, 197; both SWE-Gym,
-the next runs of 30 per repository after `gym-heldout`) and `poly-heldout-c` (JS/TS, 246).
-Spent: `gym-heldout` on E052 (GH01), `poly-heldout-b` on E053/E054 (PHB01) and `heldout-e` on
-E055b (HE01, failed). Larger screening splits: `gym-dev` (Python, 326) and `poly-dev-b`
-(Java/JS/TS, 371). Declare each confirmation's criteria here before its run.
+Unused confirmation splits, declared on 2026-09-27 before any result on them: `gym-heldout-c`
+(Python, 197; SWE-Gym, the next run of 30 per repository after `gym-heldout-b`) and `poly-heldout-c`
+(JS/TS, 246). Spent: `gym-heldout` on E052 (GH01), `poly-heldout-b` on E053/E054 (PHB01), `heldout-e` on
+E055b (HE01, failed) and `gym-heldout-b` on E058d (failed). Larger screening splits: `gym-dev` (Python,
+326) and `poly-dev-b` (Java/JS/TS, 371; no longer an independent screen for suffix coverage after E058).
+Declare each confirmation's criteria here before its run.
 
 Queue many runs with `benchmarks/npkbench/queue_runner.sh` (a line per run in
 `$NPK_BENCH_HOME/queue.txt`: `WORKDIR|ENV|ARGS`, see the script's header; start it with
