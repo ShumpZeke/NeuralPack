@@ -20,7 +20,7 @@ python -m benchmarks.npkbench.report --judge-runs BASE_RUN:ARM CAND_RUN:ARM --ta
 ```
 
 Unused confirmation splits, declared on 2026-09-27 before any result on them: `gym-heldout-b`
-(Python, 254; reserved by the declared E057 plan), `gym-heldout-c` (Python, 197; both SWE-Gym,
+(Python, 254), `gym-heldout-c` (Python, 197; both SWE-Gym,
 the next runs of 30 per repository after `gym-heldout`) and `poly-heldout-c` (JS/TS, 246).
 Spent: `gym-heldout` on E052 (GH01), `poly-heldout-b` on E053/E054 (PHB01) and `heldout-e` on
 E055b (HE01, failed). Larger screening splits: `gym-dev` (Python, 326) and `poly-dev-b`
@@ -103,7 +103,7 @@ read with 4K tokens or more (M006, MH01).
 5. **Held-out split hygiene:** spent: `heldout` (E002, E005c, E016b, E017), `heldout-b` (E016c,
    HB01), `heldout-c` (E031, HC01), `heldout-d` (E039, HD01), `poly-heldout` (E047, PH01),
    `gym-heldout` (E052, GH01), `poly-heldout-b` (E053/E054, PHB01), `heldout-e` (E055b, HE01,
-   failed). Unused: `gym-heldout-b` (Python, 254; reserved by the declared E057 plan),
+   failed). Unused: `gym-heldout-b` (Python, 254),
    `gym-heldout-c` (Python, 197) and `poly-heldout-c` (JS/TS, 246). Declare criteria here
    before any run on them.
 8. **Done: very long queries are capped (E043).** Distinct lexical terms per issue: median
@@ -466,6 +466,18 @@ time 99 -> 75 ms, p99 1.7 s -> 0.5 s. Two things to keep in mind: the VM restart
 restarts from scratch), and timing in runs made under concurrent load is indicative only (the
 14.9 s outlier in the gym-dev run was a cold first call under contention; isolated, the same
 selection takes 0.45 s against 1.9 s before E056).
+
+### E057 outcome: rejected on both screens (gym-heldout-b stays unused)
+
+Removing install and home-directory path prefixes from queries (61 of 300 dev and 57 of 326
+gym-dev queries change; 114 of 1,500 and 133 of 1,630 selections) moves almost nothing: on `dev`
+fix +0.00 / +0.33 / +0.00 / -0.17 / +0.00 and tests +0.34 / +0.00 / +0.00 / +0.51 / +0.34 at
+1K-16K, none significant (mean utility +0.27); on `gym-dev` fix +0.00 everywhere and tests +0.10 /
++0.00 / +0.04 / -0.21 / +0.26, utility -0.21 at 8K (mean +0.04). The prefix words are common in
+code and prose alike (low BM25 weight), so unlike template headings (E031), environment dumps
+(E052) and link scaffolding (E053), which share vocabulary with docs and boilerplate files, they
+do not pull a particular wrong file to the top. Do not retry without a new idea. Two more
+query-noise classes remain unmeasured: pasted CLI output and logs without tracebacks.
 
 ### E053 + E054 merged
 
