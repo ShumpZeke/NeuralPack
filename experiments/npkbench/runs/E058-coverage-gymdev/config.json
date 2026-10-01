@@ -1,0 +1,39 @@
+{
+ "split": "gym-dev",
+ "arms": [
+  "npk_default",
+  "e058_core",
+  "e058_core_test",
+  "e058_core_test_snap"
+ ],
+ "budgets": [
+  1024,
+  2048,
+  4096,
+  8192,
+  16384
+ ],
+ "tasks": 326,
+ "targets": [
+  "fix",
+  "tests"
+ ],
+ "ephemeral_packs": true,
+ "load": [],
+ "environment": {
+  "git_commit": "2bb5cb1e1668c0b72195643408aa521285b98c63",
+  "git_dirty": false,
+  "python": "3.12.3",
+  "sqlite": "3.45.1",
+  "platform": "Linux-6.18.44-fc-v50-x86_64-with-glibc2.39",
+  "cpus": 4,
+  "bench_version": "npkbench-1.1"
+ },
+ "started_unix": 1790824612.630602,
+ "compiler_fingerprints": {
+  "npk_default": "64eaa710015ef6b6",
+  "e058_core": "664d185ae18db4bc",
+  "e058_core_test": "8701af96b8b13218",
+  "e058_core_test_snap": "42b1c1affa4507b8"
+ }
+}
