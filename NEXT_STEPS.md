@@ -852,8 +852,8 @@ five mutants, and the selection-equality proof below.
 ### D4 and the declared E060 plan: the ends of the test mate's file (2026-10-01, before any E060 run)
 
 Regression-test recall is the weakest target and mostly a within-file problem: on the 405 held-out
-issues of R006 the correct test *file* is reached for 58% of issues at 4K but a test *hunk* for 27%
-(fix: 68% against 47%), and the median cost to the first test hunk is 12.4K tokens against 3.7K for fix.
+issues of R006, test-file recall is 0.58 at 4K but test-hunk recall 0.27 (fix: 0.68 against 0.47), and the
+median cost to the first test hunk is 12.4K tokens against 3.7K for fix.
 D4 (`experiments/npkbench/diagnostics/D4-test-mate.*`, 278 cached-pack tasks with test gold from
 dev-fast, gym-dev, poly-dev, poly-dev-b and ood-multi-dev) looks at the test mate: its block is small
 (median 191 tokens, p90 904, never above 1,449) and fits the budget from 2K, so size is not the
