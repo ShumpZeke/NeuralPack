@@ -849,6 +849,35 @@ recovered fix hunks, accepted under the standard declared for it (a harm check, 
 requirement). Product form: `_excluded_dir` (`npk/pack/compile.py`), `tests/test_source_directories.py`,
 five mutants, and the selection-equality proof below.
 
+### D4 and the declared E060 plan: the ends of the test mate's file (2026-10-01, before any E060 run)
+
+Regression-test recall is the weakest target and mostly a within-file problem: on the 405 held-out
+issues of R006 the correct test *file* is reached for 58% of issues at 4K but a test *hunk* for 27%
+(fix: 68% against 47%), and the median cost to the first test hunk is 12.4K tokens against 3.7K for fix.
+D4 (`experiments/npkbench/diagnostics/D4-test-mate.*`, 278 cached-pack tasks with test gold from
+dev-fast, gym-dev, poly-dev, poly-dev-b and ood-multi-dev) looks at the test mate: its block is small
+(median 191 tokens, p90 904, never above 1,449) and fits the budget from 2K, so size is not the
+limit. The mate's file is a gold test file in 28% of tasks (77 of 278) and the mate block covers a gold
+hunk in 11% of tasks, 40% of the cases where the file is right. In the 46 tasks where the file is
+right and the block wrong, the covering block is the last block of the file in 15 (33%; last two 37%,
+last three 43%) and the first block in 8 (17%): relative position by quintile 13 / 6 / 4 / 6 / 17.
+Regression tests are appended at the end of a test file and their imports edited at the top, which no
+ranking over query terms can see. A tail block and a head block of the mate's file could therefore
+recover up to 5.4% and 2.9% of tasks' test hunks at the price of two small blocks of budget.
+
+E060 prototype (`benchmarks/npkbench/prototypes/mate_ends.py`; selection-time only, no compile change):
+right after the test mate, place the last block of the mate's file (`tail`) and optionally its first
+block (`head`) from a budget threshold, everything else as the product. Arms: `e060_control` (threshold
+never reached: must equal `npk_default` on every selection), `e060_tail_2k`, `e060_tail_4k`,
+`e060_tail_8k` and `e060_headtail_4k`. Screens (targets fix and tests; docs on dev): `dev` (300),
+`gym-dev` (326), `poly-dev-b` (371) and `ood-multi-dev` (186). An arm is a candidate iff on every screen
+utility is >= 0 at every budget and there is no significant loss, and it passes the standard rule on at
+least one screen; among candidates the highest mean utility over the four screens wins (ties: the
+higher threshold, then fewer blocks). Confirmation, once each and declared now: `gym-heldout-c` (Python,
+197) and `poly-heldout-c` (JS/TS, 246), arms `npk_default` and the candidate, targets fix and tests;
+promotion iff utility >= 0 at every budget on both, no significant loss on either, and a significant
+fix or tests gain on at least one. If no arm is a candidate nothing is merged and both splits stay unused.
+
 ## Semantic evidence for code: what has been measured
 
 Dense and neural evidence has not helped code retrieval on this benchmark so far: equal-weight
