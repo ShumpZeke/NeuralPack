@@ -476,8 +476,12 @@ fix +0.00 / +0.33 / +0.00 / -0.17 / +0.00 and tests +0.34 / +0.00 / +0.00 / +0.5
 +0.00 / +0.04 / -0.21 / +0.26, utility -0.21 at 8K (mean +0.04). The prefix words are common in
 code and prose alike (low BM25 weight), so unlike template headings (E031), environment dumps
 (E052) and link scaffolding (E053), which share vocabulary with docs and boilerplate files, they
-do not pull a particular wrong file to the top. Do not retry without a new idea. Two more
-query-noise classes remain unmeasured: pasted CLI output and logs without tracebacks.
+do not pull a particular wrong file to the top. Do not retry without a new idea. Pasted
+CLI output and logs without tracebacks were measured as well and are not worth a screen: only 21 of
+300 dev, 20 of 326 gym-dev and 7 of 371 poly-dev-b queries have 20% or more of their terms on such
+lines (median share 0.3-0.4), against 18-19% of queries changed by E057 for no effect. The
+query-noise ideas that worked share a signature (the noise matches one wrong, non-code file
+class); the remaining classes do not.
 
 ### Side condition SC01 for E053/E054 (declared before its result)
 

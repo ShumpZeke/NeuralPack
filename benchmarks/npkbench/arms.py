@@ -114,6 +114,9 @@ ARMS: Dict[str, Arm] = {
     # The product before this loop's query handling (neither E031 nor E039).
     "npk_query_baseline": Arm("npk_query_baseline", selector_options={
         "enable_query_cleaning": False, "title_weight": 1, "tf_cap": 1}),
+    # The product before E054 (release notes ranked in place); E053 is part of query cleaning, so
+    # ``npk_rawquery`` is its ablation (together with E031 and E052).
+    "npk_notes_inplace": Arm("npk_notes_inplace", selector_options={"demote_release_notes": False}),
     "npk_members": Arm("npk_members", compile_options={"python_members": True}),
     "oracle_blocks": Arm("oracle_blocks", runner=_oracle_blocks),
 }
