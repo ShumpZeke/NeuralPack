@@ -496,6 +496,16 @@ types already; E053 to the hosts or languages where it loses) and re-run SC01; o
 as the side condition and keep both. R007 (`ood-multi-sample`, measurement only) is the
 independent check of the same effect on 114 other multilingual issues.
 
+### SC01 outcome: E053 + E054 are safe on the other languages (both stay)
+
+On `ood-multi-dev` (186 issues) the merged default beats the pre-merge tree: fix +0.78 / +1.29 /
++1.22 / +1.66 / +1.33 points at 1K-16K (significant at 2K-8K), tests +0.29 / +0.88 / +0.29 / +0.00 /
+-1.17 (not significant), utility >= 0 at every budget (mean +1.31); 452 of 930 selections change. No
+language loses fix recall (PHP +3.2 to +4.3, Go up to +3.9, Rust up to +5.9, JS/TS up to +4.4, Ruby up
+to +2.2, C/C++ +3.9 at 4K, Java unchanged); the one lost cell is a single changelog-only issue at 16K,
+which E054 demotes by design. The declared action rule did not trigger. R006 (heldout, Python) and R007
+(ood-multi-sample, 114 issues) agree: no loss, README tables refreshed.
+
 ### E053 + E054 merged
 
 The combined product form reproduces the combined prototype (`e053_e054`) on all 1,475
