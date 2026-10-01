@@ -58,7 +58,13 @@ and 16K) over run R004. The table shows run R006, the current default.
   changes. On SWE-PolyBench's Java, JavaScript and TypeScript issues (`poly-dev`, 199
   issues in 12 repositories, measured before any tuning on it; run P001) fix recall is
   0.195 / 0.244 / 0.319 / 0.404 / 0.476, 1.6-2.2x B002, and the query handling adds +6.0
-  to +8.9 fix points (all significant).
+  to +8.9 fix points (all significant). A ceiling to keep in mind when reading JS/TS
+  regression-test numbers: the pack indexes a fixed set of file types, and Jest snapshot
+  files (`.snap`, mostly prettier's) are 37-58% of the test hunks of the larger
+  SWE-PolyBench splits, so test recall there cannot exceed about 42-62% whatever the ranking
+  (similar, smaller ceilings: mypy's `.test` data files 5-17% of gym-dev and gym-heldout test
+  hunks, Redis' `.tcl` and C++ `.cc` tests; NEXT_STEPS has the measurements and the E058
+  experiment on indexing more file types).
 - **Definition channel** (default): code identifiers named in the query
   (`Signal.send_robust()`, `django.core.exceptions.ValidationError`) resolve to their
   defining blocks. On the held-out split it adds +5.7 to +10.3 points at every
