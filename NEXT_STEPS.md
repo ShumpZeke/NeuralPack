@@ -605,6 +605,26 @@ budget drops those suffixes and amends the README's "never used for decisions" s
 is a candidate, nothing is merged and the three unused splits stay unused. The coverage numbers above
 stay in the documentation either way.
 
+### E058 multilingual screen and E058b (declared before E058b's results and before the gym-dev and poly-dev-b results)
+
+On `ood-multi-dev` (186 issues; `dev-fast` was identical in 510 of 515 selections, recall unchanged)
+`e058_core` lifts regression-test recall by +3.8 / +4.5 / +5.7 / +6.6 / +6.9 points at 1K-16K (all
+significant) and `e058_core_test` by up to +7.5, but fix recall moves -1.1 / -0.8 / -0.9 / -1.3 /
+-1.4 (the 16K cell is significant by its unrounded bound, upper limit -0.00), so by the declared rule
+neither passes this screen (utility +2.7 to +6.0, mean +4.4 / +4.6; the snapshot arm also loses fix
+at 8K and 16K). By repository the picture separates cleanly: fmt (8 issues, C++ tests in `.cc`)
+gains +50 to +62 test points with no fix change; prometheus (`.test`) +10 to +20 test points
+at 2K-16K; coreutils (`env/`) +6.3 fix points; jq (`.y`) +0.7 to +0.9; and all of the fix loss
+is redis (9 issues: fix -28 to -29 points at 8K-16K, three issues lose every fix hunk at 16K)
+where its Tcl test windows now outrank the C implementation, while redis tests gain +17 to +64 points.
+That is the transfer the rule exists to catch, and Tcl is left out unless it passes on its own.
+E058b adds the arms `e058_notcl` and `e058_notcl_test` (the same two profiles without `.tcl`),
+screened on `ood-multi-dev` only (no Python or JS split contains Tcl files). The candidate set is
+`e058_core`, `e058_core_test`, `e058_notcl`, `e058_notcl_test`; the rule of the E058 plan applies to
+all of them unchanged on every screen (gym-dev and poly-dev-b results for the first two are still
+pending), and among candidates the highest mean utility over the screens wins, ties going to the
+fewest suffixes. The confirmation splits and the multilingual guard stay as declared.
+
 ## Semantic evidence for code: what has been measured
 
 Dense and neural evidence has not helped code retrieval on this benchmark so far: equal-weight
