@@ -479,6 +479,19 @@ code and prose alike (low BM25 weight), so unlike template headings (E031), envi
 do not pull a particular wrong file to the top. Do not retry without a new idea. Two more
 query-noise classes remain unmeasured: pasted CLI output and logs without tracebacks.
 
+### Side condition SC01 for E053/E054 (declared before its result)
+
+E053 and E054 were confirmed on JS/TS and screened on Python, but they are now the default for every
+language, and SWE-bench Multilingual's Go, Rust, PHP, Ruby, C/C++ and Java repositories were not part
+of any screen. SC01 runs the default on `ood-multi-dev` (186 issues, targets fix and tests) before
+(worktree `np-e056p`, which has E056 but neither E053 nor E054; E056 selects identically) and after
+the merge (current tree), compared with `report --judge-runs`. Action rule, declared now: if the
+merged changes show a significant fix or tests loss at any budget, or utility below zero at any
+budget, split the result by language and restrict the offending change (E054 to its prose file
+types already; E053 to the hosts or languages where it loses) and re-run SC01; otherwise record it
+as the side condition and keep both. R007 (`ood-multi-sample`, measurement only) is the
+independent check of the same effect on 114 other multilingual issues.
+
 ### E053 + E054 merged
 
 The combined product form reproduces the combined prototype (`e053_e054`) on all 1,475
