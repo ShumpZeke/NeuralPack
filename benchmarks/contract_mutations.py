@@ -378,6 +378,16 @@ MUTANTS = [
      "tests/test_query_cleaning.py::test_version_listing_no_longer_pulls_the_version_module"),
     ("environment_booleans_counted", "npk/pack/select.py", None, None,
      "tests/test_query_cleaning.py::test_configuration_and_code_are_kept"),
+    ("env_directories_always_excluded", "npk/pack/compile.py", None, None,
+     "tests/test_source_directories.py::test_source_directories_named_env_are_kept_but_virtualenvs_are_not"),
+    ("virtualenv_pyvenv_marker_ignored", "npk/pack/compile.py", None, None,
+     "tests/test_source_directories.py::test_source_directories_named_env_are_kept_but_virtualenvs_are_not"),
+    ("virtualenv_bin_activate_ignored", "npk/pack/compile.py", None, None,
+     "tests/test_source_directories.py::test_source_directories_named_env_are_kept_but_virtualenvs_are_not"),
+    ("virtualenv_scripts_activate_ignored", "npk/pack/compile.py", None, None,
+     "tests/test_source_directories.py::test_source_directories_named_env_are_kept_but_virtualenvs_are_not"),
+    ("other_excluded_directories_unlocked", "npk/pack/compile.py", None, None,
+     "tests/test_source_directories.py::test_other_excluded_directories_stay_excluded_whatever_they_hold"),
     ("url_scaffolding_kept", "npk/pack/select.py", "_strip_urls", "return line",
      "tests/test_query_cleaning.py::test_link_scaffolding_no_longer_pulls_the_readme"),
     ("github_source_link_path_dropped", "npk/pack/select.py", None, None,
@@ -565,6 +575,21 @@ def main():
                 }[name]
                 if source.count(target) != 1:
                     raise ValueError("lexical split target is no longer unique")
+                changed = source.replace(target, replacement)
+            elif name in ("env_directories_always_excluded", "virtualenv_pyvenv_marker_ignored",
+                          "virtualenv_bin_activate_ignored", "virtualenv_scripts_activate_ignored",
+                          "other_excluded_directories_unlocked"):
+                target, replacement = {
+                    "env_directories_always_excluded": ('if name in ("env", "venv"):', 'if False:'),
+                    "virtualenv_pyvenv_marker_ignored": ('for marker in ("pyvenv.cfg", ', 'for marker in ("no-such-marker", '),
+                    "virtualenv_bin_activate_ignored": ('os.path.join("bin", "activate"),', 'os.path.join("bin", "no-such-marker"),'),
+                    "virtualenv_scripts_activate_ignored": ('os.path.join("Scripts", "activate")))',
+                                                            'os.path.join("Scripts", "no-such-marker")))'),
+                    "other_excluded_directories_unlocked": ('    if name not in EXCLUDED_DIRS:\n        return False\n',
+                                                            '    return False\n'),
+                }[name]
+                if source.count(target) != 1:
+                    raise ValueError("source directory target is no longer unique")
                 changed = source.replace(target, replacement)
             elif name == "environment_booleans_counted":
                 target = 'r"\\d+\\.\\d+|^(None|not installed)$"'

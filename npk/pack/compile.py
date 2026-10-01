@@ -35,7 +35,8 @@ from .source_policy import SKIP_REASONS, check_source, credential_kind, safe_lab
 #: Directories and files never read into an artifact. Credential-bearing names
 #: are excluded by name. Ordinary source still requires secret review.
 #: "build" is intentionally eligible: real projects keep authored source there
-#: (for example SQLAlchemy's doc/build). A generic name is not proof of generated data.
+#: (for example SQLAlchemy's doc/build). A generic name is not proof of generated data. The same
+#: holds for "env" and "venv": they are skipped only when they are virtualenvs (``_excluded_dir``).
 EXCLUDED_DIRS = frozenset({
     ".git", ".hg", ".svn", ".venv", "venv", "env", "node_modules", "__pycache__",
     ".pytest_cache", ".ruff_cache", ".mypy_cache", "dist", ".tox",
@@ -46,6 +47,27 @@ EXCLUDED_FILE_RE = re.compile(
     r"\.(pem|key|p12|pfx|pyc|so|dll|dylib|bin|npk)$|^id_(rsa|ed25519))",
     re.IGNORECASE,
 )
+
+
+def _excluded_dir(parent: str, name: str) -> bool:
+    """Whether the scan skips directory *name* of *parent* (dot directories always).
+
+    ``env`` and ``venv`` are skipped only when they are virtualenvs (``pyvenv.cfg`` or an
+    ``activate`` script inside): a source package that happens to be called ``env`` (conan's
+    ``conan/tools/env``, coreutils' ``src/uu/env``, nushell's ``nu-command/src/env``) used to vanish
+    from the pack without a trace (E059).
+    """
+    if name.startswith("."):
+        return True
+    if name not in EXCLUDED_DIRS:
+        return False
+    if name in ("env", "venv"):
+        base = os.path.join(parent, name)
+        return any(os.path.exists(os.path.join(base, marker))
+                   for marker in ("pyvenv.cfg", os.path.join("bin", "activate"),
+                                  os.path.join("Scripts", "activate")))
+    return True
+
 
 TEXT_SUFFIXES = {
     ".py": "python", ".pyi": "python", ".js": "javascript", ".jsx": "javascript",
@@ -771,7 +793,7 @@ def scan_source(root: str | Path, *, known_files: Optional[Dict[str, Tuple[str, 
     prefix = root_str if root_str.endswith(os.sep) else root_str + os.sep
     out: List[SourceFile] = []
     for dirpath, dirnames, filenames in os.walk(root,onerror=_source_scan_error):
-        dirnames[:] = sorted(d for d in dirnames if d not in EXCLUDED_DIRS and not d.startswith("."))
+        dirnames[:] = sorted(d for d in dirnames if not _excluded_dir(dirpath, d))
         rel_dir = "" if dirpath == root_str else dirpath[len(prefix):].replace(os.sep, "/")
         for fn in sorted(filenames):
             if EXCLUDED_FILE_RE.search(fn):
