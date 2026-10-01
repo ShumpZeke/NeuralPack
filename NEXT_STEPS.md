@@ -381,9 +381,12 @@ Both arms and the combination pass on `poly-heldout-b` (320 issues; control iden
 +1.30 / +1.71 and tests +0.48 / +0.43 / +0.63 at 2K-8K (significant), mean +1.41. `e053_e054`:
 fix +1.56 to +3.62 and tests +1.08 to +2.56, every cell significant, mean +4.72. The default on
 `poly-heldout-b` finds 0.162 / 0.214 / 0.318 / 0.418 / 0.484 of fix hunks; with both changes
-0.177 / 0.238 / 0.354 / 0.454 / 0.515. The product forms (local branch `exp/e053-e054`) merge
-once they reproduce the prototypes' selections and the running `gym-dev` screen, which uses
-the current product, has finished.
+0.177 / 0.238 / 0.354 / 0.454 / 0.515. By repository (80 issues each), `e053_e054` gains fix
+recall at every budget in material-ui (+1.2 to +5.8 points), prettier (+0.9 to +4.7) and svelte
+(+2.0 to +5.1); serverless is flat (-0.8 / -1.7 at 1K / 2K, then +0.3 to +1.5) because the URL
+rule changes only 2 of its 80 queries (one lost issue each at 1K and 2K: a nodejs.org docs link
+and a short-link), so the gain is not one repository's. The product forms (local branch
+`exp/e053-e054`) merged after they reproduced the prototypes' selections.
 
 ### Pre-declared plan for E055 (traceback frames; written before any E055 result)
 
