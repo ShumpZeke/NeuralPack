@@ -210,7 +210,7 @@ def recall_at(items, model, budgets=(512, 1024, 2048, 4096), target="fix"):
         if task_hunks is None:
             continue
         ordered = rerank(model, it["blocks"], it["rows"]) if model else it["blocks"]
-        labels = {b.id: l for b, l in zip(it["blocks"], task_hunks)}
+        labels = {b.id: label for b, label in zip(it["blocks"], task_hunks)}
         for budget in budgets:
             used, n, hit = 0, 0, 0
             for b in ordered:

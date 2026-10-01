@@ -289,7 +289,7 @@ def _changed_lines(diff: str) -> Tuple[set, set]:
 
 
 def _distinctive(lines: set) -> set:
-    kept = {l for l in lines if len(l) >= 8 and re.search(r"[A-Za-z0-9_]{3}", l)}
+    kept = {line for line in lines if len(line) >= 8 and re.search(r"[A-Za-z0-9_]{3}", line)}
     return kept or lines
 
 

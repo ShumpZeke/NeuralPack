@@ -22,7 +22,7 @@ import time
 from pathlib import Path
 from typing import Dict, List, Sequence, Tuple
 
-from npk.pack.format import load_blocks, open_pack
+from npk.pack.format import open_pack
 from npk.pack.select import PackSelector, _lexical_terms
 
 from .. import packs as packs_mod

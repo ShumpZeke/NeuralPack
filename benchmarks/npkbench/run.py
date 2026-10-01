@@ -136,8 +136,13 @@ def main(argv: List[str] | None = None) -> int:
     # Load every product module before forking. Workers are recycled, and a
     # lazily imported module would otherwise be read from disk mid-run; an
     # edit during a run could then mix two compilers under one fingerprint.
-    import npk.pack, npk.pack.compile, npk.pack.select, npk.pack.format  # noqa: F401
-    import npk.pack.integrity, npk.pack.conflict, npk.pack.source_policy  # noqa: F401
+    import npk.pack  # noqa: F401
+    import npk.pack.compile  # noqa: F401
+    import npk.pack.select  # noqa: F401
+    import npk.pack.format  # noqa: F401
+    import npk.pack.integrity  # noqa: F401
+    import npk.pack.conflict  # noqa: F401
+    import npk.pack.source_policy  # noqa: F401
 
     # A run is written to "<out>.partial" and renamed to "<out>" only when it is
     # complete, so an unfinished run never looks like a result (the .partial

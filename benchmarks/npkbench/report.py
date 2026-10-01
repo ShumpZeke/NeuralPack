@@ -11,8 +11,7 @@ import argparse
 import json
 import math
 from pathlib import Path
-import statistics
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 from .metrics import bootstrap_diff
 

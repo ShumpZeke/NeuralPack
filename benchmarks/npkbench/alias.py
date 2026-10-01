@@ -13,7 +13,6 @@ from __future__ import annotations
 import argparse
 import json
 import time
-from pathlib import Path
 
 from . import data, packs, repos
 from .equivalence import differences

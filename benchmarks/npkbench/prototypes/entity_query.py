@@ -15,10 +15,9 @@ import math
 import re
 import time
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple
+from typing import Dict, List, Optional, Sequence, Set, Tuple
 
 from npk.pack.format import load_blocks, open_pack
-from npk.pack.search import analyzed_terms
 from npk.pack.select import FUNCTION_WORDS, RRF_K, _lexical_terms, _relation_channel
 
 from ..arms import Arm, ArmResult, register

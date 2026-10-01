@@ -15,7 +15,7 @@ from __future__ import annotations
 import importlib
 import time
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence
+from typing import Dict, List, Sequence
 
 from npk.pack import PackSelector
 
