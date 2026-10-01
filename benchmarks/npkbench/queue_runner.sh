@@ -6,8 +6,8 @@
 # exists under $NPK_BENCH_HOME/failed/, is skipped. The queue file is re-read after every run, so
 # lines may be appended or reordered while it runs, and the runner exits when nothing is left.
 # Runs stage their output in "<out>.partial" (see run.py), so nothing unfinished looks like a result;
-# an interrupted run (a VM restart kills the runner) is redone from scratch when the runner is
-# started again:
+# an interrupted run (a VM restart kills the runner) resumes from its journal when the runner is
+# started again, provided nothing that determines its rows changed (else it is redone from scratch):
 #     (nohup sh benchmarks/npkbench/queue_runner.sh >> $NPK_BENCH_HOME/queue.log 2>&1 &)
 # Check that it is alive with  ps -eo pid,args | grep -E '^ *[0-9]+ /bin/sh .*queue_runner'
 # (never pgrep -f: it matches its own command line).

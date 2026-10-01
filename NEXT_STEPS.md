@@ -28,9 +28,16 @@ E055b (HE01, failed). Larger screening splits: `gym-dev` (Python, 326) and `poly
 
 Queue many runs with `benchmarks/npkbench/queue_runner.sh` (a line per run in
 `$NPK_BENCH_HOME/queue.txt`: `WORKDIR|ENV|ARGS`, see the script's header; start it with
-`(nohup sh benchmarks/npkbench/queue_runner.sh >> $NPK_BENCH_HOME/queue.log 2>&1 &)`). A VM
-restart kills it and the run in flight (which restarts from scratch); on a long idle gap, check
-that it is alive before trusting a result.
+`(nohup sh benchmarks/npkbench/queue_runner.sh >> $NPK_BENCH_HOME/queue.log 2>&1 &)`). The
+container is parked while the session is idle (a wake-up finds `uptime` of minutes: the files are
+back, the processes are not), so runs only progress while a session is active: restart the runner
+at every wake-up and keep working or polling (`sleep` in bounded steps) while it runs. A run
+interrupted that way resumes from `<out>.partial/journal.jsonl` (one fsynced line per finished
+task) when the split, task list, arms, budgets, targets, loaded modules, interpreter and a digest
+of the product, harness and loaded arm sources are unchanged, and is discarded (with the reason
+printed) otherwise or under `--fresh`; tasks that recorded an error are run again. Partials made
+by a harness without journals restart from scratch. The summary of a resumed run carries `resumes`
+and `config.json` a `resumes` log (`tests/test_run_resume.py`).
 
 First runs clone the 12 SWE-bench repositories (blobless, ~2 GB) and build packs
 (~15 s each for Django). Use `--ephemeral-packs` on `heldout` (407 tasks) unless you
@@ -468,8 +475,8 @@ product form selects identically to the default on all 1,500 dev and 1,630 gym-d
 (runs `E056p-lexical-split-dev` / `-gymdev`, each compared with the default's rows from the
 preceding run on the same compiler) and on 586 of 586 offline rankings. Gym-dev median selection
 time 99 -> 75 ms, p99 1.7 s -> 0.5 s. Two things to keep in mind: the VM restarts on idle gaps
-(each restart killed the queue runner; restart it per the check-in prompt, an interrupted run
-restarts from scratch), and timing in runs made under concurrent load is indicative only (the
+(each restart killed the queue runner; restart it per the check-in prompt; a run now resumes
+from its journal, see the queue paragraph above), and timing in runs made under concurrent load is indicative only (the
 14.9 s outlier in the gym-dev run was a cold first call under contention; isolated, the same
 selection takes 0.45 s against 1.9 s before E056).
 

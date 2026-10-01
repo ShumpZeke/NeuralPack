@@ -8,6 +8,7 @@ Makes zero generative model calls. Packs are cached by compiler fingerprint.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import multiprocessing
 import os
@@ -18,12 +19,18 @@ import subprocess
 import sys
 import time
 import traceback
-from typing import Any, Dict, List, Sequence
+from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 
 from . import arms as arms_mod
 from . import data, metrics, packs, report
 
 DEFAULT_BUDGETS = (1024, 2048, 4096, 8192, 16384)
+RESULT_KEYS = ("rows", "ranks", "builds", "errors")
+JOURNAL = "journal.jsonl"
+# What may differ between two attempts of one run without making their rows incomparable: the
+# clock, the resume log, and the commit (the source digest decides whether the code changed).
+_VOLATILE = ("started_unix", "resumes")
+_VOLATILE_ENV = ("git_commit", "git_dirty")
 
 
 def _load_experimental_arms(specs: Sequence[str]) -> None:
@@ -102,6 +109,107 @@ def environment() -> Dict[str, Any]:
     }
 
 
+def source_digest(root: Path, extra_modules: Sequence[str]) -> str:
+    """Digest of the code that produces a run's rows: the product, the harness and the loaded arms."""
+    import importlib.util
+    root = root.resolve()
+    files = {p.resolve() for p in (root / "npk").rglob("*") if p.is_file() and "__pycache__" not in p.parts}
+    files |= {p.resolve() for p in (root / "benchmarks" / "npkbench").glob("*.py")}
+    for spec in extra_modules:
+        found = importlib.util.find_spec(spec)
+        if found is not None and found.origin and Path(found.origin).is_file():
+            files.add(Path(found.origin).resolve())
+    for module in list(sys.modules.values()):  # whatever else the loaded arm modules pulled in
+        origin = getattr(module, "__file__", None)
+        if origin and origin.endswith(".py") and (root / "benchmarks") in Path(origin).resolve().parents:
+            files.add(Path(origin).resolve())
+    digest = hashlib.sha256()
+    names = {path: path.relative_to(root).as_posix() if root in path.parents else path.name for path in files}
+    for path in sorted(files, key=lambda p: (names[p], str(p))):
+        digest.update(names[path].encode() + b"\0" + path.read_bytes() + b"\0")
+    return digest.hexdigest()
+
+
+def config_mismatch(old: Dict[str, Any], new: Dict[str, Any]) -> Optional[str]:
+    """The first setting that differs between two run configs, or None when they match."""
+    def strip(config: Dict[str, Any]) -> Dict[str, Any]:
+        config = json.loads(json.dumps(config))
+        for key in _VOLATILE:
+            config.pop(key, None)
+        for key in _VOLATILE_ENV:
+            config.get("environment", {}).pop(key, None)
+        return config
+    a, b = strip(old), strip(new)
+    for key in sorted(set(a) | set(b)):
+        if key == "environment" and isinstance(a.get(key), dict) and isinstance(b.get(key), dict):
+            for sub in sorted(set(a[key]) | set(b[key])):
+                if a[key].get(sub) != b[key].get(sub):
+                    return f"environment.{sub}"
+        elif a.get(key) != b.get(key):
+            return key
+    return None
+
+
+def read_journal(path: Path, wanted: Set[str]) -> Dict[str, Dict[str, Any]]:
+    """The entries of the tasks an interrupted attempt finished (instance id -> entry).
+
+    A killed process can leave a torn last line, even padding that is not UTF-8, so reading stops
+    at the first line that is not a whole entry; the tasks after it are simply run again.
+    """
+    done: Dict[str, Dict[str, Any]] = {}
+    if not path.is_file():
+        return done
+    with path.open("rb") as fh:
+        for raw in fh:
+            try:
+                entry = json.loads(raw)
+                iid, result = entry["instance_id"], entry["result"]
+                whole = (isinstance(result, dict) and result.get("instance_id") == iid
+                         and all(isinstance(result.get(key), list) for key in RESULT_KEYS))
+            except (ValueError, KeyError, TypeError):
+                break
+            if not whole:
+                break
+            # A task that recorded an error is run again: the cause may have been transient.
+            if iid in wanted and iid not in done and not result["errors"]:
+                done[iid] = entry
+    return done
+
+
+def journal_line(entry: Dict[str, Any]) -> bytes:
+    return (json.dumps(entry, sort_keys=True) + "\n").encode()
+
+
+def rewrite_journal(path: Path, entries: Sequence[Dict[str, Any]]) -> None:
+    """Replace the journal by exactly these entries (drops a torn tail) and make it durable."""
+    tmp = path.with_name(path.name + ".tmp")
+    with tmp.open("wb") as fh:
+        for entry in entries:
+            fh.write(journal_line(entry))
+        fh.flush()
+        os.fsync(fh.fileno())
+    os.replace(tmp, path)
+
+
+def resume_state(partial: Path, config: Dict[str, Any],
+                 task_ids: Set[str]) -> Tuple[Dict[str, Dict[str, Any]], Optional[Dict[str, Any]], str]:
+    """(finished tasks, the interrupted attempt's config, reason it cannot resume) of a "<out>.partial".
+
+    The attempt resumes only when everything that determines its rows is unchanged: the split,
+    task list, arms, budgets, targets, loaded modules, interpreter and the digest of the code.
+    """
+    try:
+        old = json.loads((partial / "config.json").read_text())
+    except (OSError, ValueError):
+        return {}, None, "no readable config.json"
+    if not (partial / JOURNAL).is_file():
+        return {}, None, "no journal (written by an earlier harness)"
+    differs = config_mismatch(old, config)
+    if differs is not None:
+        return {}, None, f"{differs} differs from the interrupted attempt"
+    return read_journal(partial / JOURNAL, task_ids), old, ""
+
+
 def main(argv: List[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--split", default="dev-fast")
@@ -114,6 +222,8 @@ def main(argv: List[str] | None = None) -> int:
     parser.add_argument("--targets", default="", help="extra gold targets scored on the same selections, e.g. tests")
     parser.add_argument("--ephemeral-packs", action="store_true",
                         help="delete packs this run builds once their task is scored (large held-out runs)")
+    parser.add_argument("--fresh", action="store_true",
+                        help="discard an interrupted attempt of this run instead of resuming it")
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args(argv)
 
@@ -146,25 +256,55 @@ def main(argv: List[str] | None = None) -> int:
 
     # A run is written to "<out>.partial" and renamed to "<out>" only when it is
     # complete, so an unfinished run never looks like a result (the .partial
-    # directories are git-ignored). A finished run is never overwritten.
+    # directories are git-ignored). A finished run is never overwritten. Every finished task is
+    # also appended to "<out>.partial/journal.jsonl" (one fsynced line); an interrupted attempt
+    # resumes from it when nothing that determines its rows has changed, else it is discarded.
     final_out = args.out
     if (final_out / "summary.json").exists():
         raise SystemExit(f"{final_out} already holds a finished run; choose another --out")
     args.out = final_out.with_name(final_out.name + ".partial")
-    if args.out.exists():
-        import shutil
-        shutil.rmtree(args.out)  # an interrupted attempt of this same run
-    args.out.mkdir(parents=True)
     started = time.time()
     config = {"split": args.split, "arms": arm_names, "budgets": list(budgets), "tasks": len(tasks),
+              "task_ids_sha256": hashlib.sha256("\n".join(sorted(t.instance_id for t in tasks)).encode()).hexdigest(),
+              "repos": args.repos, "limit": args.limit,
               "targets": ["fix", *[x for x in args.targets.split(",") if x]],
               "ephemeral_packs": args.ephemeral_packs,
               "load": extra, "environment": environment(), "started_unix": started,
+              "source_digest": source_digest(packs.ROOT, extra),
               "compiler_fingerprints": {n: packs.compiler_fingerprint(arms_mod.get(n).compile_options)
                                         for n in arm_names}}
+    finished: Dict[str, Dict[str, Any]] = {}
+    active_before = 0.0  # seconds earlier attempts of this run were working
+    if args.out.exists():
+        import shutil
+        interrupted, why = None, "--fresh"
+        if not args.fresh:
+            finished, interrupted, why = resume_state(args.out, config, {t.instance_id for t in tasks})
+        if interrupted is None:
+            print(f"discarding the interrupted attempt of {final_out.name}: {why}", flush=True)
+            shutil.rmtree(args.out)
+            finished = {}
+        else:
+            active_before = max((e.get("t", 0.0) for e in finished.values()), default=0.0)
+            interrupted["resumes"] = [*interrupted.get("resumes", []), {
+                "started_unix": started, "tasks_done": len(finished), "active_s_before": active_before,
+                "environment": {k: config["environment"].get(k) for k in _VOLATILE_ENV}}]
+            config = interrupted  # the first attempt's settings, plus this resume
+            print(f"resuming {final_out.name}: {len(finished)}/{len(tasks)} tasks already done "
+                  f"({len(config['resumes'])} interruption(s))", flush=True)
+    args.out.mkdir(parents=True, exist_ok=True)
     (args.out / "config.json").write_text(json.dumps(config, indent=1))
-    files = {k: (args.out / f"{k}.jsonl").open("w") for k in ("rows", "ranks", "builds", "errors")}
-    done = 0
+    journal_path = args.out / JOURNAL
+    rewrite_journal(journal_path, list(finished.values()))
+    files = {k: (args.out / f"{k}.jsonl").open("w") for k in RESULT_KEYS}
+    for entry in finished.values():  # the result files are rebuilt from the journal
+        for key in RESULT_KEYS:
+            for item in entry["result"][key]:
+                files[key].write(json.dumps(item, sort_keys=True) + "\n")
+    for f in files.values():
+        f.flush()
+    journal = journal_path.open("ab")
+    done = len(finished)
     try:
         target_names = [x for x in args.targets.split(",") if x]
         target_maps = {name: {t.instance_id: t for t in data.split(f"{args.split}:{name}")}
@@ -172,11 +312,16 @@ def main(argv: List[str] | None = None) -> int:
         jobs = [(t, arm_names, budgets, extra,
                  [(name, target_maps[name][t.instance_id]) for name in target_names
                   if t.instance_id in target_maps[name]],
-                 args.ephemeral_packs) for t in tasks]
+                 args.ephemeral_packs) for t in tasks if t.instance_id not in finished]
         ctx = multiprocessing.get_context("fork")
-        with ctx.Pool(args.workers, maxtasksperchild=8) as pool:
+        with ctx.Pool(args.workers if jobs else 1, maxtasksperchild=8) as pool:
             for result in pool.imap_unordered(_job, jobs):
-                for key in ("rows", "ranks", "builds", "errors"):
+                entry = {"instance_id": result["instance_id"],
+                         "t": round(active_before + time.time() - started, 1), "result": result}
+                journal.write(journal_line(entry))
+                journal.flush()
+                os.fsync(journal.fileno())
+                for key in RESULT_KEYS:
                     for item in result[key]:
                         files[key].write(json.dumps(item, sort_keys=True) + "\n")
                     files[key].flush()
@@ -184,8 +329,10 @@ def main(argv: List[str] | None = None) -> int:
                 if done % 10 == 0 or done == len(tasks):
                     print(f"[{time.time() - started:7.1f}s] {done}/{len(tasks)} tasks", flush=True)
     finally:
+        journal.close()
         for f in files.values():
             f.close()
+    journal_path.unlink()  # the result files hold the same rows
     # Rows carry every selected span (for offline re-scoring); compress them
     # so dozens of runs stay cheap to keep in version control.
     import gzip
@@ -193,7 +340,9 @@ def main(argv: List[str] | None = None) -> int:
     (args.out / "rows.jsonl.gz").write_bytes(gzip.compress(rows_path.read_bytes(), mtime=0))
     rows_path.unlink()
     summary = report.summarize(args.out)
-    summary["elapsed_s"] = round(time.time() - started, 1)
+    summary["elapsed_s"] = round(active_before + time.time() - started, 1)
+    if config.get("resumes"):
+        summary["resumes"] = len(config["resumes"])
     final = {n: packs.compiler_fingerprint(arms_mod.get(n).compile_options) for n in arm_names}
     summary["fingerprints_stable"] = final == config["compiler_fingerprints"]
     if not summary["fingerprints_stable"]:
