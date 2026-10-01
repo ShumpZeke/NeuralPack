@@ -559,6 +559,52 @@ gold block at median rank 22 / 20 against 9 for the lexical order (top 10: 93 / 
 and RRF of the two orders is worse than the lexical order alone (better in 63 / 75 tasks, worse in
 123 / 118). No channel is built. Data and script: `experiments/npkbench/diagnostics/D2-*`.
 
+### Coverage ceilings and the pre-declared plan for E058 (written 2026-10-01 before any E058 result)
+
+Everything so far changed ranking. A different limit is what the scanner never indexes: it keeps a
+whitelist of suffixes, skips any directory named `env`, `venv`, `dist`, `secrets` (and every dot
+directory), and skips file names containing `credential` or `secret`. Gold hunks in files the
+default scan cannot see are unfindable at any rank. Measured on the benchmark data (fix target, share
+of hunks): dev and every SWE-bench held-out split 0%; gym-dev 0.5% (Cython `.pyx` 9, `env/` 1);
+poly-dev 1.5%, poly-dev-b 1.7% (`.lock` 24), poly-heldout 4.1% (`.xml` 59), poly-heldout-b 1.9%
+(`.lock` 17, credential-named source files such as serverless' 8); ood-multi-dev 4.0% (yacc `.y` 14 in
+three jq issues, `env/` 7 in coreutils, `.neon`, `.feature`, `.l`, `.grammar`) and ood-multi-sample
+2.8%. The tests target is hit much harder: Jest snapshots (`.snap`) are 37-58% of the test hunks of
+poly-dev-b, poly-heldout and poly-heldout-b (prettier dominates), mypy's data-driven `.test` files
+5.5% of gym-dev's and 17% of gym-heldout's, Redis' `.tcl` 14 and C++ `.cc` tests 9 hunks in
+ood-multi-dev. So JS/TS test recall is capped near 42-62% of hunks before any ranking, and the numbers
+in this repository for those splits understate real retrieval quality. Across the 66 benchmark
+repositories the scanner skips 3,978 `.snap`, 2,046 `.mjs`, 605 `.test`, 402 `.tcl`, 90 `.pyx`
+files, among others; a directory named `env` (coreutils' `src/uu/env/`) drops a real source tree
+without a trace in `skipped_sources`.
+
+E058 indexes the authored source and test types with evidence, and keeps `env`/`venv` directories
+unless they are virtualenvs (`pyvenv.cfg` or an `activate` script). Prototype: the compile option
+`suffix_profile` in worktree `np-e058` (a different fingerprint per profile, so one run compares them
+as arms). Arms: `e058_core` (C++ `.cc .cxx .hh .hxx .ipp .inl`, `.mjs .cjs .mts .cts`, `.vue .svelte`,
+Cython `.pyx .pxd .pxi`, yacc/lex `.y .l`, `.tcl`, `.proto`, plus the `env`/`venv` rule),
+`e058_core_test` (adds `.test`) and `e058_core_test_snap` (adds `.snap`), against `npk_default` of the
+same tree. The credential-name rule is not touched: it is a security policy for the maintainers (a
+source file called `credentials.js` is dropped today; the content scan would still catch recognized
+key formats), recorded here as an open policy question. `e058_core_test_snap` is informational and
+not promotable: whether committed snapshots belong in a context pack is a product decision, the
+effect cannot be confirmed on a fresh prettier-heavy split (poly-heldout-c has 6 prettier issues), and
+a tests gain driven by it would be exactly the artifact the benchmark must not reward; its results
+are reported with and without `.snap` hunks.
+Screens (targets fix and tests; docs on dev-fast): `gym-dev`, `ood-multi-dev`, `poly-dev-b` and
+`dev-fast` (sanity). `e058_core` or `e058_core_test` is a candidate if it passes the standard rule on
+at least one of the first three screens and has utility >= 0 at every budget and no significant loss
+on the others and on dev-fast; with two candidates, the higher mean utility over the three screens
+goes on (ties: `e058_core`). The candidate is confirmed once on `gym-heldout-b` (Python: mypy
+`.test`, pandas `.pyx`) and once on `poly-heldout-c` (JS/TS: `.mjs .cjs .vue .svelte`), each against
+`npk_default`, targets fix and tests, and is promoted only if utility is >= 0 at every budget on both,
+neither shows a significant loss, and at least one shows a significant fix or tests gain. The
+multilingual-only suffixes (`.cc .cxx .hh .hxx .ipp .inl .y .l .tcl`) have no fresh split;
+`ood-multi-sample` is the guard (measurement, as R005/R007): a significant fix or tests loss at any
+budget drops those suffixes and amends the README's "never used for decisions" sentence. If no variant
+is a candidate, nothing is merged and the three unused splits stay unused. The coverage numbers above
+stay in the documentation either way.
+
 ## Semantic evidence for code: what has been measured
 
 Dense and neural evidence has not helped code retrieval on this benchmark so far: equal-weight
