@@ -26,6 +26,12 @@ Spent: `gym-heldout` on E052 (GH01), `poly-heldout-b` on E053/E054 (PHB01) and `
 E055b (HE01, failed). Larger screening splits: `gym-dev` (Python, 326) and `poly-dev-b`
 (Java/JS/TS, 371). Declare each confirmation's criteria here before its run.
 
+Queue many runs with `benchmarks/npkbench/queue_runner.sh` (a line per run in
+`$NPK_BENCH_HOME/queue.txt`: `WORKDIR|ENV|ARGS`, see the script's header; start it with
+`(nohup sh benchmarks/npkbench/queue_runner.sh >> $NPK_BENCH_HOME/queue.log 2>&1 &)`). A VM
+restart kills it and the run in flight (which restarts from scratch); on a long idle gap, check
+that it is alive before trusting a result.
+
 First runs clone the 12 SWE-bench repositories (blobless, ~2 GB) and build packs
 (~15 s each for Django). Use `--ephemeral-packs` on `heldout` (407 tasks) unless you
 have ~20 GB free. Record every experiment with `benchmarks.npkbench.expdb.append`.
