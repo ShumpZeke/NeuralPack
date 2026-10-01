@@ -1,6 +1,7 @@
 """Which newly indexed suffixes does a candidate arm select, and what do they cost or gain?
 
-Usage: suffix_attrib.py RUN SPLIT BASE_ARM CAND_ARM
+Usage: E058-suffix-attribution.py RUN SPLIT BASE_ARM CAND_ARM
+       E058-suffix-attribution.py BASE_RUN CAND_RUN SPLIT BASE_ARM CAND_ARM   (arms of two runs)
 For every (issue, budget): spans selected only by the candidate ("added") grouped by file suffix, with the
 number of fix / tests gold hunks each added span covers; and the recall change of the issue per target,
 attributed to the suffixes of its added spans.
@@ -15,20 +16,26 @@ sys.path.insert(0, os.getcwd())
 os.environ.setdefault("NPK_BENCH_HOME", "/home/user/npk-data")
 from benchmarks.npkbench import data
 
-RUN, SPLIT, BASE, CAND = sys.argv[1:5]
+if len(sys.argv) == 6:
+    BASE_RUN, CAND_RUN, SPLIT, BASE, CAND = sys.argv[1:6]
+else:
+    BASE_RUN = CAND_RUN = sys.argv[1]
+    SPLIT, BASE, CAND = sys.argv[2:5]
+RUN = BASE_RUN
 fix = {t.instance_id: t for t in data.split(SPLIT)}
 tests = {t.instance_id: t for t in data.split(f"{SPLIT}:tests")}
 spans = collections.defaultdict(dict)
 recall = collections.defaultdict(dict)
-with gzip.open(f"{RUN}/rows.jsonl.gz", "rt") as fh:
-    for line in fh:
-        r = json.loads(line)
-        arm = r["arm"].split("@")[0]
-        if arm in (BASE, CAND):
-            key = (arm, r["arm"].partition("@")[2] or "fix", r["budget"])
-            recall[key][r["instance_id"]] = r["hunk_recall"]
-            if "@" not in r["arm"]:
-                spans[(arm, r["budget"])][r["instance_id"]] = [tuple(s) for s in r["spans"]]
+for run_dir, wanted in ((BASE_RUN, BASE), (CAND_RUN, CAND)):
+    with gzip.open(f"{run_dir}/rows.jsonl.gz", "rt") as fh:
+        for line in fh:
+            r = json.loads(line)
+            arm = r["arm"].split("@")[0]
+            if arm == wanted:
+                key = (arm, r["arm"].partition("@")[2] or "fix", r["budget"])
+                recall[key][r["instance_id"]] = r["hunk_recall"]
+                if "@" not in r["arm"]:
+                    spans[(arm, r["budget"])][r["instance_id"]] = [tuple(s) for s in r["spans"]]
 
 
 def suffix(path):
@@ -57,7 +64,7 @@ for b in budgets:
             c["fix_gold_removed"] += sum(h.found_by([sp]) for h in fix[iid].hunks)
             if iid in tests:
                 c["tests_gold_removed"] += sum(h.found_by([sp]) for h in tests[iid].hunks)
-print(f"{RUN} {SPLIT}: {CAND} against {BASE}")
+print(f"{BASE_RUN} / {CAND_RUN} {SPLIT}: {CAND} against {BASE}")
 for b in budgets:
     rows = sorted(((s, c) for (bb, s), c in total.items() if bb == b), key=lambda x: -x[1]["added"])
     print(f"  budget {b}:")

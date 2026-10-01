@@ -708,10 +708,51 @@ Then, as declared for E058 and unchanged: `E058c-confirm-gymheldoutb` (split `gy
 promotion only if utility >= 0 at every budget on both, no significant loss on either and at least one
 significant fix or tests gain; and the guard `E058c-guard-multisample` on `ood-multi-sample` (arms
 `npk_default`, `e058_c`, and the chunk baselines on both kinds of pack, `b002_bm25_chars1000_split` and
-`b003_bm25_chars1000_split_e058`): a significant fix or tests loss at any budget drops the multilingual-only
+`b003_bm25_chars1000_split_e058c`): a significant fix or tests loss at any budget drops the multilingual-only
 suffixes (`.cc .cxx .hh .hxx .ipp .inl .y .l`). poly-dev-b is no longer an independent screen for this
 variant (the suffixes were removed because of it); the fresh confirmations are. If a screen fails, nothing
 is merged and `gym-heldout-c` stays unused either way.
+
+### E058c result and E058d declared (2026-10-01, before any E058d run)
+
+E058c (profile `core_nosfc_test`, arm `e058_c`): a 20-issue gym-dev re-run selects exactly as
+`e058_core_test` (195 of 195 cells, `E058c-identity-gymdev20`). `ood-multi-dev` passes: tests +2.34 /
++2.63 / +3.22 / +3.22 / +3.51 (significant at every budget), fix +0.00 / +0.44 / -0.02 / +0.03 / +0.07,
+utility +2.32 / +3.05 / +3.17 / +3.22 / +3.54 (mean +3.06). `poly-dev-b` does not: utility +0.02 / -0.05
+/ +0.00 / +0.00 / -0.42 (mean -0.09; fix -0.07 and tests -0.35 at 16K, which is one issue's test hunk, CI
+[-1.06, +0.00]; no significant loss), negative at 2K and 16K, so by the declared rule E058c is not a
+candidate. Nothing is promoted. What the screens say about each suffix group, summed over the five
+budgets, as gold hunks covered by newly selected spans (`E058-suffix-attribution.py` on every screen):
+`.test` 48 test hunks (mypy 43, prometheus 5), C++ `.cc` 23 test hunks (fmt), yacc `.y` 10 fix hunks (jq);
+Cython 26 spans, protobuf 21, JS/TS modules (`.mjs .cjs .cts`) 120 spans and `.vue`/`.svelte` 1,930 spans
+cover no fix hunk anywhere (the svelte fixtures cover 12 test hunks at a large cost, above). The JS/TS
+module, Cython and protobuf suffixes therefore have no measured benefit on any screen and a small measured
+cost on the only JS/TS screen. Principle from here on: a suffix group is indexed only if its newly
+selected spans covered gold on some screen and the group shows no measured loss; the rest stay a
+documented, untested coverage gap (an application written in `.mjs` or `.vue` has no indexed source today).
+
+E058d, declared now: the profile `core_min_test` = C++ `.cc .cxx .hh .hxx .ipp .inl`, yacc/lex `.y .l` and
+`.test`, plus the env/venv rule; arm `e058_d`. This is a pure subset of E058c and of every earlier candidate,
+chosen by the principle above. It is a post-hoc choice on screens that already informed three variants, so
+the screens are no longer independent evidence for it (poly-dev-b in particular); the fresh confirmations
+are, and they keep the rule as declared. Trees containing files of the kept suffixes (git ls-tree of every
+base commit): `dev-fast` astropy `.l` (2 issues), `gym-dev` mypy (30), `ood-multi-dev` fmt, jq, prometheus,
+php-cs-fixer, coreutils, micropython (8 + 11 + 21 issues carry `.cc`, `.y`/`.l`, `.test`), `poly-dev-b`
+coder/code-server `.cc` (2), `gym-heldout-b` mypy (30), `poly-heldout-c` none, `ood-multi-sample` fmt, jq,
+prometheus and `.test` repositories, `heldout` astropy `.l` (18) and `.cxx` (4). Elsewhere `e058_d`
+selects exactly as the default (the env/venv rule apart, which the screens include).
+Screens, arm `e058_d` against the default arm of the earlier run of the same split (`report --judge-runs`):
+`E058d-coverage-devfast` (targets tests and docs), `E058d-coverage-multidev`, `E058d-coverage-gymdev`
+and `E058d-coverage-polydevb`. E058d is a candidate iff on all four utility is >= 0 at every budget and
+there is no significant loss, and it passes the standard rule on at least one. Then, unchanged from E058:
+`E058d-confirm-gymheldoutb` and `E058d-confirm-polyheldoutc` (arms `npk_default` and `e058_d`, targets fix
+and tests; promotion only if utility >= 0 at every budget on both, no significant loss on either and at
+least one significant fix or tests gain; `poly-heldout-c` holds none of the kept suffixes, so it can only
+show that nothing else changes) and the guard `E058d-guard-multisample` on `ood-multi-sample` (arms
+`npk_default`, `e058_d`, `b002_bm25_chars1000_split` and `b003_bm25_chars1000_split_e058d` on the same
+packs): a significant fix or tests loss at any budget drops the multilingual-only suffixes. After
+promotion the README's SWE-bench table is re-measured (`heldout` has astropy `.l`/`.cxx` files).
+If a screen fails, nothing is merged; `gym-heldout-c` stays unused either way.
 
 ## Semantic evidence for code: what has been measured
 
