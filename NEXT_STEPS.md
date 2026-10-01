@@ -754,6 +754,29 @@ packs): a significant fix or tests loss at any budget drops the multilingual-onl
 promotion the README's SWE-bench table is re-measured (`heldout` has astropy `.l`/`.cxx` files).
 If a screen fails, nothing is merged; `gym-heldout-c` stays unused either way.
 
+### E058d screens passed; the poly-heldout-c confirmation is replaced by an identity proof (2026-10-01, before the confirmation runs)
+
+Screens (arm `e058_d` against the default arm of the earlier run of each split; all four runs have
+`errors: 0` and stable fingerprints): `E058d-coverage-gymdev` passes (tests +0.13 / +0.30 / +0.91 / +0.98 /
++2.21, significant at 2K, 4K and 16K; fix -0.11 / -0.18 / +0.15 / +0.50 / -0.94, none significant; utility
++0.02 / +0.11 / +1.06 / +1.47 / +1.25, mean +0.78); `E058d-coverage-multidev` passes (tests +2.34 / +2.63 /
++3.22 / +3.22 / +3.51, significant at every budget; fix +0.00 / +0.44 / +0.06 / +0.03 / +0.10; utility mean
++3.08); `E058d-coverage-devfast` is identical to the default in every cell (utility 0 at every budget; the
+`.l` files of astropy do not reach a selection); `E058d-coverage-polydevb` is identical but for one `.java`
+span without gold (utility 0.00 at every budget). So `e058_d` meets the declared candidate rule.
+
+The confirmation on `poly-heldout-c` is not run. Every file the profile adds or the env/venv rule
+unlocks would have to exist in a base tree of the split for the profile to change a pack, and none does:
+`git ls-tree` of the 246 base commits holds no `.cc .cxx .hh .hxx .ipp .inl .y .l .test` file and no
+directory named `env` or `venv` (script `experiments/npkbench/diagnostics/E058-inventory.py`). The scan is
+then identical, the packs and selections are identical, and the declared conditions (utility >= 0 at
+every budget, no significant loss) hold with equality; running it would only spend a fresh JS/TS split on
+a certain zero. It stays unused. The confirmation that can show a change is `gym-heldout-b` (mypy's 30
+issues carry `.cc` and `.test` files; conan, hydra and mypy's typeshed carry `env`/`venv` directories in 45
+issues): run `E058d-confirm-gymheldoutb`, arms `npk_default` and `e058_d`, targets fix and tests. Promotion
+needs utility >= 0 at every budget there, no significant loss, and a significant fix or tests gain. The
+guard `E058d-guard-multisample` runs as declared above.
+
 ## Semantic evidence for code: what has been measured
 
 Dense and neural evidence has not helped code retrieval on this benchmark so far: equal-weight

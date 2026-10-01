@@ -1,0 +1,52 @@
+# kept suffixes of E058d
+dev-fast: 103 tasks; {'.l': 2} (tasks with such files)
+     .l {'astropy/astropy': 2}
+heldout: 407 tasks; {'.cxx': 4, '.l': 18} (tasks with such files)
+     .cxx {'astropy/astropy': 4}
+     .l {'astropy/astropy': 18}
+gym-dev: 326 tasks; {'.cc': 30, '.test': 30} (tasks with such files)
+     .cc {'python/mypy': 30}
+     .test {'python/mypy': 30}
+poly-dev-b: 371 tasks; {'.cc': 2} (tasks with such files)
+     .cc {'coder/code-server': 2}
+gym-heldout-b: 254 tasks; {'.cc': 30, '.test': 30} (tasks with such files)
+     .cc {'python/mypy': 30}
+     .test {'python/mypy': 30}
+poly-heldout-c: 246 tasks; none (tasks with such files)
+ood-multi-dev: 186 tasks; {'.cc': 8, '.y': 11, '.l': 11, '.test': 21} (tasks with such files)
+     .cc {'fmtlib/fmt': 8}
+     .y {'jqlang/jq': 6, 'prometheus/prometheus': 5}
+     .l {'jqlang/jq': 6, 'prometheus/prometheus': 5}
+     .test {'php-cs-fixer/php-cs-fixer': 7, 'jqlang/jq': 6, 'prometheus/prometheus': 5, 'uutils/coreutils': 2, 'micropython/micropython': 1}
+ood-multi-sample: 114 tasks; {'.cc': 3, '.y': 6, '.l': 6, '.test': 16} (tasks with such files)
+     .cc {'fmtlib/fmt': 3}
+     .y {'jqlang/jq': 3, 'prometheus/prometheus': 3}
+     .l {'jqlang/jq': 3, 'prometheus/prometheus': 3}
+     .test {'jqlang/jq': 3, 'micropython/micropython': 3, 'php-cs-fixer/php-cs-fixer': 3, 'prometheus/prometheus': 3, 'uutils/coreutils': 3, 'nlohmann/json': 1}
+
+# env/venv directories
+dev-fast: 103 tasks, 0 with env/venv directories
+heldout: 407 tasks, 0 with env/venv directories
+gym-dev: 326 tasks, 75 with env/venv directories
+    conan-io/conan {'conan/tools/env': 4, 'conans/test/functional/toolchains/env': 2, 'conans/test/integration/toolchains/env': 6, 'conans/test/unittests/tools/env': 3}
+    facebookresearch/hydra {'hydra/conf/hydra/env': 1, 'tests/test_apps/custom_env_defaults/hydra_plugins/env_defaults/conf/hydra/env': 1, 'examples/patterns/configuring_experiments/conf/hydra/env': 1}
+    python/mypy {'mypy/typeshed/stdlib/venv': 1}
+poly-dev-b: 371 tasks, 12 with env/venv directories
+    apache/dubbo {'dubbo-spring-boot/dubbo-spring-boot-autoconfigure/src/test/java/org/apache/dubbo/spring/boot/env': 1, 'dubbo-spring-boot/dubbo-spring-boot-compatible/autoconfigure/src/main/java/org/apache/dubbo/spring/boot/env': 1, 'dubbo-spring-boot/dubbo-spring-boot-compatible/autoconfigure/src/test/java/org/apache/dubbo/spring/boot/env': 1}
+    coder/code-server {'lib/vscode/extensions/microsoft-authentication/src/env': 3}
+    trinodb/trino {'presto-product-tests-launcher/src/main/java/io/prestosql/tests/product/launcher/env': 55, 'presto-product-tests-launcher/src/test/java/io/prestosql/tests/product/launcher/env': 1}
+gym-heldout-b: 254 tasks, 45 with env/venv directories
+    conan-io/conan {'conan/tools/env': 4, 'conans/test/functional/toolchains/env': 3, 'conans/test/integration/toolchains/env': 6, 'conans/test/unittests/tools/env': 3, 'test/functional/toolchains/env': 3}
+    facebookresearch/hydra {'hydra/conf/hydra/env': 1, 'tests/test_apps/custom_env_defaults/hydra_plugins/env_defaults/conf/hydra/env': 1}
+    python/mypy {'mypy/typeshed/stdlib/venv': 1}
+poly-heldout-c: 246 tasks, 0 with env/venv directories
+ood-multi-dev: 186 tasks, 11 with env/venv directories
+    astral-sh/ruff {'crates/ruff_python_resolver/resources/test/airflow/venv': 10}
+    axios/axios {'lib/env': 3}
+    nushell/nushell {'crates/nu-command/src/env': 11}
+    uutils/coreutils {'src/uu/env': 11, 'tests/fixtures/env': 2}
+ood-multi-sample: 114 tasks, 12 with env/venv directories
+    astral-sh/ruff {'crates/ruff_python_resolver/resources/test/airflow/venv': 10}
+    axios/axios {'lib/env': 3}
+    nushell/nushell {'crates/nu-command/src/env': 10}
+    uutils/coreutils {'src/uu/env': 11, 'tests/fixtures/env': 2}
