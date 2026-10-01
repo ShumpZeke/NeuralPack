@@ -1,0 +1,159 @@
+{
+ "arms": {
+  "e059_env": {
+   "budgets": {
+    "1024": {
+     "all_found": 0.1222,
+     "fallback": 0,
+     "file_recall": 0.3327,
+     "hunk_recall": 0.1792,
+     "hunk_recall_repo_macro": 0.1792,
+     "latency_ms_p50": 55.76,
+     "latency_ms_p95": 170.13,
+     "line_recall": 0.2054,
+     "n": 90,
+     "tokens_mean": 1009.5
+    },
+    "16384": {
+     "all_found": 0.3556,
+     "fallback": 0,
+     "file_recall": 0.723,
+     "hunk_recall": 0.5115,
+     "hunk_recall_repo_macro": 0.5115,
+     "latency_ms_p50": 65.54,
+     "latency_ms_p95": 178.98,
+     "line_recall": 0.5291,
+     "n": 90,
+     "tokens_mean": 15710.1
+    },
+    "2048": {
+     "all_found": 0.1778,
+     "fallback": 0,
+     "file_recall": 0.3679,
+     "hunk_recall": 0.257,
+     "hunk_recall_repo_macro": 0.257,
+     "latency_ms_p50": 72.91,
+     "latency_ms_p95": 179.71,
+     "line_recall": 0.2832,
+     "n": 90,
+     "tokens_mean": 2030.5
+    },
+    "4096": {
+     "all_found": 0.2444,
+     "fallback": 0,
+     "file_recall": 0.4758,
+     "hunk_recall": 0.3412,
+     "hunk_recall_repo_macro": 0.3412,
+     "latency_ms_p50": 59.36,
+     "latency_ms_p95": 188.37,
+     "line_recall": 0.3546,
+     "n": 90,
+     "tokens_mean": 4081.5
+    },
+    "8192": {
+     "all_found": 0.3,
+     "fallback": 0,
+     "file_recall": 0.5812,
+     "hunk_recall": 0.4162,
+     "hunk_recall_repo_macro": 0.4162,
+     "latency_ms_p50": 62.72,
+     "latency_ms_p95": 196.75,
+     "line_recall": 0.4323,
+     "n": 90,
+     "tokens_mean": 8167.1
+    }
+   },
+   "ranking": {
+    "all_found_in_pool": 71,
+    "n": 90,
+    "tokens_to_all_median": 29747,
+    "tokens_to_all_median_all_tasks": 50951,
+    "tokens_to_first_median": 5480
+   }
+  },
+  "e059_env@tests": {
+   "budgets": {
+    "1024": {
+     "all_found": 0.0227,
+     "fallback": 0,
+     "file_recall": 0.137,
+     "hunk_recall": 0.0622,
+     "hunk_recall_repo_macro": 0.0612,
+     "latency_ms_p50": 51.86,
+     "latency_ms_p95": 170.13,
+     "line_recall": 0.0695,
+     "n": 88,
+     "tokens_mean": 1009.6
+    },
+    "16384": {
+     "all_found": 0.2045,
+     "fallback": 0,
+     "file_recall": 0.4293,
+     "hunk_recall": 0.2733,
+     "hunk_recall_repo_macro": 0.2724,
+     "latency_ms_p50": 65.21,
+     "latency_ms_p95": 178.98,
+     "line_recall": 0.2724,
+     "n": 88,
+     "tokens_mean": 15695.0
+    },
+    "2048": {
+     "all_found": 0.0682,
+     "fallback": 0,
+     "file_recall": 0.2316,
+     "hunk_recall": 0.1245,
+     "hunk_recall_repo_macro": 0.1232,
+     "latency_ms_p50": 73.6,
+     "latency_ms_p95": 179.71,
+     "line_recall": 0.1329,
+     "n": 88,
+     "tokens_mean": 2030.8
+    },
+    "4096": {
+     "all_found": 0.0795,
+     "fallback": 0,
+     "file_recall": 0.3165,
+     "hunk_recall": 0.1536,
+     "hunk_recall_repo_macro": 0.1522,
+     "latency_ms_p50": 59.36,
+     "latency_ms_p95": 188.37,
+     "line_recall": 0.1646,
+     "n": 88,
+     "tokens_mean": 4081.9
+    },
+    "8192": {
+     "all_found": 0.1591,
+     "fallback": 0,
+     "file_recall": 0.3799,
+     "hunk_recall": 0.2393,
+     "hunk_recall_repo_macro": 0.2381,
+     "latency_ms_p50": 62.72,
+     "latency_ms_p95": 196.75,
+     "line_recall": 0.237,
+     "n": 88,
+     "tokens_mean": 8167.3
+    }
+   },
+   "ranking": {
+    "all_found_in_pool": 50,
+    "n": 88,
+    "tokens_to_all_median": 59679,
+    "tokens_to_all_median_all_tasks": 227585,
+    "tokens_to_first_median": 10897
+   }
+  }
+ },
+ "builds": {
+  "1209ce77e40e5ae3": {
+   "compile_s_mean": 3.5,
+   "compile_s_total": 314.8,
+   "pack_mb_mean": 13.87,
+   "packs": 90,
+   "tasks_with_blockers": 0
+  }
+ },
+ "elapsed_s": 117.5,
+ "errors": 0,
+ "fingerprints_stable": true,
+ "tasks": 90
+}

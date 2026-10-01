@@ -679,7 +679,7 @@ equals `e058_core_test` here, is not a candidate and nothing is promoted as decl
 snapshot arm shows the usual transfer: tests +0.11 / +1.09 / +1.29 / +2.06 / +2.50 (significant from 2K) for
 fix -0.73 / -0.78 / -1.19 / -1.54 / -0.66 (significant at 2K-8K), mean utility +0.42; split by hunk class
 (`experiments/npkbench/diagnostics/E058-snap-split.*`) it finds 0.05-0.30 of the 646 `.snap` hunks of 42
-issues (0 without it) and loses 0.4-1.1 points on the 1,105 other test hunks. It stays out.
+issues (0 without it) and loses 0.3-1.1 points on the 1,105 other test hunks. It stays out.
 
 Where the loss comes from (selection diff of `e058_core_test` against the default, script
 `experiments/npkbench/diagnostics/E058-suffix-attribution.py`): the newly selected spans are almost all `.svelte` (104 / 186 / 305 /
@@ -806,7 +806,7 @@ fresh multilingual issues are too few to confirm it; single-file components (`.v
 recall where component fixtures abound (sveltejs/svelte, prettier: -0.7 points at 16K on 371 issues);
 Tcl moves Redis' fix sites out of reach; Jest snapshots move recall from other test hunks to snapshot
 hunks (the 646 snapshot hunks of poly-dev-b: 0.05-0.30 found with them, 0 without; the 1,105 other test
-hunks lose 0.4-1.1 points); ES-module JS, Cython and protobuf files covered no gold on any screen. An
+hunks lose 0.3-1.1 points); ES-module JS, Cython and protobuf files covered no gold on any screen. An
 application written only in those types has no indexed source today, and the compile output does not say
 so: reporting the counts of unindexed files by suffix (and by skipped directory name) in the compile
 stats, plus a caller-declared include list, would make the gap visible without touching a default.
@@ -832,6 +832,21 @@ E058 arms: fix +6.3 points on its issues). The fresh-split condition is met by `
 that were not used for any decision before E058d) and `ood-multi-sample`. If any split fails, nothing is
 merged. After acceptance the product form is `_excluded_dir` (worktree `np-e058p`), proved equal to
 `e059_env` on these issues, with its four mutants, and the README/architecture text records the change.
+
+### E059 result: accepted (2026-10-01)
+
+The harm check (arm `e059_env` on the affected repositories of each split, `report --judge`/`--judge-runs`
+against the default arm of the earlier run; script and output `experiments/npkbench/diagnostics/E059-harm-check.*`)
+passes on all five splits: utility >= 0 at every budget and no significant loss everywhere. The rule
+changes selections in very few issues, all of them gains: `gym-dev` conan, 2 of 30 issues, fix +3.67 /
++3.33 / +3.33 points at 4K / 8K / 16K (split level +1.22 / +1.11 / +1.11, intervals reach zero; its
+`conan/tools/env/` package was invisible); `ood-multi-dev` coreutils, 1 of 2 issues, fix +6.25 points from 4K
+(split level +1.14, `src/uu/env/`). Everything else is exactly equal to the default: `gym-heldout-b` (conan,
+hydra, mypy's typeshed `venv`: 51 issues), `poly-dev-b` (dubbo, code-server, trino: 33), `ood-multi-sample`
+(ruff, axios, nushell, coreutils: 12). The change is therefore a bug fix with no measured cost and two
+recovered fix hunks, accepted under the standard declared for it (a harm check, no significant-gain
+requirement). Product form: `_excluded_dir` (`npk/pack/compile.py`), `tests/test_source_directories.py`,
+five mutants, and the selection-equality proof below.
 
 ## Semantic evidence for code: what has been measured
 
