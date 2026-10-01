@@ -566,6 +566,17 @@ gold block at median rank 22 / 20 against 9 for the lexical order (top 10: 93 / 
 and RRF of the two orders is worse than the lexical order alone (better in 63 / 75 tasks, worse in
 123 / 118). No channel is built. Data and script: `experiments/npkbench/diagnostics/D2-*`.
 
+### D3 (2026-10-01, diagnostic only): file-level support adds nothing to block-level BM25
+
+Do blocks of files with many lexical candidates deserve a boost? On the same 238 cached-pack tasks as
+D2, ordering the lexical top 200 by file support (the sum of 1/(60+rank) over the file's
+candidates) puts the first gold block at median rank 47 against 9 for the lexical order (top 10: 44
+against 123); grouping files by their best candidate (file-first) is slightly worse (top 10: 104,
+median 14), and RRF of either order with the lexical one is no better than the lexical order alone
+(file-first: top 3 77 against 71, top 10 117 against 123, mean reciprocal rank 0.292 against 0.293;
+better in 74 tasks, worse in 96). No channel is built. Data and script:
+`experiments/npkbench/diagnostics/D3-*`.
+
 ### Coverage ceilings and the pre-declared plan for E058 (written 2026-10-01 before any E058 result)
 
 Everything so far changed ranking. A different limit is what the scanner never indexes: it keeps a

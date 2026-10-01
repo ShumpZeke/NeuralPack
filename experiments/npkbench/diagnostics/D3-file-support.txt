@@ -1,0 +1,9 @@
+depth=200: 238 tasks with a gold block in the lexical top 200
+  lexical              top1  46 top3  71 top10 123 top30 185  median rank 9  mean reciprocal 0.293
+  file support         top1  12 top3  22 top10  44 top30  87  median rank 47  mean reciprocal 0.102
+  rrf(lex,support)     top1  15 top3  31 top10  88 top30 170  median rank 16  mean reciprocal 0.153
+  file-first           top1  46 top3  71 top10 104 top30 156  median rank 14  mean reciprocal 0.279
+  rrf(lex,file-first)  top1  46 top3  77 top10 117 top30 187  median rank 11  mean reciprocal 0.292
+  rrf(lex,support) vs lexical: better 79, worse 145, equal 14
+  rrf(lex,file-first) vs lexical: better 74, worse 96, equal 68
+  file-first vs lexical: better 75, worse 103, equal 60
