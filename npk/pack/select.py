@@ -299,7 +299,11 @@ def _strip_environment(lines: List[str]) -> List[str]:
 #: attachments are dropped; a GitHub ``blob``/``tree``/``raw`` link keeps the
 #: repository path it points to; other GitHub links (issues, pull requests,
 #: commits) are dropped; any other URL keeps its path and fragment words.
-_URL_IMAGE = re.compile(r"!\[[^\]]*\]\([^)]*\)|<img\b[^>]*>", re.IGNORECASE)
+#: Bounded so unterminated markup in a pasted log cannot make the scan quadratic (each ``![``
+#: would otherwise search to the end of the line): the longest image link in 4,237
+#: benchmark queries is 190 characters, and base64 data URIs, the one long form, go first.
+_URL_IMAGE = re.compile(r"!\[[^\]]{0,500}\]\([^)]{0,2000}\)|<img\b[^>]{0,2000}>", re.IGNORECASE)
+_DATA_URI = re.compile(r"data:[\w.+/-]{1,100};base64,[A-Za-z0-9+/=]+")
 _URL = re.compile(r"https?://[^\s)>\]\"'`<]+", re.IGNORECASE)
 _ATTACHMENT_HOSTS = ("user-images.githubusercontent.com", "private-user-images.githubusercontent.com")
 
@@ -319,7 +323,7 @@ def _rewrite_url(match: "re.Match[str]") -> str:
 
 
 def _strip_urls(line: str) -> str:
-    return _URL.sub(_rewrite_url, _URL_IMAGE.sub(" ", line))
+    return _URL.sub(_rewrite_url, _URL_IMAGE.sub(" ", _DATA_URI.sub(" ", line)))
 
 
 def _strip_issue_template(query: str) -> str:

@@ -384,6 +384,10 @@ MUTANTS = [
      "tests/test_query_cleaning.py::test_urls_keep_only_their_informative_parts"),
     ("url_title_rewritten", "npk/pack/select.py", None, None,
      "tests/test_query_cleaning.py::test_a_url_in_the_title_is_kept"),
+    ("url_image_patterns_unbounded", "npk/pack/select.py", None, None,
+     "tests/test_query_cleaning.py::test_unterminated_markup_is_scanned_in_linear_time"),
+    ("data_uri_kept", "npk/pack/select.py", None, None,
+     "tests/test_query_cleaning.py::test_inline_base64_images_are_removed_whole"),
     ("query_cleaning_drops_title", "npk/pack/select.py", None, None,
      "tests/test_query_cleaning.py::test_first_line_and_long_headings_are_kept"),
     ("query_cleaning_reports_cleaned_query", "npk/pack/select.py", None, None,
@@ -528,6 +532,16 @@ def main():
                 if source.count(target) != 1:
                     raise ValueError("GitHub source-link rule is no longer unique")
                 changed = source.replace(target, 'return " "')
+            elif name in ("url_image_patterns_unbounded", "data_uri_kept"):
+                target, replacement = {
+                    "url_image_patterns_unbounded": (
+                        r'r"!\[[^\]]{0,500}\]\([^)]{0,2000}\)|<img\b[^>]{0,2000}>"',
+                        r'r"!\[[^\]]*\]\([^)]*\)|<img\b[^>]*>"'),
+                    "data_uri_kept": ('_URL_IMAGE.sub(" ", _DATA_URI.sub(" ", line))', '_URL_IMAGE.sub(" ", line)'),
+                }[name]
+                if source.count(target) != 1:
+                    raise ValueError("URL image rule is no longer unique")
+                changed = source.replace(target, replacement)
             elif name == "url_title_rewritten":
                 target = "lines[:1] + [_strip_urls(line) for line in lines[1:]]"
                 if source.count(target) != 1:

@@ -217,3 +217,22 @@ def test_link_scaffolding_no_longer_pulls_the_readme(tmp_path):
     with PackSelector(str(pack), enable_cache=False) as selector:
         top = selector.select(query, budget_tokens=10**6, allow_escalation=False).evidence[0]
     assert top.path == "widgets/tooltip.py"   # without E053 the README's links rank first
+
+
+def test_unterminated_markup_is_scanned_in_linear_time():
+    import time
+    for chunk in ("![a](", "<img ", "!["):
+        query = "Pasted log\n" + chunk * 20000
+        started = time.perf_counter()
+        _strip_issue_template(query)
+        # The unbounded patterns searched to the end of the line from every start: 0.5-1.4 s here.
+        assert time.perf_counter() - started < 0.25, chunk
+
+
+def test_inline_base64_images_are_removed_whole():
+    blob = "A" * 60000
+    query = (f"Broken icon\nSee ![icon](data:image/png;base64,{blob}) and "
+             f"<img src=\"data:image/gif;base64,{blob}\"> here.")
+    cleaned = _strip_issue_template(query)
+    assert "base64" not in cleaned and "AAAA" not in cleaned
+    assert "See" in cleaned and "here." in cleaned
