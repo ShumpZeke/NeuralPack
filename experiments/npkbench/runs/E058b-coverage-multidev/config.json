@@ -1,0 +1,37 @@
+{
+ "split": "ood-multi-dev",
+ "arms": [
+  "npk_default",
+  "e058_notcl",
+  "e058_notcl_test"
+ ],
+ "budgets": [
+  1024,
+  2048,
+  4096,
+  8192,
+  16384
+ ],
+ "tasks": 186,
+ "targets": [
+  "fix",
+  "tests"
+ ],
+ "ephemeral_packs": true,
+ "load": [],
+ "environment": {
+  "git_commit": "2bb5cb1e1668c0b72195643408aa521285b98c63",
+  "git_dirty": false,
+  "python": "3.12.3",
+  "sqlite": "3.45.1",
+  "platform": "Linux-6.18.44-fc-v50-x86_64-with-glibc2.39",
+  "cpus": 4,
+  "bench_version": "npkbench-1.1"
+ },
+ "started_unix": 1790827038.0892065,
+ "compiler_fingerprints": {
+  "npk_default": "64eaa710015ef6b6",
+  "e058_notcl": "28fbd25114c9e52c",
+  "e058_notcl_test": "a69243e5aac4c494"
+ }
+}
