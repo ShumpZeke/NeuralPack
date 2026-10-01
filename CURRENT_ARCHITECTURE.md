@@ -187,7 +187,9 @@ query ──strip issue-form scaffolding, environment dumps, URL scaffolding (E0
   GitHub attachments are dropped, a GitHub `blob`/`tree`/`raw` link keeps the repository path
   it points to, other GitHub links (issues, pull requests, commits) are dropped, and any other
   URL keeps its path and fragment words (no scheme, host or query string). Scheme, host and
-  GitHub scaffolding words otherwise match READMEs, docs and CI files. poly-heldout-b (PHB01,
+  GitHub scaffolding words otherwise match READMEs, docs and CI files. The image patterns are
+  length-bounded and base64 data URIs are removed first by a linear rule, so unterminated
+  markup in a pasted log cannot make the scan quadratic. poly-heldout-b (PHB01,
   320 JS/TS issues): fix +1.8 to +3.3 points at every budget and tests +1.1 to +2.2 from 2K,
   all significant.
 - **Release notes last (E054, `demote_release_notes`, `--no-release-notes-last`):** blocks of
@@ -211,6 +213,15 @@ query ──strip issue-form scaffolding, environment dumps, URL scaffolding (E0
   Django lexical ranking goes from about 51 to 107 ms (matching alone 8 -> 18 ms) and median
   selection time rises about 55%. Per-phrase weights inside FTS5 would remove this but need a
   C auxiliary function.
+- **Split scoring for long weighted queries (E056, `LEXICAL_SPLIT_MIN_PHRASES` 128):** above
+  128 weighted phrases the lexical ranking issues one FTS5 query per weight class over the
+  distinct terms of that weight and sums `weight * bm25` per row, then orders by (score, path,
+  ordinal) like the single query. BM25 is a sum over phrases, so the ranking is the same
+  (586 of 586 rankings on 293 cached packs; 1,500 of 1,500 dev and 1,630 of 1,630 gym-dev
+  selections identical) while the work per query falls: a 498-phrase query on a 31,000-block
+  pack takes 0.45 s instead of 1.9 s, and the 134 long queries among the cached packs take
+  91 ms instead of 175 ms at the median and 1.2 s instead of 2.5 s at worst. Shorter
+  queries keep the single query, where splitting costs more than it saves.
 - **Query-term cap and deterministic analysis (E043):** a query keeps its first 512 distinct
   lexical terms (`MAX_QUERY_TERMS`, first-occurrence order; backticked literals always kept),
   since `bm25()` cost grows with every term and matching row. Queries under the cap are

@@ -455,6 +455,18 @@ ranked blocks displace about as many sites as they add). The default on `heldout
 product, E053 + E054): fix 0.214 / 0.296 / 0.397 / 0.475 / 0.560, tests 0.110 / 0.212 / 0.278 /
 0.357 / 0.437 at 1K-16K, a further fresh Python measurement of the default (SWE-bench full).
 
+### E056 merged (latency; no recall change by construction)
+
+Long weighted lexical queries (above 128 phrases) are scored one weight class at a time. The
+product form selects identically to the default on all 1,500 dev and 1,630 gym-dev selections
+(runs `E056p-lexical-split-dev` / `-gymdev`, each compared with the default's rows from the
+preceding run on the same compiler) and on 586 of 586 offline rankings. Gym-dev median selection
+time 99 -> 75 ms, p99 1.7 s -> 0.5 s. Two things to keep in mind: the VM restarts on idle gaps
+(each restart killed the queue runner; restart it per the check-in prompt, an interrupted run
+restarts from scratch), and timing in runs made under concurrent load is indicative only (the
+14.9 s outlier in the gym-dev run was a cold first call under contention; isolated, the same
+selection takes 0.45 s against 1.9 s before E056).
+
 ### E053 + E054 merged
 
 The combined product form reproduces the combined prototype (`e053_e054`) on all 1,475
