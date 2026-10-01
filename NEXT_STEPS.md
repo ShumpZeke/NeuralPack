@@ -653,8 +653,8 @@ above), `E058b-coverage-multidev` (`e058_notcl`: tests +2.3 to +2.9 significant 
 -0.06 to +0.44, mean +3.05, passes) and `E058-coverage-gymdev` (`e058_core_test`: tests +0.3 / +0.3 /
 +0.9 / +0.9 / +2.2, significant at 2K, 4K, 16K, fix -0.9 to +0.5 not significant, mean +0.79, passes;
 `e058_core` alone neutral, so the gain is mypy's `.test` files). No gym-dev or poly-dev-b tree
-contains a `.tcl` file, so `e058_notcl_test` equals `e058_core_test` there. Pending: `E058-coverage-polydevb`
-(running, ~90 minutes; it also carries the informational `.snap` arm). If `e058_notcl_test` has
+contains a `.tcl` file, so `e058_notcl_test` equals `e058_core_test` there. `E058-coverage-polydevb` has since
+finished and the candidate fails it: see the next section. The plan below is kept as declared. If `e058_notcl_test` has
 utility >= 0 at every budget and no significant loss there, it is the candidate (highest mean utility)
 and the next steps, all declared above, are: (1) runs `E058-confirm-gymheldoutb` (split
 `gym-heldout-b`) and `E058-confirm-polyheldoutc` (split `poly-heldout-c`), arms `npk_default` and
@@ -667,6 +667,51 @@ the mutation evidence and the README/architecture text. If poly-dev-b shows a si
 negative utility for the JS/TS part, drop the offending suffixes by a newly declared variant instead
 of promoting. The snapshot arm is reported with and without `.snap` hunks (`snap_split.py` logic) and
 is never promoted.
+
+### E058 poly-dev-b result: the declared candidate fails; E058c declared (2026-10-01, before any E058c run)
+
+`E058-coverage-polydevb` (371 issues, tests and fix; run in worktree `np-e058r`, same compiler sources
+as `np-e058`). `e058_core` and `e058_core_test` select identically here (no `.test` or `.tcl` files) and
+fail the rule: fix -0.13 / -0.02 / -0.20 / -0.25 / -0.73 points at 1K-16K (significant losses at 8K,
+upper bound -0.02, and 16K, [-1.32, -0.26]), tests -0.56 / +0.16 / -0.03 / -0.06 / -0.39 (nothing
+significant), utility -0.69 / +0.13 / -0.23 / -0.31 / -1.12 (mean -0.44). So `e058_notcl_test`, which
+equals `e058_core_test` here, is not a candidate and nothing is promoted as declared. The informational
+snapshot arm shows the usual transfer: tests +0.11 / +1.09 / +1.29 / +2.06 / +2.50 (significant from 2K) for
+fix -0.73 / -0.78 / -1.19 / -1.54 / -0.66 (significant at 2K-8K), mean utility +0.42; split by hunk class
+(`experiments/npkbench/diagnostics/E058-snap-split.*`) it finds 0.05-0.30 of the 646 `.snap` hunks of 42
+issues (0 without it) and loses 0.4-1.1 points on the 1,105 other test hunks. It stays out.
+
+Where the loss comes from (selection diff of `e058_core_test` against the default, script
+`experiments/npkbench/diagnostics/E058-suffix-attribution.py`): the newly selected spans are almost all `.svelte` (104 / 186 / 305 /
+504 / 544 spans at 1K-16K; every one in sveltejs/svelte, 67 issues, whose repository holds thousands of
+`.svelte` test fixtures) and `.vue` (26-75; prettier's fixtures, 66 issues), with no fix-site hunk among
+them; the 9 issues that lose fix recall at 16K (-2.71 in total, none gains) have `.svelte` blocks among
+their added spans in 7. Every other new suffix adds at most 10 spans per budget. The benchmark has no
+repository that authors application code in single-file components, so their benefit is untested here
+and their cost is measured.
+
+E058c, declared now: the profile `core_nosfc_test` = `core_notcl_test` without `.vue` and `.svelte`,
+i.e. C++ `.cc .cxx .hh .hxx .ipp .inl`, `.mjs .cjs .mts .cts`, Cython `.pyx .pxd .pxi`, yacc/lex `.y .l`,
+`.proto` and `.test`, plus the env/venv rule; arm `e058_c`. No `.tcl` (E058b), no single-file components
+(this result), no `.snap` (policy and transfer). Facts checked before the declaration (git ls-tree of every
+task's base commit): `dev-fast`, `heldout`, `gym-dev` and `gym-heldout-b` contain no `.vue`, `.svelte` or `.tcl`
+file, so `e058_c` selects there exactly as `e058_notcl_test` and the earlier results on `dev-fast`
+(identical in 510 of 515 selections, no recall change) and `gym-dev` (`e058_core_test` passes, mean utility
++0.79) are its results; a 20-issue `gym-dev` re-run checks the identity. Files with the removed suffixes
+exist in `ood-multi-dev` (bat, vuejs/core, babel: 7 issues), `poly-dev-b` (svelte 67, prettier 66, tailwindcss 1),
+`poly-heldout-c` (svelte 66, prettier 6) and `ood-multi-sample` (bat, vuejs/core, babel: 7 issues).
+Screens to run, arm `e058_c` against the default arm of the earlier run (`report --judge-runs`):
+`E058c-coverage-polydevb` and `E058c-coverage-multidev`. It is a candidate iff on both screens utility is >= 0
+at every budget and there is no significant loss (the standard-rule pass was established on `gym-dev`).
+Then, as declared for E058 and unchanged: `E058c-confirm-gymheldoutb` (split `gym-heldout-b`) and
+`E058c-confirm-polyheldoutc` (split `poly-heldout-c`), arms `npk_default` and `e058_c`, targets fix and tests,
+promotion only if utility >= 0 at every budget on both, no significant loss on either and at least one
+significant fix or tests gain; and the guard `E058c-guard-multisample` on `ood-multi-sample` (arms
+`npk_default`, `e058_c`, and the chunk baselines on both kinds of pack, `b002_bm25_chars1000_split` and
+`b003_bm25_chars1000_split_e058`): a significant fix or tests loss at any budget drops the multilingual-only
+suffixes (`.cc .cxx .hh .hxx .ipp .inl .y .l`). poly-dev-b is no longer an independent screen for this
+variant (the suffixes were removed because of it); the fresh confirmations are. If a screen fails, nothing
+is merged and `gym-heldout-c` stays unused either way.
 
 ## Semantic evidence for code: what has been measured
 

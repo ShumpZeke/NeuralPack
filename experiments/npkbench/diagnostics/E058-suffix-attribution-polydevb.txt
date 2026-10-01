@@ -1,0 +1,82 @@
+experiments/npkbench/runs/E058-coverage-polydevb poly-dev-b: e058_core_test against npk_default
+  budget 1024:
+    added .svelte      spans   104  fix-gold   0  tests-gold   2
+    added .vue         spans    26  fix-gold   0  tests-gold   0
+    added .js          spans    22  fix-gold   0  tests-gold   0
+    added .md          spans     7  fix-gold   0  tests-gold   0
+    added .ts          spans     6  fix-gold   1  tests-gold   0
+    added .mjs         spans     6  fix-gold   0  tests-gold   0
+    added .json        spans     4  fix-gold   0  tests-gold   0
+    added .cjs         spans     2  fix-gold   0  tests-gold   0
+    added .html        spans     1  fix-gold   0  tests-gold   0
+    added .java        spans     1  fix-gold   0  tests-gold   0
+    removed .html       spans    17  fix-gold   0  tests-gold   5
+    removed .ts         spans    21  fix-gold   1  tests-gold   0
+  budget 2048:
+    added .svelte      spans   186  fix-gold   0  tests-gold   3
+    added .js          spans    40  fix-gold   0  tests-gold   1
+    added .vue         spans    37  fix-gold   0  tests-gold   0
+    added .ts          spans    18  fix-gold   0  tests-gold   0
+    added .md          spans    14  fix-gold   0  tests-gold   0
+    added .cjs         spans     9  fix-gold   0  tests-gold   0
+    added .json        spans     9  fix-gold   0  tests-gold   0
+    added .html        spans     6  fix-gold   0  tests-gold   0
+    added .mjs         spans     6  fix-gold   0  tests-gold   0
+    added .proto       spans     1  fix-gold   0  tests-gold   0
+    added .java        spans     1  fix-gold   0  tests-gold   0
+    added .css         spans     1  fix-gold   0  tests-gold   0
+    removed .java       spans     5  fix-gold   1  tests-gold   3
+  budget 4096:
+    added .svelte      spans   305  fix-gold   0  tests-gold   2
+    added .vue         spans    58  fix-gold   0  tests-gold   0
+    added .js          spans    30  fix-gold   0  tests-gold   1
+    added .ts          spans    20  fix-gold   1  tests-gold   0
+    added .md          spans    19  fix-gold   0  tests-gold   0
+    added .cjs         spans    10  fix-gold   0  tests-gold   0
+    added .mjs         spans     7  fix-gold   0  tests-gold   0
+    added .html        spans     2  fix-gold   0  tests-gold   0
+    added .css         spans     2  fix-gold   0  tests-gold   0
+    added .json        spans     2  fix-gold   0  tests-gold   0
+    added .proto       spans     1  fix-gold   0  tests-gold   0
+    added .yml         spans     1  fix-gold   0  tests-gold   0
+    added .tsx         spans     1  fix-gold   0  tests-gold   0
+    removed .ts         spans    44  fix-gold   2  tests-gold   0
+    removed .html       spans    24  fix-gold   0  tests-gold   2
+    removed .js         spans   173  fix-gold   0  tests-gold   1
+  budget 8192:
+    added .svelte      spans   504  fix-gold   0  tests-gold   2
+    added .md          spans    85  fix-gold   0  tests-gold   0
+    added .vue         spans    75  fix-gold   0  tests-gold   0
+    added .js          spans    31  fix-gold   0  tests-gold   0
+    added .ts          spans    20  fix-gold   0  tests-gold   0
+    added .json        spans    14  fix-gold   0  tests-gold   0
+    added .cjs         spans    10  fix-gold   0  tests-gold   0
+    added .mjs         spans     8  fix-gold   0  tests-gold   0
+    added .html        spans     5  fix-gold   0  tests-gold   0
+    added .proto       spans     1  fix-gold   0  tests-gold   0
+    removed .ts         spans    62  fix-gold   6  tests-gold   0
+    removed .js         spans   217  fix-gold   1  tests-gold   1
+  budget 16384:
+    added .svelte      spans   544  fix-gold   0  tests-gold   3
+    added .vue         spans    75  fix-gold   0  tests-gold   0
+    added .js          spans    29  fix-gold   0  tests-gold   0
+    added .md          spans    20  fix-gold   0  tests-gold   0
+    added .ts          spans    18  fix-gold   0  tests-gold   0
+    added .json        spans    13  fix-gold   0  tests-gold   0
+    added .cjs         spans    10  fix-gold   0  tests-gold   0
+    added .tsx         spans     9  fix-gold   0  tests-gold   0
+    added .mjs         spans     9  fix-gold   0  tests-gold   0
+    added .html        spans     3  fix-gold   0  tests-gold   0
+    added .proto       spans     1  fix-gold   0  tests-gold   0
+    added .java        spans     1  fix-gold   0  tests-gold   0
+    removed .ts         spans   102  fix-gold  19  tests-gold   0
+    removed .js         spans   254  fix-gold   1  tests-gold   4
+  issues with a change at 8K and 16K (fix, tests): count by sign and suffixes of added spans
+    8K fix   loss:   4 issues (sum of recall change -0.93); suffixes among their added spans: {'.svelte': 3, '.md': 2, '.vue': 1, '.js': 1, '.ts': 1, '.html': 1}
+    8K fix   gain:   0 issues (sum of recall change +0.00); suffixes among their added spans: {}
+    8K tests loss:   1 issues (sum of recall change -0.33); suffixes among their added spans: {'.svelte': 1}
+    8K tests gain:   1 issues (sum of recall change +0.17); suffixes among their added spans: {'.svelte': 1, '.html': 1}
+    16K fix   loss:   9 issues (sum of recall change -2.71); suffixes among their added spans: {'.svelte': 7, '.ts': 3, '.md': 2, '.html': 2, '.vue': 1, '.json': 1, '.js': 1}
+    16K fix   gain:   0 issues (sum of recall change +0.00); suffixes among their added spans: {}
+    16K tests loss:   3 issues (sum of recall change -1.53); suffixes among their added spans: {'.svelte': 2, '.js': 1, '.tsx': 1, '.ts': 1}
+    16K tests gain:   2 issues (sum of recall change +0.42); suffixes among their added spans: {'.svelte': 2, '.md': 1, '.html': 1}

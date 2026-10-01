@@ -1,0 +1,68 @@
+experiments/npkbench/runs/E058-coverage-devfast tests target (103 issues)
+  hunk class all (103 issues, 202 hunks)
+    npk_default@tests       1K 0.075   2K 0.218   4K 0.290   8K 0.382  16K 0.448
+    e058_core@tests         1K 0.075   2K 0.218   4K 0.290   8K 0.382  16K 0.448
+    e058_core_test@tests    1K 0.075   2K 0.218   4K 0.290   8K 0.382  16K 0.448
+    e058_core_test_snap@tests  1K 0.075   2K 0.218   4K 0.290   8K 0.382  16K 0.448
+  hunk class .snap (0 issues, 0 hunks)
+    npk_default@tests       1K 0.000   2K 0.000   4K 0.000   8K 0.000  16K 0.000
+    e058_core@tests         1K 0.000   2K 0.000   4K 0.000   8K 0.000  16K 0.000
+    e058_core_test@tests    1K 0.000   2K 0.000   4K 0.000   8K 0.000  16K 0.000
+    e058_core_test_snap@tests  1K 0.000   2K 0.000   4K 0.000   8K 0.000  16K 0.000
+  hunk class non-.snap (103 issues, 202 hunks)
+    npk_default@tests       1K 0.075   2K 0.218   4K 0.290   8K 0.382  16K 0.448
+    e058_core@tests         1K 0.075   2K 0.218   4K 0.290   8K 0.382  16K 0.448
+    e058_core_test@tests    1K 0.075   2K 0.218   4K 0.290   8K 0.382  16K 0.448
+    e058_core_test_snap@tests  1K 0.075   2K 0.218   4K 0.290   8K 0.382  16K 0.448
+
+experiments/npkbench/runs/E058-coverage-multidev tests target (171 issues)
+  hunk class all (171 issues, 364 hunks)
+    npk_default@tests       1K 0.075   2K 0.132   4K 0.162   8K 0.227  16K 0.276
+    e058_core@tests         1K 0.113   2K 0.177   4K 0.219   8K 0.293  16K 0.345
+    e058_core_test@tests    1K 0.113   2K 0.180   4K 0.222   8K 0.296  16K 0.350
+    e058_core_test_snap@tests  1K 0.116   2K 0.189   4K 0.236   8K 0.310  16K 0.364
+  hunk class .snap (4 issues, 13 hunks)
+    npk_default@tests       1K 0.000   2K 0.000   4K 0.000   8K 0.000  16K 0.000
+    e058_core@tests         1K 0.000   2K 0.000   4K 0.000   8K 0.000  16K 0.000
+    e058_core_test@tests    1K 0.000   2K 0.000   4K 0.000   8K 0.000  16K 0.000
+    e058_core_test_snap@tests  1K 0.500   2K 0.625   4K 0.750   8K 0.750  16K 0.750
+  hunk class non-.snap (170 issues, 351 hunks)
+    npk_default@tests       1K 0.086   2K 0.143   4K 0.174   8K 0.239  16K 0.288
+    e058_core@tests         1K 0.125   2K 0.189   4K 0.231   8K 0.305  16K 0.357
+    e058_core_test@tests    1K 0.125   2K 0.192   4K 0.234   8K 0.308  16K 0.363
+    e058_core_test_snap@tests  1K 0.107   2K 0.186   4K 0.234   8K 0.308  16K 0.363
+
+experiments/npkbench/runs/E058-coverage-gymdev tests target (321 issues)
+  hunk class all (321 issues, 1224 hunks)
+    npk_default@tests       1K 0.061   2K 0.150   4K 0.190   8K 0.286  16K 0.350
+    e058_core@tests         1K 0.063   2K 0.151   4K 0.190   8K 0.285  16K 0.351
+    e058_core_test@tests    1K 0.064   2K 0.153   4K 0.199   8K 0.294  16K 0.373
+    e058_core_test_snap@tests  1K 0.064   2K 0.153   4K 0.199   8K 0.294  16K 0.373
+  hunk class .snap (0 issues, 0 hunks)
+    npk_default@tests       1K 0.000   2K 0.000   4K 0.000   8K 0.000  16K 0.000
+    e058_core@tests         1K 0.000   2K 0.000   4K 0.000   8K 0.000  16K 0.000
+    e058_core_test@tests    1K 0.000   2K 0.000   4K 0.000   8K 0.000  16K 0.000
+    e058_core_test_snap@tests  1K 0.000   2K 0.000   4K 0.000   8K 0.000  16K 0.000
+  hunk class non-.snap (321 issues, 1224 hunks)
+    npk_default@tests       1K 0.061   2K 0.150   4K 0.190   8K 0.286  16K 0.350
+    e058_core@tests         1K 0.063   2K 0.151   4K 0.190   8K 0.285  16K 0.351
+    e058_core_test@tests    1K 0.064   2K 0.153   4K 0.199   8K 0.294  16K 0.373
+    e058_core_test_snap@tests  1K 0.064   2K 0.153   4K 0.199   8K 0.294  16K 0.373
+
+experiments/npkbench/runs/E058-coverage-polydevb tests target (283 issues)
+  hunk class all (283 issues, 1751 hunks)
+    npk_default@tests       1K 0.089   2K 0.175   4K 0.251   8K 0.310  16K 0.394
+    e058_core@tests         1K 0.083   2K 0.177   4K 0.251   8K 0.309  16K 0.390
+    e058_core_test@tests    1K 0.083   2K 0.177   4K 0.251   8K 0.309  16K 0.390
+    e058_core_test_snap@tests  1K 0.090   2K 0.186   4K 0.264   8K 0.330  16K 0.419
+  hunk class .snap (42 issues, 646 hunks)
+    npk_default@tests       1K 0.000   2K 0.000   4K 0.000   8K 0.000  16K 0.000
+    e058_core@tests         1K 0.000   2K 0.000   4K 0.000   8K 0.000  16K 0.000
+    e058_core_test@tests    1K 0.000   2K 0.000   4K 0.000   8K 0.000  16K 0.000
+    e058_core_test_snap@tests  1K 0.052   2K 0.089   4K 0.141   8K 0.230  16K 0.301
+  hunk class non-.snap (269 issues, 1105 hunks)
+    npk_default@tests       1K 0.101   2K 0.192   4K 0.279   8K 0.341  16K 0.431
+    e058_core@tests         1K 0.095   2K 0.194   4K 0.279   8K 0.341  16K 0.426
+    e058_core_test@tests    1K 0.095   2K 0.194   4K 0.279   8K 0.341  16K 0.426
+    e058_core_test_snap@tests  1K 0.093   2K 0.189   4K 0.268   8K 0.330  16K 0.422
+

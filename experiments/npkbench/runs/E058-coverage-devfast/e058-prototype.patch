@@ -1,0 +1,187 @@
+diff --git a/benchmarks/npkbench/arms.py b/benchmarks/npkbench/arms.py
+index 27be9e5..fde9d05 100644
+--- a/benchmarks/npkbench/arms.py
++++ b/benchmarks/npkbench/arms.py
+@@ -117,6 +117,13 @@ ARMS: Dict[str, Arm] = {
+     # The product before E054 (release notes ranked in place); E053 is part of query cleaning, so
+     # ``npk_rawquery`` is its ablation (together with E031 and E052).
+     "npk_notes_inplace": Arm("npk_notes_inplace", selector_options={"demote_release_notes": False}),
++    # E058: authored source/test file types the default scan skips (compile option suffix_profile).
++    "e058_core": Arm("e058_core", compile_options={"suffix_profile": "core"}),
++    "e058_core_test": Arm("e058_core_test", compile_options={"suffix_profile": "core_test"}),
++    "e058_core_test_snap": Arm("e058_core_test_snap", compile_options={"suffix_profile": "core_test_snap"}),
++    # E058b: the same without Tcl (redis: Tcl test windows outrank the C implementation).
++    "e058_notcl": Arm("e058_notcl", compile_options={"suffix_profile": "core_notcl"}),
++    "e058_notcl_test": Arm("e058_notcl_test", compile_options={"suffix_profile": "core_notcl_test"}),
+     "npk_members": Arm("npk_members", compile_options={"python_members": True}),
+     "oracle_blocks": Arm("oracle_blocks", runner=_oracle_blocks),
+ }
+diff --git a/npk/pack/compile.py b/npk/pack/compile.py
+index 2d021f5..e1aee4f 100644
+--- a/npk/pack/compile.py
++++ b/npk/pack/compile.py
+@@ -57,6 +57,40 @@ TEXT_SUFFIXES = {
+     ".cfg": "ini", ".sql": "sql", ".html": "html", ".css": "css",
+ }
+ 
++#: Experimental scan profiles (E058): authored source and test file types the default scan
++#: skips, indexed in addition to ``TEXT_SUFFIXES``. Non-default profiles also keep a directory
++#: named ``env``/``venv`` unless it is a virtualenv (``pyvenv.cfg`` or an ``activate`` script).
++CORE_EXTRA_SUFFIXES = {
++    ".cc": "cpp", ".cxx": "cpp", ".hh": "cpp", ".hxx": "cpp", ".ipp": "cpp", ".inl": "cpp",
++    ".mjs": "javascript", ".cjs": "javascript", ".mts": "typescript", ".cts": "typescript",
++    ".vue": "vue", ".svelte": "svelte", ".pyx": "cython", ".pxd": "cython", ".pxi": "cython",
++    ".y": "yacc", ".l": "lex", ".tcl": "tcl", ".proto": "protobuf",
++}
++CORE_NO_TCL = {k: v for k, v in CORE_EXTRA_SUFFIXES.items() if k != ".tcl"}
++SUFFIX_PROFILES = {
++    "default": {},
++    "core": CORE_EXTRA_SUFFIXES,
++    "core_test": {**CORE_EXTRA_SUFFIXES, ".test": "text"},
++    "core_test_snap": {**CORE_EXTRA_SUFFIXES, ".test": "text", ".snap": "text"},
++    "core_notcl": CORE_NO_TCL,
++    "core_notcl_test": {**CORE_NO_TCL, ".test": "text"},
++}
++
++
++def _excluded_dir(parent: str, name: str, detect_env: bool) -> bool:
++    """Whether the scan skips directory *name* of *parent* (dot directories always)."""
++    if name.startswith("."):
++        return True
++    if name not in EXCLUDED_DIRS:
++        return False
++    if detect_env and name in ("env", "venv"):
++        base = os.path.join(parent, name)
++        return any(os.path.exists(os.path.join(base, marker))
++                   for marker in ("pyvenv.cfg", os.path.join("bin", "activate"),
++                                  os.path.join("Scripts", "activate")))
++    return True
++
++
+ MAX_FILE_BYTES = 2 * 1024 * 1024
+ MAX_BLOCK_TOKENS = 1200
+ # Format v8 keeps the symbol schema, but the compiler's derived symbol policy
+@@ -747,7 +781,8 @@ class UnsupportedSource(PackError):
+ 
+ def scan_source(root: str | Path, *, known_files: Optional[Dict[str, Tuple[str, int, int]]] = None,
+                 indexed: Optional[set] = None, strict: bool = False,
+-                skipped: Optional[List[Dict[str, str]]] = None) -> List[SourceFile]:
++                skipped: Optional[List[Dict[str, str]]] = None,
++                suffix_profile: str = "default") -> List[SourceFile]:
+     """Read every eligible source file under *root*.
+ 
+     Content that is not indexable text (binary/NUL, non-UTF-8, over 2 MiB,
+@@ -762,6 +797,10 @@ def scan_source(root: str | Path, *, known_files: Optional[Dict[str, Tuple[str,
+     if not root.is_dir():
+         raise PackError(f"source root is not a directory: {root}")
+     indexed = indexed or set()
++    if suffix_profile not in SUFFIX_PROFILES:
++        raise ValueError(f"unknown suffix_profile {suffix_profile!r}; expected one of {sorted(SUFFIX_PROFILES)}")
++    suffixes = {**TEXT_SUFFIXES, **SUFFIX_PROFILES[suffix_profile]}
++    detect_env = suffix_profile != "default"
+ 
+     # String prefixes replace pathlib relative_to/is_relative_to, which cost
+     # more than reading the files on a one-file update of a large repository.
+@@ -771,12 +810,12 @@ def scan_source(root: str | Path, *, known_files: Optional[Dict[str, Tuple[str,
+     prefix = root_str if root_str.endswith(os.sep) else root_str + os.sep
+     out: List[SourceFile] = []
+     for dirpath, dirnames, filenames in os.walk(root,onerror=_source_scan_error):
+-        dirnames[:] = sorted(d for d in dirnames if d not in EXCLUDED_DIRS and not d.startswith("."))
++        dirnames[:] = sorted(d for d in dirnames if not _excluded_dir(dirpath, d, detect_env))
+         rel_dir = "" if dirpath == root_str else dirpath[len(prefix):].replace(os.sep, "/")
+         for fn in sorted(filenames):
+             if EXCLUDED_FILE_RE.search(fn):
+                 continue
+-            language = TEXT_SUFFIXES.get(os.path.splitext(fn)[1].lower())
++            language = suffixes.get(os.path.splitext(fn)[1].lower())
+             if language is None:
+                 continue
+             full = Path(dirpath, fn)
+@@ -1129,6 +1168,7 @@ def compile_pack(
+     build_deps: bool = False,
+     python_members: bool = False,
+     strict: bool = False,
++    suffix_profile: str = "default",
+ ) -> CompileStats:
+     """Build privately, then replace the artifact after a successful commit.
+ 
+@@ -1160,7 +1200,8 @@ def compile_pack(
+             raise PackError("staging directory escaped output parent")
+         staged_pack = staging / "artifact.npk"
+         stats = _compile_unpublished(source_root, staged_pack, mode=mode, build_deps=build_deps,
+-                                     python_members=python_members, strict=strict)
++                                     python_members=python_members, strict=strict,
++                                     suffix_profile=suffix_profile)
+         if any(Path(str(out) + suffix).exists() for suffix in ("-wal", "-shm", "-journal")):
+             raise PackError("output has active SQLite sidecars; close readers/writers before recompiling")
+         os.replace(staged_pack, out)
+@@ -1176,6 +1217,7 @@ def _compile_unpublished(
+     build_deps: bool = False,
+     python_members: bool = False,
+     strict: bool = False,
++    suffix_profile: str = "default",
+ ) -> CompileStats:
+     """Create an unpublished artifact owned by compile_pack's staging directory."""
+     if mode not in COMPILE_MODES:
+@@ -1186,7 +1228,7 @@ def _compile_unpublished(
+     out.parent.mkdir(parents=True, exist_ok=True)
+ 
+     skipped: List[Dict[str, str]] = []
+-    files = scan_source(source, strict=strict, skipped=skipped)
++    files = scan_source(source, strict=strict, skipped=skipped, suffix_profile=suffix_profile)
+     stats = CompileStats(files_scanned=len(files), mode=mode, dependency_index=build_deps,
+                          skipped_sources=skipped)
+ 
+diff --git a/tests/test_suffix_profiles.py b/tests/test_suffix_profiles.py
+new file mode 100644
+index 0000000..14d85db
+--- /dev/null
++++ b/tests/test_suffix_profiles.py
+@@ -0,0 +1,47 @@
++"""Scan profiles index authored source and test file types and keep real source in env/ (E058)."""
++import pytest
++
++from npk.pack import compile_pack
++from npk.pack.format import open_pack
++
++
++def _tree(root):
++    for path, text in {
++        "keep.py": "x = 1\n",
++        "src/uu/env/src/env.rs": "fn main() {}\n",
++        "lib/x.cc": "int f() { return 1; }\n",
++        "lib/y.mjs": "export const a = 1;\n",
++        "tests/case.test": "[case t]\nx = 1\n",
++        "snap/__snapshots__/a.snap": "exports[`a`] = `b`;\n",
++        "parser.y": "%% grammar\n",
++        "venv/pyvenv.cfg": "home = /usr\n",
++        "venv/lib/python3.12/site-packages/foo.py": "x = 1\n",
++        "env/bin/activate": "#!/bin/sh\n",
++        "env/bin/tool.py": "y = 2\n",
++    }.items():
++        target = root / path
++        target.parent.mkdir(parents=True, exist_ok=True)
++        target.write_text(text)
++
++
++def _files(tmp_path, profile):
++    out = tmp_path / f"{profile}.npk"
++    compile_pack(tmp_path / "src", out, suffix_profile=profile)
++    with open_pack(out) as con:
++        return {row[0] for row in con.execute("SELECT path FROM files")}
++
++
++def test_profiles_add_file_types_and_keep_env_source_but_not_virtualenvs(tmp_path):
++    _tree(tmp_path / "src")
++    assert _files(tmp_path, "default") == {"keep.py"}
++    core = _files(tmp_path, "core")
++    assert core == {"keep.py", "lib/x.cc", "lib/y.mjs", "parser.y", "src/uu/env/src/env.rs"}
++    assert _files(tmp_path, "core_test") == core | {"tests/case.test"}
++    assert _files(tmp_path, "core_test_snap") == core | {"tests/case.test", "snap/__snapshots__/a.snap"}
++
++
++def test_unknown_profile_is_rejected(tmp_path):
++    (tmp_path / "src").mkdir()
++    (tmp_path / "src" / "a.py").write_text("x = 1\n")
++    with pytest.raises(ValueError):
++        compile_pack(tmp_path / "src", tmp_path / "p.npk", suffix_profile="everything")
