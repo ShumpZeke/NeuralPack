@@ -10,7 +10,7 @@ uv venv --python /usr/bin/python3.12 .venv && . .venv/bin/activate
 uv pip install -e '.[dev,tokenizers]' numpy==2.2.6 psutil==7.0.0 urllib3==2.7.0 click==8.5.0 \
     tiktoken==0.12.0 safetensors==0.6.2 pyarrow transformers==4.57.6
 uv pip install torch==2.8.0 --index-url https://download.pytorch.org/whl/cpu
-python -m pytest tests/ -q -p no:cacheprovider      # 1282 pass, 28 skip; one test needs a file not in this snapshot
+python -m pytest tests/ -q -p no:cacheprovider      # 1306 pass, 20 skip; one test needs a file not in this snapshot
 export NPK_BENCH_HOME=~/npk-data                     # datasets, clones, packs (never committed)
 python -m benchmarks.npkbench.run --split dev-fast --targets tests,docs --arms npk_default,npk_nodefs \
     --workers 4 --out experiments/npkbench/runs/<id>
@@ -32,11 +32,11 @@ have ~20 GB free. Record every experiment with `benchmarks.npkbench.expdb.append
 
 ## Evidence discipline that must not be relaxed
 
-- Contract mutations: 184 mutants, all killed at 4293b7f
-  (`experiments/npkbench/contract-mutations-4293b7f.json`, with E047's and E052's three each;
-  before that 181/181 at 7cca1f3, 178/178 at c66ccca and 168/168 in
-  `contract-mutations-3b5f9f5.json`, whose commit message misstates the added count as 13).
-  Add a mutant for every new guard or ranking rule.
+- Contract mutations: 194 mutants, all killed at a81e2c6
+  (`experiments/npkbench/contract-mutations-a81e2c6.json`, with E053's five, E054's two and
+  E056's three added to the 184/184 at 4293b7f; before that 181/181 at 7cca1f3, 178/178 at
+  c66ccca and 168/168 in `contract-mutations-3b5f9f5.json`, whose commit message misstates
+  the added count as 13). Add a mutant for every new guard or ranking rule.
 
 - Decide on `dev`/`dev-fast`; confirm once on `heldout`; never tune on `heldout`.
 - Small dev-fast effects have not replicated: E035, E036 and E044 each looked good on the
