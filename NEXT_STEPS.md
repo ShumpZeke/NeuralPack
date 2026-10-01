@@ -625,6 +625,31 @@ all of them unchanged on every screen (gym-dev and poly-dev-b results for the fi
 pending), and among candidates the highest mean utility over the screens wins, ties going to the
 fewest suffixes. The confirmation splits and the multilingual guard stay as declared.
 
+### E058 state (2026-10-01, written while poly-dev-b runs)
+
+Screens done (worktree `np-e058`, branch `exp/e058`, commit `2bb5cb1`; do not edit its compiler sources
+while runs are pending there, the harness flags a changed fingerprint): `dev-fast` (identical in 510 of
+515 selections, no recall change), `ood-multi-dev` (`e058_core`/`e058_core_test` fail on redis' Tcl, see
+above), `E058b-coverage-multidev` (`e058_notcl`: tests +2.3 to +2.9 significant at every budget, fix
+-0.06 to +0.55, mean utility +2.79, passes; `e058_notcl_test`: tests +2.3 to +3.5 significant, fix
+-0.06 to +0.44, mean +3.05, passes) and `E058-coverage-gymdev` (`e058_core_test`: tests +0.3 / +0.3 /
++0.9 / +0.9 / +2.2, significant at 2K, 4K, 16K, fix -0.9 to +0.5 not significant, mean +0.79, passes;
+`e058_core` alone neutral, so the gain is mypy's `.test` files). No gym-dev or poly-dev-b tree
+contains a `.tcl` file, so `e058_notcl_test` equals `e058_core_test` there. Pending: `E058-coverage-polydevb`
+(running, ~90 minutes; it also carries the informational `.snap` arm). If `e058_notcl_test` has
+utility >= 0 at every budget and no significant loss there, it is the candidate (highest mean utility)
+and the next steps, all declared above, are: (1) runs `E058-confirm-gymheldoutb` (split
+`gym-heldout-b`) and `E058-confirm-polyheldoutc` (split `poly-heldout-c`), arms `npk_default` and
+`e058_notcl_test` in worktree `np-e058`, targets fix and tests; (2) guard run on `ood-multi-sample`
+with the same two arms; (3) judge with `report --judge` and the declared promotion rule; (4) only then
+cherry-pick the product form (worktree `np-e058p`, branch `exp/e058p`, commit `5e41c87`: suffixes baked
+into `TEXT_SUFFIXES`, env/venv virtualenv detection, `tests/test_source_coverage.py`, eight mutants all
+killed) onto the PR branch, prove default selections equal the prototype arm's on the screens, refresh
+the mutation evidence and the README/architecture text. If poly-dev-b shows a significant loss or
+negative utility for the JS/TS part, drop the offending suffixes by a newly declared variant instead
+of promoting. The snapshot arm is reported with and without `.snap` hunks (`snap_split.py` logic) and
+is never promoted.
+
 ## Semantic evidence for code: what has been measured
 
 Dense and neural evidence has not helped code retrieval on this benchmark so far: equal-weight
