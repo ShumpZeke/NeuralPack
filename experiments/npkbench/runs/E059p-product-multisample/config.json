@@ -1,0 +1,37 @@
+{
+ "split": "ood-multi-sample",
+ "arms": [
+  "npk_default"
+ ],
+ "budgets": [
+  1024,
+  2048,
+  4096,
+  8192,
+  16384
+ ],
+ "tasks": 12,
+ "task_ids_sha256": "196687889d39ea4e91e431026cb270fefde433a8fa9301a06a417a2ecc2e25b3",
+ "repos": "astral-sh/ruff,axios/axios,nushell/nushell,uutils/coreutils",
+ "limit": 0,
+ "targets": [
+  "fix",
+  "tests"
+ ],
+ "ephemeral_packs": true,
+ "load": [],
+ "environment": {
+  "git_commit": "f3e4060615150d4cc1a812ee30ccd953b82d32f9",
+  "git_dirty": true,
+  "python": "3.12.3",
+  "sqlite": "3.45.1",
+  "platform": "Linux-6.18.44-fc-v50-x86_64-with-glibc2.39",
+  "cpus": 4,
+  "bench_version": "npkbench-1.1"
+ },
+ "started_unix": 1790847536.6229198,
+ "source_digest": "27dd39902b3f092ffb76d2de79e40b612e4e022a0024a795e3ab02547b57f5d2",
+ "compiler_fingerprints": {
+  "npk_default": "479f7f548ee1ab4f"
+ }
+}

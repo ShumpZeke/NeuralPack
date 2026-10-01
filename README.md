@@ -63,8 +63,13 @@ and 16K) over run R004. The table shows run R006, the current default.
   files (`.snap`, mostly prettier's) are 37-58% of the test hunks of the larger
   SWE-PolyBench splits, so test recall there cannot exceed about 42-62% whatever the ranking
   (similar, smaller ceilings: mypy's `.test` data files 5-17% of gym-dev and gym-heldout test
-  hunks, Redis' `.tcl` and C++ `.cc` tests; NEXT_STEPS has the measurements and the E058
-  experiment on indexing more file types).
+  hunks, Redis' `.tcl` and C++ `.cc` tests). Indexing more types was measured (E058) and does
+  not pay for itself as a default: mypy's `.test` files raise regression-test recall by +1 to
+  +3 points on 254 fresh issues but cost 0.2-1.0 fix points (significant at 2K, 8K and 16K),
+  Jest snapshots move recall from other test hunks to snapshot hunks, `.vue`/`.svelte`
+  fixtures displace code in sveltejs/svelte and prettier, and Tcl displaces Redis' C fix sites.
+  The default scan therefore keeps its file types; only source directories called `env` or
+  `venv` are now kept unless they are virtualenvs (E059; NEXT_STEPS has the measurements).
 - **Definition channel** (default): code identifiers named in the query
   (`Signal.send_robust()`, `django.core.exceptions.ValidationError`) resolve to their
   defining blocks. On the held-out split it adds +5.7 to +10.3 points at every

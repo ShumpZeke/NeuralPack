@@ -33,7 +33,9 @@ test-harness fix; one test needs an evidence file absent from this snapshot.
 ## 2. Compile pipeline (`npk/pack/compile.py`)
 
 1. **Scan** (`scan_source`): walk the tree, skip excluded directory names, credential-like
-   filenames and unknown suffixes (31 known text suffixes). Read bytes, check the stat
+   filenames and unknown suffixes (31 known text suffixes; `env` and `venv` directories are
+   skipped only when they are virtualenvs, i.e. hold `pyvenv.cfg` or an `activate` script, E059).
+   Read bytes, check the stat
    identity did not change during the read. **Abort the whole build** on any file that is
    > 2 MiB, contains NUL, is not UTF-8, or matches one of five credential regexes.
 2. **Split** (`split_source`) into blocks by language:
