@@ -126,8 +126,8 @@ def test_lazy_reader_checks_parent_in_same_query_snapshot(tmp_path,pipeline,monk
             def update():
                 try: return update_pack(pack,source)
                 finally: done.set()
-            def interleaved(con,query,limit):
-                ids = lexical(con,query,limit)
+            def interleaved(con,query,limit,*weights):
+                ids = lexical(con,query,limit,*weights)
                 if not jobs:
                     (source/'one.py').write_text('def retry_alpha():\n    return 99002\n')
                     jobs.append(pool.submit(update)); assert ready.wait(5); done.wait(.15)

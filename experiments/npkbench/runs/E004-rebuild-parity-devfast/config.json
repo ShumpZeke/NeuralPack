@@ -1,0 +1,32 @@
+{
+ "split": "dev-fast",
+ "arms": [
+  "npk_default",
+  "npk_members",
+  "oracle_blocks"
+ ],
+ "budgets": [
+  1024,
+  2048,
+  4096,
+  8192,
+  16384
+ ],
+ "tasks": 103,
+ "load": [],
+ "environment": {
+  "git_commit": "0e2794d7ee8571468bf279d48126a66cc8fc6dac",
+  "git_dirty": true,
+  "python": "3.12.3",
+  "sqlite": "3.45.1",
+  "platform": "Linux-6.18.44-fc-v37-x86_64-with-glibc2.39",
+  "cpus": 4,
+  "bench_version": "npkbench-1.1"
+ },
+ "started_unix": 1790444887.0420463,
+ "compiler_fingerprints": {
+  "npk_default": "72f3bc0c237eeddd",
+  "npk_members": "9e167a1e884da643",
+  "oracle_blocks": "72f3bc0c237eeddd"
+ }
+}

@@ -18,6 +18,7 @@ from .pack import (
 )
 # v1 and v2 each define their own PackError; keep them distinguishable.
 from .pack.format import PackError as PackV2Error
+from .pack.select import TF_CAP, TITLE_WEIGHT
 from .telemetry import analyze_traces
 from .auditor import audit_run
 
@@ -57,11 +58,15 @@ def main(argv: list[str] | None = None) -> int:
     build.set_defaults(build_deps=False)
     build.add_argument("--python-members", action="store_true",
                        help="EXPERIMENTAL: split Python classes at method boundaries")
+    build.add_argument("--strict", action="store_true",
+                       help="abort on any unindexable file instead of skipping and reporting it")
 
     update = commands.add_parser("update", help="Incrementally refresh a .npk from its source")
     update.add_argument("pack", type=Path)
     update.add_argument("source", type=Path)
     update.add_argument("--quick", action="store_true", help="Skip re-hashing files whose mtime and size match verified artifact records")
+    update.add_argument("--strict", action="store_true",
+                        help="abort on any unindexable file instead of skipping and reporting it")
     update_deps = update.add_mutually_exclusive_group()
     update_deps.add_argument("--deps", dest="build_deps", action="store_true")
     update_deps.add_argument("--no-deps", dest="build_deps", action="store_false")
@@ -80,6 +85,28 @@ def main(argv: list[str] | None = None) -> int:
     query.add_argument("--no-escalation", action="store_true", help="strict single-pass selection")
     query.add_argument("--no-relations", action="store_true",
                        help="disable conservative syntactic raise-site retrieval")
+    query.add_argument("--no-definitions", action="store_true",
+                       help="do not resolve identifiers named in the query to their definitions")
+    query.add_argument("--no-trim", action="store_true",
+                       help="skip an oversized top-ranked block instead of emitting its best members")
+    query.add_argument("--test-mate", choices=["auto", "always", "never"], default="auto",
+                       help="place the mirroring test file's best block right after the top implementation "
+                            "block: auto = from a 2048-token budget (default), always, or never")
+    query.add_argument("--raw-query", action="store_true",
+                       help="retrieve with the query exactly as given (keep issue-form headings, "
+                            "checklists and HTML comments)")
+    query.add_argument("--no-release-notes-last", action="store_true",
+                       help="rank changelogs, release notes and release blog posts like any other file "
+                            "(by default they go behind all other candidates)")
+    query.add_argument("--title-weight", type=int, default=TITLE_WEIGHT,
+                       help="times the terms of a multi-line query's first line (an issue title) "
+                            "count in lexical retrieval; 1 turns the emphasis off")
+    query.add_argument("--tf-cap", type=int, default=TF_CAP,
+                       help="most times a term of a multi-line query counts from its frequency in "
+                            "the query; 1 ignores frequency")
+    query.add_argument("--map-share", type=float, default=0.0,
+                       help="fraction of the budget for a context map: further ranked places "
+                            "(path:start-end kind name) listed without their text")
 
     verify_p = commands.add_parser("verify", help="Integrity-check a .npk")
     verify_p.add_argument("pack", type=Path)
@@ -163,10 +190,12 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "compile":
             output = args.output or args.source.absolute().with_suffix(".npk")
             result = compile_pack(args.source, output, mode=args.mode,
-                                  build_deps=args.build_deps, python_members=args.python_members).as_dict()
+                                  build_deps=args.build_deps, python_members=args.python_members,
+                                  strict=args.strict).as_dict()
             result["output"] = str(Path(output).absolute())
         elif args.command == "update":
-            result = update_pack(args.pack, args.source, build_deps=args.build_deps, quick=args.quick).as_dict()
+            result = update_pack(args.pack, args.source, build_deps=args.build_deps, quick=args.quick,
+                                 strict=args.strict).as_dict()
         elif args.command == "verify":
             result = verify(args.pack)
         elif args.command == "query":
@@ -174,10 +203,18 @@ def main(argv: list[str] | None = None) -> int:
                                     retrieval=args.retrieval,
                                     tokenizer=LocalTokenizer(args.tokenizer_json) if args.tokenizer_json else None,
                                     enable_dependency_expansion=args.expand_deps,
-                                    enable_relations=not args.no_relations)
+                                    enable_relations=not args.no_relations,
+                                    enable_definitions=not args.no_definitions,
+                                    enable_trim=not args.no_trim,
+                                    enable_test_mate={'auto': None, 'always': True, 'never': False}[args.test_mate],
+                                    enable_query_cleaning=not args.raw_query,
+                                    demote_release_notes=not args.no_release_notes_last,
+                                    title_weight=args.title_weight,
+                                    tf_cap=args.tf_cap)
             selection = selector.select(args.query, budget_tokens=args.budget,
                                         target_model=args.target_model,
-                                        allow_escalation=not args.no_escalation)
+                                        allow_escalation=not args.no_escalation,
+                                        map_share=args.map_share)
             result = selection.as_dict(include_text=args.show_text)
 
         elif args.command == "legacy-compile":

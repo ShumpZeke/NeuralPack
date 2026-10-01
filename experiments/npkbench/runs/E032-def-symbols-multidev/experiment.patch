@@ -1,0 +1,45 @@
+From 54c231b2c5cd76cfe1eda55a406c0c0888ec9256 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Sun, 27 Sep 2026 00:34:41 +0000
+Subject: [PATCH] E032 (experiment): bare member names and modifier-prefixed
+ declarations as definitions
+
+---
+ npk/pack/compile.py | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/npk/pack/compile.py b/npk/pack/compile.py
+index 2d021f5..da7dd53 100644
+--- a/npk/pack/compile.py
++++ b/npk/pack/compile.py
+@@ -652,7 +652,13 @@ def _python_raise_sites(source: str) -> List[Tuple[int, int, str]]:
+ 
+ 
+ IDENT_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]{2,}")
+-DEF_RE = re.compile(r"^\s*(?:def|class|function|fn|func|type|struct|interface)\s+([A-Za-z_][A-Za-z0-9_]*)", re.MULTILINE)
++# Declarations may carry modifiers (pub fn, export function, public static, async def,
++# pub(crate) struct); Ruby class methods are "def self.name".
++DEF_RE = re.compile(
++    r"^\s*(?:(?:pub(?:\([^)]*\))?|export|default|async|public|private|protected|static|final|"
++    r"abstract|unsafe|const|extern|override|internal|open|sealed|readonly|declare)\s+)*"
++    r"(?:def|class|function|fn|func|type|struct|interface|enum|trait|module)\s+(?:self\.)?"
++    r"([A-Za-z_][A-Za-z0-9_]*)", re.MULTILINE)
+ CONST_RE = re.compile(r"^\s*([A-Z_][A-Z0-9_]{2,})\s*[:=]", re.MULTILINE)
+ IMPORT_RE = re.compile(r"^\s*(?:from\s+([\w.]+)\s+import|import\s+([\w.]+))", re.MULTILINE)
+ 
+@@ -674,6 +680,12 @@ def _extract_symbols(block: RawBlock, language: str = "unknown") -> None:
+         seen.setdefault(m.group(1), ("constant", True))
+     if block.name:
+         seen.setdefault(block.name, ("definition", True))
++        # Qualified member names (JsonReader.nextString, Parser.parse_line) are
++        # also definitions of their bare member name, which is what issues cite.
++        if "." in block.name:
++            member = block.name.rsplit(".", 1)[1]
++            if member:
++                seen.setdefault(member, ("definition", True))
+     block.symbols = [(n, k, d) for n, (k, d) in seen.items()]
+     block.imports = [m.group(1) or m.group(2) for m in IMPORT_RE.finditer(block.text)]
+ 
+-- 
+2.43.0
+

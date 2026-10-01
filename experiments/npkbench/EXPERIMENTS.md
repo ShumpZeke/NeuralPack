@@ -1,0 +1,2464 @@
+# NPK-Bench experiment history
+
+Generated from `EXPERIMENTS.jsonl` by `python -m benchmarks.npkbench.expdb render`.
+Do not edit by hand.
+
+| ID | Date | Title | Status | Reason |
+|---|---|---|---|---|
+| B001 | 2026-09-26 | Standard-RAG baseline: Okapi BM25 over fixed 60-line chunks (whole and split identifiers) | **kept** | Kept as a permanent baseline arm. Held-out (407 issues), fix recall: product 0.230/0.309/0.399/0.475/0.575 vs chunk BM25 0.102/0.146/0.190/0.227/0.262 (+12.8 to +31.4 points) and identifier-split chunk BM25 0.101/0.149/0.217/0.267/0.321 (+12.9 to +25.5); every CI excludes zero. Even the pre-loop product (0.136/0.206/0.302/0.393/0.490) beat both. Tests: split baseline equal at 1-2K, product ahead from 8K (+5.7, +6.6 significant). Docs (33 issues): baseline ahead at 2K (+14.6 split, +21.4 whole; significant), equal from 8K. Dev-fast agrees on fix (+19 to +30 points). Memory-dev at 256-1K is not a fair comparison for 60-line chunks of long chat lines; B002 uses the common ~1,000-character chunker instead. |
+| B002 | 2026-09-26 | Standard-RAG baseline with the common ~1,000-character chunker (identifier-split BM25) | **kept** | Kept as a baseline arm. Code (dev-fast): product fix +23.1/+24.6/+21.8/+19.7/+15.9 points at 1K-16K (all significant); tests within noise (baseline slightly ahead at 1-4K, product at 8-16K); docs (13 tasks) baseline far ahead (0.423 vs 0.000 at 2K). Memory (memory-dev): product +20.6 [+10.6,+30.3] at 256 and +13.9 [+5.0,+23.0] at 512, then 1K-4K within +-1 point and -3.8 (n.s.) at 8K; the semantic/hybrid mode leads at every budget (+25.1/+15.3/+6.0/+3.5/+3.4/+3.3). Documentation retrieval is NeuralPack's main open weakness: small prose units match issue text well, and code-first ranking (definition channel) gives docs up. |
+| E000 | 2026-09-26 | Baseline: product as received on NPK-Bench dev-fast | **kept** | Reference point. Ranking (not packing) is the dominant loss; ~45% of selected tokens are docs/tests; 46/103 snapshots need blocker removal to compile. |
+| E001 | 2026-09-26 | Compile speed: parse Python once, statement-only raise walk, memoized term analysis | **kept** | 1.49x faster (not the >=2x expected: cProfile overstated pure-Python call overhead) with logically identical packs on real Django; kept. |
+| E001b | 2026-09-26 | Cache joined per-word analysis strings in analyzed_text | **rejected** | No measurable gain without the profiler (within noise). Reverted to keep the simpler code. Lesson: confirm profiler-guided micro-optimizations with uninstrumented paired timing. |
+| E002 | 2026-09-26 | Definition channel: identifiers a query names resolve to their defining blocks (held-out confirmed) | **kept** | Largest confirmed improvement: +5.7 to +10.3 points of held-out fix-target recall at every budget and +18.8 points of file recall at 2K, about 3x the tests-target cost; the two-target mean improves at every budget. Kept as default with the tradeoff documented. |
+| E003 | 2026-09-26 | File-level evidence aggregation (block score + alpha * file top-3 sum) | **rejected** | No significant gain at any budget; alpha 1.0 hurts at 16K. Discarded. File recall even drops at 4K+ (0.524 vs 0.592). |
+| E004 | 2026-09-26 | Skip and report never-indexed unindexable files instead of aborting the build | **kept** | Product can now compile every dev-fast snapshot, with explicit per-file reports and identical retrieval. |
+| E005 | 2026-09-26 | Rank coarse blocks, emit only the best-matching K method-level children of large blocks | **rejected** | Helps only at 1K; loses 5-10 pts at 2K-16K on the fix target: trimming blocks that would have fit drops gold lines (non-top children, class-level lines, class-end insertions) more often than the freed budget recovers. Follow-up E005c trims only blocks that no longer fit. |
+| E005c | 2026-09-26 | Top-block fit-or-trim: an oversized top-ranked Python block degrades to its best member spans | **kept** | Strict improvement on dev-fast: +13.9 / +7.3 points at 512 / 1K on the fix target, +0.7 / +0.5 on tests, identical selections at 2K-16K. Every emitted span is exact source with its own span; a note records the trim. enable_trim=False restores skipping. |
+| E006 | 2026-09-26 | Implementation-first role prior (demote tests/docs/examples by a BM25 factor) | **rejected** | Benchmark gaming, confirmed by attack: the fix-target gain is bought by nearly eliminating recall of where maintainers put regression tests (4K: 0.141 -> 0.034). Not a default. Could only return as an explicit caller-declared intent. |
+| E008 | 2026-09-26 | Role portfolio: per-role budget shares (impl/tests/docs), soft shares, pure test reservation | **rejected** | Attack by decomposition: the arms that improve both targets do so by demoting documentation, which NPK-Bench cannot falsify (it has no documentation target); giving docs 10-20% removes most of the gain, and a pure test reservation only transfers recall from fix to tests (two-target mean within noise). Hard shares also lose 10 points at 1K. Not promoted. |
+| E009 | 2026-09-26 | Callee expansion from named-definition seeds | **rejected** | Fix-target changes stay within +/-2 points (noise at n=103) and the tests target loses up to 5.5 points. Precise seeds do not rescue graph expansion here; gold is mostly named or lexically matched directly. |
+| E010 | 2026-09-26 | Drop very-high-document-frequency terms from long queries | **inconclusive** | ~3x faster lexical stage for long queries with fix-target recall within noise, but up to -3 points on the tests target at 16K. Latency is not a bottleneck at this scale (~30 ms uncontended); not promoted. Revisit for interactive/agent loops on very large repositories. |
+| E011 | 2026-09-26 | Learned pairwise re-ranker over the product's candidate pool | **rejected** | With role features the model relearns documentation demotion and a fix->tests transfer (largest weights are role and doc-like kind proxies). Role-blind models do not beat the product's fused ranking (fix within +/-3 points). The remaining ranking headroom needs new evidence (semantic similarity, structure), not reweighting of existing channels. |
+| E012 | 2026-09-26 | Dense similarity (MiniLM, bge-small) fused with the product's top-100 pool order | **rejected** | Budget-dependent trade-off that fails the declared rule. bge-small vs product (dev-fast, paired): fix -9.2 [-17.5,-1.0] at 1K and -10.8 [-18.1,-3.9] at 2K, +2.6/+3.1 (n.s.) at 8K/16K; tests +5.3 [+1.6,+9.6] at 1K, +7.5 at 2K, +5.6 at 16K; docs (docs-3 rescored, 13 tasks) 0.000->0.154 at 1K, 0.538->0.692 at 16K. Utility U = -2.7/-2.1/+3.5/+7.6/+9.9 points at 1K-16K: negative at small budgets. Fusing at equal weight with the whole pool order halves every product channel's influence; MiniLM and a sharper dense weight (k=30) are worse on fix. Query-time encoding of 100 blocks costs seconds per query on CPU (37 s p50 cold). |
+| E012b | 2026-09-26 | Dense similarity as one channel inside the product's RRF (pool of 100) | **inconclusive** | bge-small passes the quality rule, barely at 1K; the cost keeps it out of the default. bge vs product (dev-fast): fix -3.9/-3.4/-0.5/+4.2/+4.2 (none significant), tests +3.4*/+6.4*/+2.8/+1.8/+2.9, docs (13 tasks) +7.7/+15.4/+7.7/+23.1/+15.4; utility +0.2/+4.3/+3.0/+8.0/+8.4 points. MiniLM fails (fix -5.8*/-7.8* at 1-2K; utility -3.9 at 1K). A product form needs bge vectors for every block (compile time on Django rises from ~15 s to 10+ minutes on CPU) or query-time pool encoding (seconds per cold query). Candidate for an opt-in semantic mode (swap MiniLM for bge-small, pool-channel form); not a default. |
+| E013 | 2026-09-26 | Sibling/near-duplicate collapse (measured before building) | **rejected** | At most 3.1% of selected tokens could be reclaimed on this workload; not worth a new representation now. Revisit for repetitive/vendored corpora or conversation logs. |
+| E014 | 2026-09-26 | Source scan without pathlib relative_to/is_relative_to (update latency) | **kept** | 1.5-2.5x faster updates on a large repository with identical artifacts. Remaining one-file update cost is the global digest over FTS storage (future: incremental global integrity). |
+| E015 | 2026-09-26 | Documentation target for NPK-Bench (docs-1) and first docs-cost measurement | **inconclusive** | Superseded by E015b. Inspection of the docs-1 gold found construction errors: the upstream-commit rule (first commit after base touching every fix file) picked a mass-reformat commit for pytest-5103 (19 doc example files) and a deprecation sweep for matplotlib-24265, and counted CONTRIBUTORS.txt and doc/users/prev_whats_new as topical docs. Directionally, documentation demotion collapsed docs recall (e006_role05: 0.000/0.000/0.000/0.011/0.063 at 1K-16K vs npk_default 0.000/0.092/0.236/0.276/0.425), and definitions+trim cost -9.2 points at 1K (CI [-19.5,-1.1], 0 wins/4 losses) and -6.9 at 8K. docs-3 (patch-overlap commit identification, widening only to the introducing PR merge, prose-only) is the corrected target; docs-2 was built but found to swallow branch-integration merges before any use. |
+| E015b | 2026-09-26 | Docs target docs-3: documentation cost of role priors and of the definition channel | **kept** | docs-3 is kept as NPK-Bench's third target. (a) Demotion is decisively harmful: e006_role05 vs product on dev docs -14.1/-30.1/-37.2/-40.4 points at 2K-16K (CIs exclude zero, 0 wins / 5-12 losses), confirming the E006/E008 rejections on evidence rather than suspicion. (b) The definition channel costs docs: dev -10.3 [-21.8,-1.3] at 1K; held-out (33 tasks, confirmation only) -12.1 [-24.2,-3.0] at 2K and -10.1 [-21.2,-1.0] at 4K. Under the declared utility E002 stays net positive (fix gains of 8-10 points dominate the 0.087-weighted docs loss). Top-block trimming is docs-neutral (held-out identical). |
+| E016 | 2026-09-26 | Test-mate prototype: insert the test block mirroring the top implementation file | **rejected** | Superseded by E016b. The prototype re-filled the budget itself without top-block trimming, so its -6.3 fix points at 1K were mostly the missing trim, not the insertion; its tests gains (+10.8 [+5.2,+17.0] at 2K for position 1) motivated the product-form E016b. |
+| E016b | 2026-09-26 | Test mate in the product selector (placed right after the top implementation block) | **kept** | Kept as an opt-in mode (enable_test_mate=True, --test-mate); the held-out confirmation did not support a default change. Dev-fast: tests +3.7/+7.0/+4.9/+2.9/+2.8 points, fix changes not significant. Held-out H001 (407 issues; criteria committed before the run): tests +1.15 [+0.2,+2.3] / +3.8 [+1.6,+6.0] / +4.5 [+2.2,+7.1] / +3.6 [+2.0,+5.4] / +1.7 [+0.7,+2.9] points at 1K-16K (34 wins/6 losses at 2K); fix -1.15 [-2.2,-0.3] / -0.6 / -1.4 [-2.7,-0.2] / -0.3 / -0.6 [-1.3,-0.1]; docs ~0. Utility -0.012/+3.2/+2.8/+3.3/+1.0 points: negative (by 0.012 points) at 1K with a significant fix loss, so the pre-declared rule blocks a default change. A budget-gated variant (mate only at >=2K) is suggested by these numbers but must not be confirmed on the same held-out split. |
+| E016c | 2026-09-26 | Budget-gated test mate as the default (on from 2048 tokens) | **kept** | Passes the criteria declared in NEXT_STEPS.md before HB01 (heldout-b, 400 fresh issues). Gated vs product: 1K identical by construction; tests +5.7 [+3.4,+8.1] / +6.0 [+3.7,+8.4] / +3.7 [+2.0,+5.5] / +2.3 [+1.0,+3.7] points at 2K-16K; fix -1.1 [-2.6,+0.3] / -0.9 [-2.0,+0.2] / -0.9 [-1.8,-0.1] / -0.4 [-1.0,-0.0]; utility 0.0/+4.5/+5.0/+2.8/+1.9. Significant fix losses occur only where utility is clearly positive. The new default equals the evaluated composition (mate off at 1K, evaluated mate from 2K) on all 515 dev-fast selections. enable_test_mate: None (default, gated) / True / False; CLI --test-mate auto/always/never; mutant test_mate_gate_ignored is killed. |
+| E017 | 2026-09-26 | Context map: a budget share for ranked locations listed without text | **kept** | Kept as an opt-in output mode (select(map_share=...), --map-share), not a default: full-text recall falls as the map share grows. With 25% of the budget as a map (dev-fast, paired vs the product's full text): locatable fix recall +5.3/+4.4/+9.6/+11.3/+9.7 points at 1K-16K (all CIs exclude zero), tests +2.1/+8.8/+9.0/+7.4/+6.5, docs (13 tasks) 0.000->0.077 at 1K, 0.231->0.462 at 4K; full-text fix recall -4.6/-5.8/-2.9/-3.4/-3.6. A 25% map at 2K locates 0.484 of fix hunks, the product's full text at 4K 0.479. Map only (100%): 0.515 located at 1K vs 0.358 in text. |
+| E018 | 2026-09-26 | Documentation channel on top of reST sectioning (E019) | **rejected** | Built on E019, which was rejected. On docs (dev, 26 tasks) the channel added +10.3/+5.1/+7.7/+3.8/-2.6 points over E019 alone, but the combination only matched the main compiler beyond 1K. The channel alone on the main compiler was tested as E018b. The code-target run of this combination was stopped as superseded. |
+| E018b | 2026-09-26 | Documentation channel (named entities -> reST object directives) on the main compiler | **rejected** | Trades code for documentation. Docs (dev, 26 tasks): +14.1 [+2.6,+26.9] points at 1K (5 wins/0 losses), +5.8 at 2K, -2.6/-1.3/0 beyond. Dev-fast code targets vs the same selector without the channel: fix -2.4/-1.0/-5.3 [-9.7,-1.5]/-1.0/0.0 (0 wins/6 losses at 4K), tests -0.2/-1.9/-3.9 [-7.8,-1.0]/-1.6/-0.6. Utility -1.9/-2.2/-9.9/-2.6/-0.6 points: negative at every budget. Django documents nearly every entity, so the channel lifts documentation for most queries at the expense of the code the issue is about; documentation matters for 8.7% of tasks. |
+| E019 | 2026-09-26 | Split .txt files with reST section structure as reST (Django documentation) | **rejected** | No gain on any target. docs (dev, 26 tasks): +3.8/-2.6/-10.9/-3.8/-1.3 points at 1K-16K, none significant (2 wins/5 losses at 4K); dev-fast vs the same selector on the main compiler: fix 0.0/-1.9/-1.9/+1.0/0.0, tests -0.5/0.0/-0.5/+1.5/+1.0, docs 0/0/-7.7/0/-7.7 (13 tasks); utility -0.5/-1.9/-3.1/+2.4/+0.3 points. Compile time +15% (17.3 s vs 15.0 s per Django pack) from more, smaller blocks. Smaller named sections do not rank the edited lines better than windows do. |
+| E022 | 2026-09-26 | Segment-aware lexical retrieval: separate channels for issue prose and code | **rejected** | Fails the declared rule at 1K. e022_split vs product (dev-fast): fix -2.4/-2.4/+2.4/+2.6/0.0 (none significant), tests +1.8/+4.4/+5.3/+3.3/+5.3 (significant at 16K), docs 0/+7.7/0/+7.7/0; utility -0.7/+2.6/+7.6/+6.6/+5.3 points. Adding only a code or only a prose channel to the full-query channel is weaker (full_plus_prose: fix -4.4 at 2K, significant). The tests gain overlaps what the test mate (E016b) already recovers; not tuned further on dev-fast to avoid fitting variants to it. |
+| E023 | 2026-09-26 | Import-aware entity extraction and prose-weighted definition votes | **rejected** | No measurable effect. A reimplementation control reproduced the product exactly (all 515 selections). Import-aware tail extraction vs product (dev-fast): fix -0.5/-0.5/+1.5/-0.5/0.0, tests 0.0/+0.5/0.0/+1.9/-0.5, at most 4 tasks changed per budget; code-half weighting and the combination are equally flat (utility within +-2 points, mixed sign). The ambiguity cap already discards most module-path names, so the traced failure is rare in aggregate. The simpler product stays. |
+| E024 | 2026-09-26 | Bulk integrity leaves (one ordered scan per table) and batched framing | **rejected** | Correct but not worth its complexity. Digests are byte-identical (4 Django packs; new equality test across all local tables; two mutants killed), but paired compile timing gives 1.018x (12.86 -> 12.64 s median) and verify ~3% (9.4-9.8 s -> 8.8-9.3 s). The cold-pack microbenchmark (1.4 s -> 0.5 s) overstated the in-compile gain because sealing reads hot pages; verify is dominated by the deliberate FTS source-parity rebuild. Not merged: +40 lines in integrity-critical code for ~2%. |
+| E025 | 2026-09-26 | Parameter sweep: BM25 field weights (E025), candidate depth (E026), RRF constant (E027) | **rejected** | Defaults sit near a local optimum; no setting passes the rule. Field weights: name x2 / path x2 / both x2 change fix by at most +3.2 points (both x2 at 16K, the only significant cell) while costing tests -1.7 at 4K (utility -1.4); halving name/path weights loses up to -2.4. Candidate depth: 30 hurts (fix -3.4 at 4K, significant); 120 and 240 give +0.5 to +1.9 points, never significant (utility +0.2 to +3.1). RRF k=20 costs 1 point at 1-2K; k=120 is identical. A reimplementation control reproduced the product exactly. Held-out was not consulted. |
+| E030 | 2026-09-27 | Top-block trimming for every language (ranked line windows of an oversized non-Python top block) | **rejected** | No effect on ood-multi-dev: fix +0.4/-0.1 points at 512/1K for 20-line windows (2 wins/2 losses), -0.1/-0.1 for 40-line windows, identical from 2K; tests +0.6 at 512-1K (one task). Trimming helps only when the top-ranked block holds the fix; outside Python the fix sites rank at median 112-401, so the non-Python gap is ranking, not packing. |
+| E031 | 2026-09-27 | Strip issue-template structure (short headings, checklists, HTML comments) from queries | **kept** | Promoted after the fresh heldout-c confirmation (HC01, criteria declared before the run): fix +0.7/+0.9/+1.2 points at 4K/8K/16K and tests +0.4 (1K) / +1.4 (16K), all significant; utility +0.25 to +2.57, no significant loss. Dev (E031b, 300): utility +1.0/+0.7/+1.6/+2.5/+0.4. Mixed on multilingual dev (utility -0.9 at 4K), which is not part of the rule. Product form: PackSelector(enable_query_cleaning=True) by default, CLI --raw-query to disable; cleaning applies once before every channel and Selection.query keeps the caller's text. The product form equals the evaluated prototype on all 515 dev-fast selections; three new mutants (cleaning disabled, title dropped, cleaned query reported) are killed. Benchmark arm npk_rawquery is the previous product. |
+| E032 | 2026-09-27 | Bare member names and modifier-prefixed declarations as definition symbols | **rejected** | Mixed outside Python and no effect on Python. ood-multi-dev vs the product (OMD01): fix -0.4/+0.3/-1.2/-0.4/+0.3 points (none significant; wins and losses balanced), tests +0.3 to +0.6; utility -0.1/+0.7/-1.2/+0.2/+0.6 (negative at 1K and 4K). By language at 2K: JS/TS +4.3, Java +1.5, PHP +0.3, Rust -4.8, others 0. dev-fast (Python): all 515 selections identical. More definition candidates displace lexical ones in some languages; a language-specific form would need more data per language than ood-multi-dev has. |
+| E033 | 2026-09-27 | Ruby splitter: def/class/module ... end blocks (matched by indentation) instead of 60-line windows | **rejected** | Fails the rule on the 28 Ruby issues of ood-multi-dev: fix +8.3 (1K, 5 wins/1 loss) / -0.4 / -1.4 / -3.6 / -10.9 [-22.8,-0.8] points (the 16K loss is significant: small method blocks lose the incidental coverage of neighboring hunks that windows gave); tests +0.9 / +8.3 / +8.3 / +20.4 [+7.4,+37.0] / +5.6 (minitest methods become findable units); utility +9.2/+7.9/+6.8/+16.6/-5.4. Promising for tests, but 28 issues are too few to tune a variant without fitting noise; a class-level-block design with member trimming (as for Python) would need a larger Ruby dev set. |
+| E034 | 2026-09-27 | Weight the issue title's terms in the lexical channel | **kept** | Large dev-fast gains, widening with weight. x1 control identical to the product (515/515). x2: utility +3.6/+6.0/+6.5/+11.8/+9.9 points (tests +5.4* to +8.4* from 2K). x3: fix +1.0/+1.0/+1.8/+6.8*/+4.7, tests +2.9*/+8.7*/+9.8*/+9.3*/+9.5*, docs +15.4 at 1K-8K (2-3 issues); utility +5.2/+10.9/+12.8/+17.3/+14.1, no significant loss. Sweep of x4/x6 and a separate title channel (E034b) queued on dev-fast, then the full dev split; confirmation would use heldout-d. E034b sweep on dev-fast against the new default (with E031 cleaning): x3 utility +4.4/+8.3/+8.6/+12.0/+13.8 (tests significant at every budget, fix never negative); x4 +5.7/+9.6/+8.6/+15.2/+13.6; x6 +5.4/+5.2/+7.5/+15.3/+13.1 (fix -1.5 at 2K); title as its own RRF channel +2.2/+5.8/+15.8/+11.3/+13.6 (fix slightly negative at 1-2K); both +3.3/+4.4/+10.0/+14.0/+14.0 (fix -4.5 at 2K); title-only lexical query -0.7 at 2K (the body matters: weight the title, do not replace the body). x3 and x4 go to the full dev split (E034-E035-E036-dev). Non-Python (ood-multi-dev, 186 issues, 41 repositories' dev half): x3 fix +3.0/+1.9/+6.5*/+6.8*/+8.2* points, tests +3.6*/+0.8/+3.9*/+3.8*/+3.7, utility +6.6/+2.7/+10.4/+10.5/+11.8, no significant loss: the gain generalizes beyond Python. Product form prepared on local branch exp/e034p (title_weight, default 3; equals the prototype on 515/515 dev-fast selections and title_weight=1 equals the previous default on 515/515; two mutants killed). Full dev (300): x3 utility +5.8/+8.8/+10.1/+10.8/+15.4 points, x4 +6.6/+8.7/+10.5/+14.0/+16.4 (fix significant from 2K, tests at every budget, no significant loss); on the 197 issues outside dev-fast x4 is +7.0/+8.1/+10.9/+13.1/+18.2. By the declared rule x4 (higher mean utility) goes to heldout-d (HD01). HD01: x4 passes on heldout-d (fix +2.2 to +5.4 points significant at 2K-16K, tests +2.9 to +10.6 at every budget, mean utility 9.54), but E039 (title x3 with query term frequency) passed with a higher mean utility (9.99) and the declared rule promotes one of two uncombined alternatives; title weighting ships as part of E039 (x3). |
+| E035 | 2026-09-27 | Choose the test mate's file with lexical evidence | **rejected** | Full dev (300): mirror_any utility 0/+2.9/+2.9/+1.1/+0.4 points (tests +2.6* at 4K), fused 0/+2.6/+3.7/+0.9/+0.5 (fix +1.2* and tests +2.1* at 4K); 1K is unchanged by construction (mate off). On the 197 issues outside dev-fast (where the rules were not designed) mirror_any stays >= 0 at every budget (0/+2.4/+1.2/+0.8/0) but fused falls to -0.14 at 8K, so by the declared rule mirror_any goes to heldout-d (HD01). HD01 (heldout-d): fails; fix -0.9 points at 4K is a significant loss and utility is -0.14 at 16K (tests +1.8 at 4K). The dev gain did not replicate. |
+| E036 | 2026-09-27 | Module header (imports) of the top implementation file | **rejected** | Full dev (300): one file utility +1.1/+0.7/+0.7/+0.8/+3.3 points (fix +1.3* at 1K, +2.2* at 8K, +3.2* at 16K; tests -0.2 to -1.1, not significant); two files +1.1/+1.7/+1.5/+1.9/+3.5. Outside dev-fast the two-file variant falls to -0.3 at 4K with tests -1.6* at 8K, while one file stays +0.9/+0.9/+0.3/+0.4/+3.6, so by the declared rule the one-file header goes to heldout-d (HD01). HD01 (heldout-d): fix +2.8/+2.2/+2.4/+2.9 points at 2K-16K (significant) and utility +1.0 to +2.9, but tests -0.7 at 2K is a significant loss (upper bound -0.00004), which the declared criteria forbid. A header variant that keeps the fix gain without displacing test blocks at 2K (for example placed only from 4K) would need a fresh held-out split. |
+| E037 | 2026-09-27 | Morphological query expansion (Snowball stems or plural forms from the pack vocabulary) | **rejected** | Fails the rule on dev-fast. Snowball (up to 3 variants per term; a Django query grows from 73 to 166 terms): fix -2.6/-4.5*/-2.1/+1.8/+0.3 points, tests -1.5/-0.5/-2.4/-5.1*/-6.2*, utility -4.1/-4.4/-3.1/-2.7/-7.2. Plural forms only: fix -1.5/-1.9/-0.5/+1.1/+1.1, tests +0.9/+1.8/-2.6/-1.7/-2.2, utility -0.6/-0.2/-2.4/-1.2/-1.7. Variants add common words (even ~ evening, supports, issues) whose BM25 terms outweigh the rare misspelled identifiers they were meant to reach. The product has no dependencies, so nothing would have shipped without an in-repository rule set anyway. |
+| E038 | 2026-09-27 | Static Model2Vec embeddings (potion-base-8M / potion-retrieval-32M) as a semantic channel for code | **rejected** | Fails the rule on dev-fast in every form. Pool-of-100 with potion-base-8M: fix -6.6*/-7.4*/-4.0/-0.5/-2.9 points, utility -3.9/-3.2/-1.4/+5.1/-4.0. Pool with potion-retrieval-32M: fix -4.0/-8.4*/-5.5/-2.4/-4.5, utility -0.6/-3.4/+0.2/0.0/-6.9. Full-pack index (32M): fix -3.2*/-7.4*/-5.8/-4.4/-2.3, tests +4.3* at 1K, utility +1.7/-1.3/-1.4/-2.4/-3.8. Mean-pooled static vectors are too coarse for code: as a fusion channel they displace lexical and definition candidates. The semantic gap for code still needs a contextual encoder (E012b) or a different use of static vectors (not as an RRF channel). |
+| E039 | 2026-09-27 | Query term frequency in the lexical channel | **kept** | Promoted after HD01 (heldout-d, 401 unused issues, criteria declared before the run): fix +0.1/+1.4/+2.9/+3.2/+4.6 points (significant from 2K), tests +2.8/+5.8/+8.5/+8.8/+12.2 (significant at every budget), utility +2.9/+7.2/+11.3/+11.9/+16.7, no significant loss; its mean utility (9.99) beat the other passing candidate, E034 title x4 (9.54). Full dev: +6.9/+6.8/+10.5/+11.6/+17.1. Product form: title_weight=3 and tf_cap=3 by default (CLI --title-weight/--tf-cap); each term of a multi-line query repeats min(tf_cap, 1 + floor(log2 tf)) times in the lexical OR plus title_weight - 1 if it is in the first line; single-line queries (chat memory) are unweighted. Equals the evaluated prototype on 515/515 dev-fast selections, and title_weight=1, tf_cap=1 equals the previous default on 515/515. Mutants killed: title_weight_ignored, query_tf_ignored, single_line_queries_weighted, title_weight_whole_query. Benchmark arms npk_unweighted (E039 off) and npk_query_baseline (E031 and E039 off). Cost (measured after promotion): FTS5 bm25() runs per phrase and per matching row, and weighting raises the phrase count 1.6-1.8x, so Django lexical ranking takes about 1.9x as long (median 51 -> 107 ms at depth 1000; matching alone 8 -> 18 ms) and median selection time rises about 55% (heldout-d at 4K: 70 -> 109 ms with four workers; p95 246 -> 469 ms). An earlier 'about 15%' figure came from E034 x3 on dev-fast and understated it for large repositories. |
+| E040 | 2026-09-27 | Code names in the issue title vote more in the definition channel | **rejected** | No effect on dev-fast: against title x3 alone, x2 and x4 title votes change 1-2 issues per budget (fix +1.0 at 1K, tests -1.0 at 2K and 8K; utility +1.0/-1.0/0/-1.0/0 for x2 and +1.0/-0.6/+1.0/-1.0/0 for x4). Title names are usually few and already decisive in the definition channel's ranking. |
+| E041 | 2026-09-27 | Title weighting in top-block trimming's member ranking | **rejected** | No effect on dev-fast at 512-16K: hunk recall identical to title x4 alone on every issue and budget (member order changes in a few selections without changing which gold lines are covered). Trimming mostly acts at small budgets, where the top block's best member is already decided by the rarest query terms. |
+| E042 | 2026-09-27 | Top-file module header on the E039 default: only from 4K, or capped at budget//16 | **rejected** | Fails the dev rule declared for HE01 (no significant loss), so nothing went to heldout-e. Full dev vs the E039 default: from-4K fix +2.2/+2.1/+2.0 points at 4K/8K/16K (significant) but tests -1.2 at 8K (significant); cap budget//16 fix +0.7 to +2.0 (significant at 1K, 2K, 8K, 16K) and the same tests -1.2 at 8K; the original E036 header likewise. The header's tokens displace tail test blocks; the loss is identical across variants at 8K/16K because the same header is placed there. The trade (about +2 fix for -1 tests points) has positive utility but the declared criteria forbid significant losses; changing that criterion is a policy decision, not something to tune per experiment. |
+| E043 | 2026-09-27 | Cap queries at 512 distinct lexical terms; append backticked literals in query order | **kept** | Kept as a robustness guard. Queries under the cap are unchanged by construction (dev-fast: 511/515 selections identical to the E039 run; the 4 differences are pylint-7080, which has 522 terms). Latency on Django (4K): 1,000 / 5,000 / 20,000 synthetic identifiers 8.4 / 39 / 114 s -> 2.2 / 3.0 / 4.1 s. On the ten benchmark issues above the cap (long-queries split, heldout-e excluded): median latency 1.2 s -> 0.74 s (max 3.5 -> 1.5 s); fix 0/0/-8.3/-10.0/+1.4 and tests +10/+10/+10/+10/0 points vs uncapped, none significant (n=10; 43 of 50 issue-budgets identical). The literal-order fix removes hash-seed dependence (six seeds give one order); on the exposed dev-fast issue, selections were already identical across seeds. Mutants query_term_cap_ignored and explicit_literals_in_hash_order are killed. |
+| E044 | 2026-09-27 | A second test mate (for the second-ranked implementation file) at large budgets | **rejected** | Does not replicate. Full dev (300) vs the default: from-8K tests +0.8 (8K, not significant) and +0.95 (16K, lower bound barely above 0), fix -0.17/-0.17, utility +0.30/+0.11 (mean 0.08); from-4K fails (fix -2.6 at 4K, significant). On the 197 dev issues outside dev-fast, where it was not screened, the from-8K variant has utility -0.9 / -0.7 at 8K/16K (fix -0.7/-0.5, tests -0.2/+1.2): the full-dev pass rests on the dev-fast issues. The HE01 plan declared for E044 would have sent the from-8K variant to heldout-e; that confirmation was deliberately not run, which can only prevent a promotion, so heldout-e stays unused for a stronger candidate. Dev-fast screen: tests +2.75 at 8K (significant), utility +2.9/+1.0 at 8K/16K. |
+| E045 | 2026-09-27 | A cross-encoder reorders the top 10 fused candidates (ms-marco MiniLM, bge-reranker-base) | **rejected** | Fails decisively on the full dev split (screened there directly). MiniLM: fix -15.8/-12.8/-8.8/-1.1/-0.3 points at 1K-16K (significant at 1K-4K), tests +4.3 (1K, significant)/+3.7/+1.7/-0.6/-0.7, utility -11.0/-9.0/-6.7/-1.6/-1.4. bge-reranker-base: fix -14.8/-11.7/-8.0/-0.4/+0.1 (significant at 1K-4K), utility -11.0/-12.1/-5.0/-1.7/-0.4. Both web-passage rerankers prefer prose-like blocks (tests, docs) that read like the issue over the implementation code; they also cost 1.9 s (MiniLM) and 10.5 s (bge) median per query on one CPU thread. A code-aware reranker would be needed; general-purpose ones are not an opt-in candidate. |
+| E046 | 2026-09-27 | Modifier-prefixed declarations and bare member names as JS/TS/Java definitions (compile time) | **rejected** | Fails the dev rule on poly-dev (199 issues; vs P001's default, same issues, the compiler change is the only difference). Fix +2.53 (1K, significant) / +1.01 / +1.38 (significant) / +0.57 (significant) / +0.22 points; tests -0.82 / -0.76 / -0.30 (significant) / -0.89 (significant) / -0.27; utility +1.7 / +0.3 / +1.1 / -0.3 / -0.04. The gain is mostly Java (fix +4.2 at 1K, +2.4 at 4K) with Java's regression-test recall down 0.7-1.9 points; TypeScript is unchanged. Java's test mate cannot mirror FooTest.java to Foo.java (E047), so when definitions change the top implementation file the mate lands on an arbitrary test of the package; E046 is to be re-screened on top of E047 if E047 is kept. Patch saved in the run directory (e046.patch). Compile +5% (13.4 s vs 12.8 s mean), packs +2%. |
+| E046b | 2026-09-27 | E046 (JS/TS/Java member and modifier definitions) re-screened on top of E047's test conventions | **rejected** | The E046 compiler reproduces E046 exactly (deterministic). E046 + e047_strict vs the current default on poly-dev: fix +2.53 (1K, significant) / +1.23 / +1.93 (significant) / +0.97 / +0.29, tests -0.82 / +2.35 / +0.14 / -1.29 / -0.27, utility +1.7 / +3.5 / +2.1 / -0.30 / +0.03: fails U>=0 at 8K. Against E047 alone, E046 still costs tests at 8K (-0.74: three Java issues each lose a test hunk, none gain) while adding fix +0.65: bare member names such as get/value/equals give many methods a definition vote, displacing test blocks at the budget's tail. The qualified form (E049: Type.member only when the issue names the type) is the precise alternative. |
+| E047 | 2026-09-27 | Test-file conventions beyond Python: JS/TS/Java/Go/C/Ruby test paths and CamelCase test affixes for the test mate | **kept** | Confirmed on poly-heldout by PH01 (133 issues, 122 with test edits; criteria declared in NEXT_STEPS.md before the run): tests +1.82 / +0.90 / +1.62 / +1.53 points at 2K / 4K / 8K / 16K (significant at 2K, 8K, 16K), fix +0.02 / +0.14 / +0.03 / +0.12, 1K unchanged by construction; utility >= 0 at every budget (mean +1.23), no significant loss. Dev screens: poly-dev-b (371) tests +2.28 / +2.72 / +2.01 / +0.90 (all significant), gains in material-ui and serverless (colocated *.test.js); poly-dev (199) tests +2.45 at 2K but utility -0.22 at 8K from two issues (the reason for the larger poly-dev-b screen); ood-multi-dev utility >= 0 everywhere. Product form (TEST_PATH conventions, _test_path_parts, named-mirror rule in _mate_score) reproduces e047_strict on dev-fast (515/515) and poly-dev (995/995); Python selections are unchanged apart from one Django issue. Mutants polyglot_test_paths_ignored, test_affix_ignored and unnamed_mirror_accepted are killed. |
+| E048 | 2026-09-27 | Only a brace type's header fragment defines its name (compile time) | **rejected** | Fails on poly-dev-b (371 fresh issues; the declared C2 screen). The E048 compiler alone vs the current default: utility -0.54 / -1.13 / -0.97 / -0.32 / -0.06 at 1K-16K (fix -0.19 / -0.34 / -0.57 / -0.29 / -0.06, tests -0.35 / -0.80 / -0.41 / -0.03 / 0.00; none significant, all negative). C2 (E048 + E049 + E047): fix -1.11 / -0.71 at 4K / 8K (significant), utility -0.47 at 1K, and worse than E047 alone (mean utility -0.20 against it). The junk class fragments cost almost no budget, and voting the class name to its header alone removes votes that happened to reach useful fragments (fields and constants between methods). poly-dev screen: neutral alone, mean utility +1.03 with E049+E047. Patch saved as PB-E048-E049-polydevb-e048/e048.patch; the fragment and ambiguity-cap findings stay recorded above. |
+| E049 | 2026-09-27 | Qualified member references (Type#member, Type::member, Type.member) resolve brace-language method blocks | **rejected** | Not promotable. poly-dev: utility >= 0 at every budget but no significant gain (fix +1.40 at 1K, CI [-0.07, +3.16]); only 10 of 199 issues use Type#member. poly-dev-b was screened only in the declared C2 combination on the E048 compiler, which failed (fix -1.11 / -0.71 at 4K / 8K); E049's own share there is not positive (E048+E047 with vs without E049: fix -1.11 vs -0.63 at 4K). A qualified reference helps only when the issue names both the type and the member, which is rare; kept as a recorded idea, not a default. |
+| E050 | 2026-09-27 | Fit-or-trim for lower-ranked Python classes (not only the top block) | **rejected** | Rejected by the declared plan. E050b (first three non-fitting classes, one member each, from 2K) on gym-dev (326 SWE-Gym issues, 11 Python repositories never used for tuning; control identical 1630/1630): fix +1.35 at 2K (significant), +0.30 / +0.28 / +0.30 at 4K-16K, but tests -1.75 at 2K (significant loss) and -0.87 at 8K; utility 0 / -0.39 / +0.36 / -0.58 / +0.20 (mean -0.08). On fresh repositories the trimmed members take budget from test blocks: a transfer between targets, not new recall. Full dev (earlier): fix +3.1 to +3.3 at 2K (significant) with utility below zero at 1K and 16K. heldout-e stays unused. |
+| E051 | 2026-09-27 | Definition ambiguity counted per (file, name) site instead of per block | **rejected** | Clearly negative on the full dev split. e051_sites (all windows of a site vote): fix -0.22 / -0.56 / +1.06 / -1.44 / -1.61, tests -0.34 / +0.02 / -0.89 / -1.46 / -1.49 at 1K-16K (tests significant from 4K), utility -0.56 / -0.54 / -0.16 / -3.05 / -3.08 (mean -1.48). e051_sites_top2: fix -1.72 at 8K (significant), mean utility -1.07. The 197 issues outside dev-fast agree (fix -2.4 / -2.1 at 8K, significant). The per-block cap is doing useful work: names defined by several blocks of one file (methods such as get or save across classes, overloads, windows) would otherwise vote with full weight and flood the channel. |
+| E052 | 2026-09-27 | Environment/version dumps stripped from the retrieval query (issue-form cleaning, part 2) | **kept** | Confirmed on gym-heldout by GH01 (300 fresh SWE-Gym issues; criteria declared before the run): fix +0.51 / +1.44 / +0.96 / +0.62 / +0.12 at 1K-16K (significant at 1K-4K), tests +0.75 / +1.09 / +1.20 / +1.55 / +1.40 (significant from 2K), utility >= 0 everywhere (mean +1.92), no significant loss. Screens: gym-dev (326) tests +0.7 to +1.2 (significant at 1K, 2K, 4K, 16K), fix not significant, mean utility +1.22; dev (300, 15 queries change) no significant loss, mean +0.23. Product form (inside _strip_issue_template, so enable_query_cleaning/--raw-query cover it) cleans all 1,382 screened queries exactly as the prototype and reproduces its selections (dev-fast 515/515, gym-dev 1630/1630). Mutants environment_dump_kept, environment_dump_ranks_version_module and environment_booleans_counted are killed. |
+| E053 | 2026-09-27 | URLs in queries keep only their informative parts | **kept** | Confirmed on poly-heldout-b by PHB01 (320 fresh JS/TS issues; criteria declared before the run): e053_urls: fix +1.83 to +3.30 at every budget (all significant), tests significant from 2K, mean utility +4.14; the combination e053_e054 also passes (mean +4.72), so both ship together. Screens: poly-dev-b screen (371): passes the standard rule. Fix +0.68 / +0.90 / +0.83 / +2.01 / +1.49 at 1K-16K (significant at 2K, 8K, 16K), tests +0.39 to +1.02, utility >= 0 everywhere (mean +1.82). gym-dev (326): no significant change (mean utility +0.39). Candidate under the declared plan; PHB01 on poly-heldout-b decides (with e054 and the combination e053_e054). |
+| E054 | 2026-09-27 | Historical release notes go to the end of the ranking | **kept** | Confirmed on poly-heldout-b by PHB01 (320 fresh JS/TS issues; criteria declared before the run): e054_notes_last: fix +1.18 / +1.30 / +1.71 at 2K-8K and tests +0.43 to +0.63 at 2K-8K (significant), mean utility +1.41; the combination e053_e054 also passes (mean +4.72), so both ship together. Screens: poly-dev-b screen (371; control identical 1855/1855): passes the standard rule. Tests +0.65 / +0.56 / +1.32 at 1K-4K and fix +1.13 at 4K (significant), fix -0.13 at 16K (not significant), utility >= 0 everywhere (mean +1.38). gym-dev also passed (mean +0.51). Candidate; PHB01 on poly-heldout-b decides. |
+| E055 | 2026-09-27 | Traceback frames as a ranked retrieval channel | **rejected** | dev screen (300; control identical 1500/1500): e055_frames fix -0.22 / +0.28 / +1.50 / +1.00 / +0.67 at 1K-16K (significant at 4K), tests -0.25 to +0.42 (none significant), utility -0.22 at 1K; e055_frames3 fix -1.06 at 1K and tests -0.84 at 4K (significant). Under the declared plan neither can be a candidate (utility < 0 at 1K on dev), so E055 is rejected; the 1K loss motivates E055b. |
+| E055b | 2026-09-27 | Traceback-frame channel from 2K only | **rejected** | Rejected by HE01 on heldout-e (384 fresh issues): fix +0.00 / +0.32 / +0.06 / +0.30 / -0.04, tests +0.00 / -0.13 / -0.18 / -0.18 / -0.39, utility -0.12 at 4K and -0.43 at 16K (mean -0.05), no significant gain. Screens had passed (gym-dev mean utility +0.41; dev cells seen before definition). The opportunity was measured on those very splits, which is why the declared plan reserved a fresh split: it did not replicate. |
+| E056 | 2026-09-30 | Long weighted lexical queries scored one weight class at a time (latency) | **kept** | Merged as the default. Rankings identical on 586 of 586 checks over 293 cached packs (depths 60 and 1000); the product form selects identically to the default on all 1,500 dev selections (run E056p-lexical-split-dev) and all 1,630 gym-dev selections (E056p-lexical-split-gymdev). The 134 queries above 128 phrases take 91 ms instead of 175 ms at the median and 1.2 s instead of 2.5 s at worst; first-call latency on the 498-phrase moto-6204 query is 0.45 s instead of 1.9 s under equal load (the run's 14.9 s outlier was a cold, CPU-contended first call on a fresh pack). Gym-dev p50 99 -> 75 ms, p99 1.7 s -> 0.5 s. Three tests (weights, path/ordinal ties across the limit, random long queries) and three contract mutants, all killed. |
+| E057 | 2026-09-27 | Install and home-directory path prefixes removed from the query | **rejected** | Both screens fail the standard rule; not a candidate, so gym-heldout-b stays unused. dev (300; 114 of 1500 selections change): fix +0.00 / +0.33 / +0.00 / -0.17 / +0.00 points at 1K-16K, tests +0.34 / +0.00 / +0.00 / +0.51 / +0.34, docs +0.00, none significant, utility >= 0 everywhere (mean +0.27). gym-dev (326; 133 of 1630 change): fix +0.00 at every budget, tests +0.10 / +0.00 / +0.04 / -0.21 / +0.26, utility -0.21 at 8K (mean +0.04). The prefix words (site, packages, lib, python3, home, venv, ...) are a median 10% of the analyzed terms of 18-19% of queries, but removing them barely moves the ranking: their weight in BM25 is small (common words). |
+| E058 | 2026-10-01 | Index authored source and test file types the scanner skips; keep env/venv source directories | **rejected** | Screens (plan, rule and variants in NEXT_STEPS): dev-fast identical in 510 of 515 selections, no recall change. ood-multi-dev: e058_core and e058_core_test fail (tests +3.8 to +7.5 points, significant at every budget, but fix -0.8 to -1.4, significant at 16K; all of it redis, where Tcl test windows outrank the C implementation; fmt's .cc tests alone give +50 to +62 test points). E058b (no Tcl): e058_notcl_test tests +2.3 to +3.5 (significant), fix -0.06 to +0.44, mean utility +3.05, passes. gym-dev: e058_core_test passes (tests +0.3 / +0.3 / +0.9 / +0.9 / +2.2, significant at 2K, 4K, 16K; fix not significant; mean +0.79). poly-dev-b (371 issues): e058_core and e058_core_test FAIL: fix -0.13 / -0.02 / -0.20 / -0.25 / -0.73 (significant at 8K and 16K), tests -0.56 / +0.16 / -0.03 / -0.06 / -0.39, utility -0.69 / +0.13 / -0.23 / -0.31 / -1.12 (mean -0.44). The loss is single-file components: newly selected .svelte spans (104-544 per budget, sveltejs/svelte's thousands of test fixtures, 67 issues) and .vue (26-75, prettier fixtures), none at a fix site; 7 of the 9 issues losing fix recall at 16K have .svelte blocks among their added spans. The .snap arm: tests +1.1 to +2.5 (significant from 2K) for fix -0.7 to -1.5 (significant at 2K-8K) - the usual transfer, never promoted. No candidate under the E058 plan. E058c declared in NEXT_STEPS before any run: profile core_nosfc_test (no .vue/.svelte, no Tcl, no .snap), screens poly-dev-b and ood-multi-dev, then the declared confirmations on gym-heldout-b and poly-heldout-c and a guard on ood-multi-sample. E058c (no .vue/.svelte): identical to e058_core_test on 20 gym-dev issues; ood-multi-dev passes (tests +2.3 to +3.5, significant at every budget, mean utility +3.06); poly-dev-b utility +0.02 / -0.05 / +0.00 / +0.00 / -0.42 (one issue's test hunk at 16K; no significant loss) - negative at 2K and 16K, so not a candidate under the declared rule. Per-group attribution of gold covered by newly selected spans over all screens: .test 48 test hunks, .cc 23 test hunks, .y 10 fix hunks; Cython, protobuf and JS/TS-module suffixes cover none. E058d declared in NEXT_STEPS before any run: profile core_min_test (C++ family, .y/.l, .test, env/venv rule), screens dev-fast, ood-multi-dev, gym-dev, poly-dev-b, then the declared confirmations and guard. E058d (C++ family, yacc/lex, .test, env/venv rule): screens pass (gym-dev mean utility +0.78, ood-multi-dev +3.08, dev-fast and poly-dev-b identical) but the fresh confirmation E058d-confirm-gymheldoutb FAILS: tests +0.96 / +1.35 / +2.26 / +2.27 / +3.02 (significant at every budget), fix -0.63 / -1.01 / -0.19 / -0.76 / -0.56 (significant at 2K, 8K, 16K), all of it mypy's .test files displacing fix blocks (15 of 30 issues change; the other 224 are identical). Guard on ood-multi-sample: no significant effect (tests +0.47 to +1.89, fix -0.05 to -0.44, all intervals reach zero). poly-heldout-c not run (identity proof: no kept suffix and no env/venv directory in any of its trees). Rejected as a whole; the env/venv rule continues as E059 (declared in NEXT_STEPS before its runs). |
+| E059 | 2026-10-01 | Keep source directories named env or venv unless they are virtualenvs | **kept** | Accepted under the harm-check standard declared before any run (a correctness fix confined to repositories with such a directory, in the class of E004/E056; no significant-gain requirement): on the affected repositories of five splits (gym-heldout-b 51 issues, gym-dev 90, poly-dev-b 33, ood-multi-dev 11, ood-multi-sample 12) utility is >= 0 at every budget and there is no significant loss. Selections change in 3 issues, all gains: gym-dev conan 2 of 30 issues fix +3.67 / +3.33 / +3.33 points at 4K / 8K / 16K (split level +1.22 / +1.11 / +1.11), ood-multi-dev coreutils 1 of 2 issues fix +6.25 from 4K (split level +1.14); everything else, including the fresh gym-heldout-b (conan, hydra, mypy typeshed venv) and ood-multi-sample, is exactly equal to the default. Product form _excluded_dir in npk/pack/compile.py (credential names, dot directories and every other excluded name unchanged), tests/test_source_directories.py, five mutants (all killed); the product's default equals the prototype arm on 1,925 of 1,925 cells (197 issues x 5 budgets x fix and tests); full suite 1,322 passed. |
+| GH01 | 2026-09-27 | gym-heldout confirmation of E052 (environment dumps stripped from the query) | **kept** | Passes the pre-declared criteria. e052_env vs npk_default: fix +0.51 / +1.44 / +0.96 / +0.62 / +0.12 points at 1K-16K (significant at 1K, 2K, 4K), tests +0.75 / +1.09 / +1.20 / +1.55 / +1.40 (significant from 2K), utility +1.26 / +2.52 / +2.15 / +2.15 / +1.51 (mean +1.92), no significant loss. Default on gym-heldout: fix 0.142 / 0.189 / 0.299 / 0.418 / 0.479, tests 0.062 / 0.118 / 0.164 / 0.227 / 0.316. gym-heldout is now spent. |
+| H001 | 2026-09-26 | Held-out confirmation: test mate (E016b), top-block trimming (E005c), context map (E017) | **kept** | E005c confirmed: trimming vs no trimming, fix +3.8 points at 1K (significant), identical at >=2K; utility +2.9/0/0/0/0. E017 confirmed: located fix recall with a 25% map +9.6/+12.3/+13.0/+11.4/+7.2 points over the default's full text, tests +5.3/+5.2/+7.7/+8.0/+8.2 (all CIs exclude zero). E016b confirmed only as a tradeoff: tests up at every budget, fix down 0.3-1.4 points; the 1K utility is -0.012 points with a significant fix loss, so it ships opt-in. Full current default on held-out (definition channel + trimming): fix 0.230/0.309/0.399/0.475/0.575 at 1K-16K (before this loop 0.136/0.206/0.302/0.393/0.490). |
+| HB01 | 2026-09-26 | Confirmation on heldout-b: budget-gated test mate (E016c) and replication of E002+E005c | **kept** | E016c passes (see its record). The definition channel and trimming replicate on fresh data: fix +6.5/+5.8/+9.0/+8.0/+8.3 points at 1K-16K over no-definitions/no-trim (all CIs exclude zero); tests -1.9 to -3.3 (the known tradeoff). Product on heldout-b (mate off): fix 0.178/0.244/0.348/0.428/0.526. |
+| HC01 | 2026-09-27 | Confirmation on heldout-c: issue-form cleaning of queries (E031) | **kept** | E031 passes all three criteria on 400 unused issues (0 errors). e031_clean vs product: fix -0.2 [-0.7,+0.2] / +0.4 [-0.3,+1.2] / +0.7 [+0.2,+1.3] / +0.9 [+0.3,+1.7] / +1.2 [+0.4,+2.3] points at 1K-16K (16 wins/2 losses at 16K); tests +0.4 [+0.0,+0.9] / +0.1 / +0.6 / +0.9 / +1.4 [+0.2,+2.7]; utility +0.25/+0.54/+1.26/+1.86/+2.57. Product on heldout-c (raw query): fix 0.194/0.259/0.350/0.411/0.496, tests 0.039/0.099/0.126/0.181/0.256. |
+| HD01 | 2026-09-27 | Confirmation on heldout-d: E034 title x4, E039 (tf + title x3), E035 mirror_any, E036 header, and combinations | **kept** | 401 unused issues, 0 errors; unrounded paired-bootstrap bounds. E034 x4 passes (utility +4.2/+6.3/+9.8/+11.4/+15.9 points, mean 9.54). E039 passes (+2.9/+7.2/+11.3/+11.9/+16.7, mean 9.99). E035 mirror_any fails (fix -0.9 at 4K significant, utility -0.14 at 16K). E036 header fails: fix +2.8/+2.2/+2.4/+2.9 points at 2K-16K (significant) but tests -0.7 at 2K is a significant loss (upper bound -0.00004; the rounded report first showed it as non-significant, so report.paired now flags significance from unrounded bounds). The passing E034 and E039 are alternative lexical weightings with no arm combining them, so by the declared rule only the candidate with the higher mean utility, E039, is promoted. Combination arms that include E035 or E036 pass (e.g. title x4 + header: mean 11.6) but combine failing components and are not eligible; a header variant would need a fresh confirmation. |
+| HE01 | 2026-09-30 | heldout-e confirmation of E055b (traceback frames from 2K) | **rejected** | Fails the pre-declared criteria (control identical 1920/1920; 172 of 1920 selections change). e055_frames_2k vs npk_default: fix +0.00 / +0.32 / +0.06 / +0.30 / -0.04 points at 1K-16K, tests +0.00 / -0.13 / -0.18 / -0.18 / -0.39, none significant; utility +0.00 / +0.19 / -0.12 / +0.13 / -0.43 (mean -0.05), below zero at 4K and 16K. The gym-dev and dev gains (opportunity measured on those splits) did not replicate on 384 fresh Python issues. Default on heldout-e (E053+E054 product): fix 0.214 / 0.296 / 0.397 / 0.475 / 0.560, tests 0.110 / 0.212 / 0.278 / 0.357 / 0.437. heldout-e is now spent; the E055b product form (exp/e055p) is not merged, its patch is saved here. |
+| M000 | 2026-09-26 | Baseline: conversation memory (LongMemEval-S dev, 100 questions) | **kept** | Reference point for the second workload family. Weak spots: multi-session aggregation and implicit preferences. |
+| M001 | 2026-09-26 | Source-diverse packing (per-file score decay) for multi-session memory questions | **rejected** | Turn recall falls 10-16 points: fused RRF scores are nearly flat (1/60..1/120), so any per-file decay reorders almost the whole ranking toward weakly matching fresh sessions. Session coverage rises but evidence turns are lost. |
+| M002 | 2026-09-26 | Relevance-density ordering (fused score / tokens^alpha) before greedy fill | **rejected** | Aggregate gain is a disguised role prior: it comes from LongMemEval's composition (842/896 evidence turns are user turns) and collapses the question type whose evidence is in long assistant turns (1K: 0.833 -> 0.333). Not a default. Pursue finer units for long turns instead. |
+| M003 | 2026-09-26 | Paragraph-level units for long conversation turns (data-level layout test) | **rejected** | Mixed: +1.1/+3.6 at 2K/4K and better session coverage, but -8.9/-1.1/-2.1 at 256/512/1K. Turn-level units stay; no compiler change. |
+| M004 | 2026-09-26 | Dense similarity on conversation memory (pool fusion, bge-small / MiniLM) | **kept** | Significant gains on memory-dev (100 questions): bge-small +4.1/+3.4/+4.3/+7.0/+7.7/+5.8 points at 256-8K (CI excludes zero at 2K, 4K, 8K); MiniLM +4.4/+1.4/+1.7/+4.7/+4.4/+4.1 (significant at 4K, 8K). By type (bge): multi-session +8 to +13, single-session-preference +17 to +22, temporal +5 to +13; knowledge-update -3 to -13 at 256-1K. The same fusion hurts code at small budgets (E012), so it cannot be a global default. Productized as the documented semantic/hybrid configuration for chat histories (M006: most of the gain with the shipped MiniLM path). |
+| M005 | 2026-09-26 | Time-window channel for dated conversation memory | **rejected** | No effect: identical to the product except one win at 4K (+0.5 points; temporal-reasoning 0.732 -> 0.751 at 4K). Pre-run analysis predicted a small ceiling: LongMemEval-S histories span 10-90 days, so period expressions cover every session (reporting lag makes the window run to the question date), and only 3 of 17 parsable memory-dev questions get a selective point window. |
+| M006 | 2026-09-26 | The shipped semantic/hybrid mode on conversation memory | **kept** | Kept as the documented configuration for conversation memory (no code change). vs lexical default on memory-dev: +4.5 [+0.4,+9.0] / +1.4 / +0.3 / +3.5 / +4.4 [+0.2,+9.2] / +7.1 [+2.8,+12.2] points at 256-8K; largest on preferences (0.67 -> 1.00 at 8K) and multi-session (0.74 -> 0.83 at 8K). Within about 3 points of M004's bge-small pool fusion (-3.3 at 4K, +1.3 at 8K) and indistinguishable from MiniLM pool fusion. Cost: 48.9 s compile per history (one CPU thread) vs 0.25 s; query p50 5.9 ms vs 1.9 ms. Held-out (MH01, 370 questions): confirmed at 4K (+4.2) and 8K (+6.0), neutral at 2K and below; the recommendation is scoped to 4K+ budgets. |
+| M007 | 2026-09-27 | Chat-memory queries are unchanged by E031 and E039 (sanity check) | **kept** | memory-dev: all 600 selections (100 questions x 256-8K) of the new default equal npk_query_baseline (neither E031 nor E039). |
+| M008 | 2026-09-27 | Memory workload unchanged after E047 (test conventions) and E052 (environment dumps) | **kept** | memory-dev (100 LongMemEval-S tasks x 6 budgets): all 600 npk_default selections are identical to M007's. |
+| MH01 | 2026-09-27 | Held-out confirmation of the semantic/hybrid chat-memory configuration (M006) | **kept** | Confirmed at 4K and above only. Hybrid vs lexical: +0.7/-0.7/+1.1/+2.2 (none significant) at 256-2K; +4.2 [+2.2,+6.4] at 4K (38 wins/6 losses) and +6.0 [+4.2,+8.1] at 8K (42/0). The 256-token gain seen on dev did not replicate. By type at 8K: preferences 0.71 -> 0.92, multi-session 0.78 -> 0.85, temporal 0.87 -> 0.92; knowledge-update is lower at 512-1K. README now recommends the mode for chat histories read with 4K tokens or more. Compile cost 44.6 s vs 0.22 s per history. |
+| O001 | 2026-09-26 | Out-of-distribution check on six never-used repositories (SWE-bench Lite dev) | **kept** | Generalizes on the fix target (23 issues: sqlfluff, pvlib, astroid, pydicom, marshmallow, pyvista). Definition channel + trimming vs neither: fix +19.6 [+4.3,+37.0] / +13.8 / +8.7 / +2.2 / +0.7 points at 1K-16K; tests -5/-10/-7.5/-7.5/-2.5 (not significant, same direction as held-out). Trimming alone: fix +15.2 [+2.2,+30.4] at 1K, identical beyond. Test mate (opt-in): tests +5/+15/+10/+5/+5 with no fix loss (20 tasks, lower CI bounds at zero). |
+| OM01 | 2026-09-27 | Non-Python generalization: SWE-bench Multilingual sample (114 issues, 41 repositories) | **kept** | Holds, at lower absolute recall. Product fix recall 0.110/0.164/0.197/0.269/0.320 at 1K-16K (Python held-out: 0.230/0.303/...). vs BM25 over 60-line chunks: fix +7.4 to +14.8 points and tests +2.4 to +9.8 (all significant); vs ~1,000-character chunks: fix +4.2 (n.s.) / +8.2 / +6.2 / +12.3 / +8.2 (significant from 2K). The definition channel helps outside Python: +5.1/+4.1/+3.6 points at 2K-8K (significant), decisive for Go (2K: 0.002 -> 0.202) and Ruby (0.000 -> 0.125). By language at 2K: PHP 0.33, Go 0.20, Java 0.20 (chunk baseline 0.27), Rust 0.18, Ruby 0.13, JS/TS 0.12 (flat to 8K), C/C++ 0.09. Weak spots (JS/TS, C/C++, Java) must be analyzed on ood-multi-dev, never on this sample. |
+| OMD01 | 2026-09-27 | Multilingual dev split: product vs chunk baseline, and where non-Python fix sites are lost | **kept** | Kept as the development baseline for non-Python work. Product fix 0.146/0.212/0.259/0.328/0.383 at 1K-16K vs ~1,000-character-chunk BM25 0.093/0.120/0.165/0.223/0.270; no-definitions 0.122/0.162/0.209/0.286/0.357. Loss at 2K by language (share of gold hunks): selected 3-4% for C/C++, JS/TS and Rust vs 16-19% for Java, Go, PHP and Ruby. Most misses are ranking losses: missed hunks' covering blocks rank at median 112-401 (C/C++ 401); 13-29% are never retrieved. Covering blocks are large for C/C++ (median 1,086 tokens) and JS/TS (735). |
+| P001 | 2026-09-27 | First measurement on SWE-PolyBench poly-dev (Java/JS/TS): default vs query baseline vs B002 | **kept** | 199 issues (173 with test edits), 0 errors, 199 packs (mean compile 12.8 s, 34.9 MB). Fix hunk recall at 1K-16K: default 0.195/0.244/0.319/0.404/0.476, npk_query_baseline 0.134/0.182/0.259/0.318/0.387, B002 0.087/0.121/0.176/0.240/0.297. Regression tests: 0.113/0.185/0.276/0.378/0.418 vs 0.082/0.117/0.191/0.269/0.343 vs 0.051/0.077/0.118/0.184/0.263. The query handling passes the declared rule on this new language set (fix +6.0 to +8.9 points, tests +3.1 to +11.0, all significant; mean utility +14.5); against B002 fix +10.8 to +17.9 points (1.6-2.2x) and tests +6.2 to +19.4 (all significant). By language (fix at 2K/16K): Java (74) 0.262/0.486, JavaScript (75) 0.218/0.440, TypeScript (50) 0.258/0.514; TypeScript gains most from query handling (+10 to +19 points). Median selection latency 68-100 ms. Poly-dev is now the development set for JS/TS/Java work; these numbers are the reference before tuning. |
+| PH01 | 2026-09-27 | poly-heldout confirmation of E047 (test-file conventions beyond Python) | **kept** | Passes the pre-declared criteria: utility d_fix + 0.99 d_tests >= 0 at every budget (0 / +1.82 / +1.03 / +1.64 / +1.64), significant tests gains at 2K (+1.82, CI [+0.08, +4.13]), 8K (+1.62) and 16K (+1.53), no significant loss. Default fix recall on poly-heldout 0.160 / 0.198 / 0.287 / 0.363 / 0.425, tests 0.119 / 0.177 / 0.259 / 0.318 / 0.391; with E047 tests 0.119 / 0.195 / 0.268 / 0.334 / 0.407. poly-heldout is now spent. |
+| PHB01 | 2026-09-27 | poly-heldout-b confirmation of E053 (URLs) and E054 (release notes last) | **kept** | Passes the pre-declared criteria for both arms and the combination (control identical 1600/1600). e053_urls: fix +1.83 / +2.50 / +3.30 / +2.63 / +2.74 at 1K-16K (all significant), tests +0.55 / +2.22 / +1.77 / +1.10 / +2.13 (significant from 2K), mean utility +4.14. e054_notes_last: fix +0.44 / +1.18 / +1.30 / +1.71 / +0.05 (significant at 2K-8K), tests +0.39 / +0.48 / +0.43 / +0.63 / +0.46 (significant at 2K-8K), mean +1.41. e053_e054: fix +1.56 / +2.45 / +3.62 / +3.54 / +3.04 and tests +1.45 / +2.32 / +2.06 / +1.08 / +2.56, all significant, mean +4.72; no significant loss anywhere. Default on poly-heldout-b: fix 0.162 / 0.214 / 0.318 / 0.418 / 0.484, tests 0.068 / 0.170 / 0.240 / 0.330 / 0.413; with both: fix 0.177 / 0.238 / 0.354 / 0.454 / 0.515. poly-heldout-b is now spent. |
+| R002 | 2026-09-27 | README re-measurement on heldout: the default after E031 and E039 | **kept** | 407 issues, 0 errors. New default vs npk_query_baseline (which reproduces the previous README row exactly, 0.230/0.303/0.385/0.472/0.569): fix 0.254/0.346/0.452/0.571/0.638 (+2.3/+4.3/+6.8/+9.9/+7.0 points, all significant), tests 0.089/0.180/0.252/0.338/0.423 (+3.0/+3.7/+5.8/+8.2/+12.0, all significant), docs +1.5/+8.5/+0.8/-3.4/+3.1 (none significant). Against the B001 chunk-BM25 baseline: fix 2.0-2.5x (significant at every budget), tests 1.5-2.1x (significant from 2K), docs no longer significantly different at any budget (at 2K 0.25 vs 0.31; was 0.17 vs 0.31). |
+| R003 | 2026-09-27 | README re-measurement on the multilingual sample: the default after E031 and E039 | **kept** | 114 issues, 0 errors. New default vs npk_query_baseline: fix 0.198/0.260/0.301/0.364/0.455 vs 0.110/0.164/0.197/0.269/0.320 (+8.9/+9.7/+10.4/+9.5/+13.5 points, all significant), tests +2.4/+3.1/+6.7/+12.4/+10.8 (significant except 2K). Against B002 (BM25 over 1,000-character chunks): fix +13.0 to +21.9 points (2.2-3.2x), tests +4.6 to +17.4 (1.9-2.6x), all significant. Non-Python recall moved from about half of Python's to about three quarters (0.260 vs 0.346 at 2K). |
+| R004 | 2026-09-27 | README re-measurement on heldout: the default after E047 and E052 | **kept** | 407 issues, 0 errors. Against R002 (E039 default): fix 0.254 / 0.343 / 0.456 / 0.572 / 0.638 vs 0.254 / 0.346 / 0.452 / 0.571 / 0.638 (none significant), tests 0.090 / 0.183 / 0.257 / 0.344 / 0.428 vs 0.089 / 0.180 / 0.252 / 0.338 / 0.423 (+0.1 to +0.6, not significant), docs identical except -1.5 at 4K (one issue); utility >= 0 at every budget (mean +0.44). Against the identifier-split chunk-BM25 baseline: fix 2.0-2.5x, tests 1.5-2.1x, as before. README table updated to these numbers. |
+| R005 | 2026-09-27 | README re-measurement on the multilingual sample: the default after E047 and E052 | **kept** | 114 issues, 0 errors. Against R003 (E039 default): fix 0.198 / 0.253 / 0.304 / 0.364 / 0.455 vs 0.198 / 0.260 / 0.301 / 0.364 / 0.455 (-0.67 at 2K, not significant), tests 0.079 / 0.122 / 0.185 / 0.269 / 0.317 vs 0.079 / 0.108 / 0.166 / 0.260 / 0.307 (+1.4 / +1.9 / +0.9 / +0.9 at 2K-16K, not significant); utility >= 0 everywhere (mean +0.95). Against B002 (R003's arm, same issues): fix +13.0 to +21.9 points (1.9-3.1x), tests +4.6 to +18.3 (2.4-3.0x), all significant. Correction: the README and R003 had stated 2.2-3.2x (fix) and 1.9-2.6x (tests); R003's own numbers give 1.9-3.2x and 2.3-2.6x (the 16K fix ratio is 1.91). README corrected. |
+| R006 | 2026-10-01 | README held-out table re-measured with E053 + E054 + E056 (measurement only) | **kept** | Default: fix 0.258 / 0.349 / 0.465 / 0.580 / 0.644, tests 0.088 / 0.184 / 0.266 / 0.353 / 0.451, docs 0.152 / 0.220 / 0.271 / 0.487 / 0.645 at 1K-16K. Against R004 (E047+E052 default; 1295 of 2035 selections identical): fix +0.46 / +0.57 / +0.94 / +0.73 / +0.56 (significant at 4K), tests -0.12 / +0.09 / +0.84 / +0.89 / +2.29 (significant at 4K, 8K, 16K), docs -3.03 at 2K (n.s.; 33 issues), utility >= 0 at every budget (mean +1.42). Against the identifier-split BM25-over-chunks baseline: fix 2.0-2.6x (significant everywhere), tests 1.5-2.2x (significant from 2K), docs gap not significant at any budget (2K: 0.311 vs 0.220, CI [-0.27, +0.08]). |
+| R007 | 2026-10-01 | README re-measurement on the multilingual sample: the default after E053, E054 and E056 (measurement only) | **kept** | 114 issues, 0 errors. Default: fix 0.202 / 0.258 / 0.312 / 0.372 / 0.468, tests 0.079 / 0.122 / 0.190 / 0.286 / 0.322 at 1K-16K. Against R005 (E047+E052 default; 287 of 570 selections identical): fix +0.38 / +0.49 / +0.77 / +0.80 / +1.30 points, tests +0.00 / +0.00 / +0.47 / +1.70 / +0.47, none significant, utility >= 0 everywhere (mean +1.27): no loss on Go, Rust, PHP, Ruby, C/C++, Java or JS/TS in aggregate. Against B002 (R003's arm, same issues): fix +13.4 to +23.0 points (2.0-3.2x), tests +4.6 to +18.8 (2.4-3.0x), all significant. |
+| SC01 | 2026-10-01 | Side condition: E053 + E054 on SWE-bench Multilingual development issues (Go, Rust, PHP, Ruby, C/C++, Java, JS/TS) | **kept** | Passes (action rule declared before the result: no significant loss at any budget and utility >= 0 at every budget). ood-multi-dev, 186 issues, before (tree without E053/E054) vs after: fix +0.78 / +1.29 / +1.22 / +1.66 / +1.33 points at 1K-16K (significant at 2K, 4K, 8K), tests +0.29 / +0.88 / +0.29 / +0.00 / -1.17 (none significant), utility >= 0 everywhere (mean +1.31); 452 of 930 selections change. By language fix recall never falls (PHP +3.2 to +4.3, Go up to +3.9, Rust up to +5.9, JS/TS up to +4.4, Ruby up to +2.2, C/C++ +3.9 at 4K, Java unchanged); the one lost cell is a single changelog-only issue at 16K, which E054 demotes by design. Both changes stay. |
+
+## B001 — Standard-RAG baseline: Okapi BM25 over fixed 60-line chunks (whole and split identifiers)
+
+- **Status:** kept
+- **Hypothesis:** NeuralPack's structure-aware blocks, fielded BM25 and channels beat the typical retrieval pipeline on the same repositories, budgets and gold.
+- **Run:** experiments/npkbench/runs/B001-rag-baseline-heldout, experiments/npkbench/runs/B001-rag-baseline-devfast, experiments/npkbench/runs/B001-rag-baseline-memory-dev
+- **Results:**
+
+```json
+{
+ "heldout_docs_1K_16K": {
+  "bm25_chunks_split": [
+   0.125,
+   0.311,
+   0.372,
+   0.537,
+   0.614
+  ],
+  "product": [
+   0.137,
+   0.165,
+   0.305,
+   0.517,
+   0.602
+  ]
+ },
+ "heldout_fix_1K_16K": {
+  "bm25_chunks": [
+   0.102,
+   0.146,
+   0.19,
+   0.227,
+   0.262
+  ],
+  "bm25_chunks_split": [
+   0.101,
+   0.149,
+   0.217,
+   0.267,
+   0.321
+  ],
+  "product": [
+   0.23,
+   0.309,
+   0.399,
+   0.475,
+   0.575
+  ],
+  "product_before_loop": [
+   0.136,
+   0.206,
+   0.302,
+   0.393,
+   0.49
+  ]
+ },
+ "heldout_tests_1K_16K": {
+  "bm25_chunks_split": [
+   0.06,
+   0.088,
+   0.129,
+   0.163,
+   0.221
+  ],
+  "product": [
+   0.058,
+   0.105,
+   0.149,
+   0.22,
+   0.287
+  ]
+ }
+}
+```
+
+- **Decision:** Kept as a permanent baseline arm. Held-out (407 issues), fix recall: product 0.230/0.309/0.399/0.475/0.575 vs chunk BM25 0.102/0.146/0.190/0.227/0.262 (+12.8 to +31.4 points) and identifier-split chunk BM25 0.101/0.149/0.217/0.267/0.321 (+12.9 to +25.5); every CI excludes zero. Even the pre-loop product (0.136/0.206/0.302/0.393/0.490) beat both. Tests: split baseline equal at 1-2K, product ahead from 8K (+5.7, +6.6 significant). Docs (33 issues): baseline ahead at 2K (+14.6 split, +21.4 whole; significant), equal from 8K. Dev-fast agrees on fix (+19 to +30 points). Memory-dev at 256-1K is not a fair comparison for 60-line chunks of long chat lines; B002 uses the common ~1,000-character chunker instead.
+
+## B002 — Standard-RAG baseline with the common ~1,000-character chunker (identifier-split BM25)
+
+- **Status:** kept
+- **Hypothesis:** A fairer baseline for chat text (60-line chunks of long chat lines rarely fit small budgets) and a second code baseline.
+- **Run:** experiments/npkbench/runs/B002-rag-chars-devfast, experiments/npkbench/runs/B002-rag-chars-memory-dev
+- **Decision:** Kept as a baseline arm. Code (dev-fast): product fix +23.1/+24.6/+21.8/+19.7/+15.9 points at 1K-16K (all significant); tests within noise (baseline slightly ahead at 1-4K, product at 8-16K); docs (13 tasks) baseline far ahead (0.423 vs 0.000 at 2K). Memory (memory-dev): product +20.6 [+10.6,+30.3] at 256 and +13.9 [+5.0,+23.0] at 512, then 1K-4K within +-1 point and -3.8 (n.s.) at 8K; the semantic/hybrid mode leads at every budget (+25.1/+15.3/+6.0/+3.5/+3.4/+3.3). Documentation retrieval is NeuralPack's main open weakness: small prose units match issue text well, and code-first ranking (definition channel) gives docs up.
+- **Follow-ups:** Documentation units sized like prose chunks (about 250 tokens) without changing code ranking; must not repeat E018b's code cost
+
+## E000 — Baseline: product as received on NPK-Bench dev-fast
+
+- **Status:** kept
+- **Hypothesis:** Establish reference numbers for the unmodified product (BM25 fields + raise relations, greedy fill).
+- **Run:** experiments/npkbench/runs/E000b-rescore-and-e002-devfast (npk_default arm; E000 run uses gold v1.0)
+- **Commit:** 6b90748
+- **Bench version:** npkbench-1.1
+- **Results:**
+
+```json
+{
+ "file_recall": {
+  "16K": 0.777,
+  "1K": 0.369,
+  "2K": 0.476,
+  "4K": 0.592,
+  "8K": 0.68
+ },
+ "hunk_recall": {
+  "16K": 0.544,
+  "1K": 0.209,
+  "2K": 0.301,
+  "4K": 0.408,
+  "8K": 0.474
+ },
+ "loss_breakdown_2K": {
+  "packing_skip": 8,
+  "ranked_later": 83,
+  "selected": 43,
+  "unranked": 19
+ },
+ "selected_token_share_2K": {
+  "doc": 0.212,
+  "example": 0.02,
+  "source": 0.56,
+  "test": 0.208
+ },
+ "snapshots_blocked_by_one_file": "46/103",
+ "tokens_to_all_median_all_tasks": 19299,
+ "tokens_to_first_median": 6427
+}
+```
+
+- **Decision:** Reference point. Ranking (not packing) is the dominant loss; ~45% of selected tokens are docs/tests; 46/103 snapshots need blocker removal to compile.
+- **Follow-ups:** E001 compile speed; E002 entity-aware queries; E004 robust ingestion
+
+## E001 — Compile speed: parse Python once, statement-only raise walk, memoized term analysis
+
+- **Status:** kept
+- **Hypothesis:** Two hot spots (a second AST parse+walk per file for raise sites; per-word pure-Python analysis) can be removed without changing artifact contents.
+- **Expected:** >=2x faster compile on Django with logically identical packs
+- **Commit:** 882fccd
+- **Files changed:** `npk/pack/compile.py`, `npk/pack/search.py`
+- **Results:**
+
+```json
+{
+ "check": "benchmarks.npkbench.equivalence: all tables, FTS5 instance postings, docsize, manifest",
+ "django_13768_compile_s_median_uncontended": {
+  "baseline": 20.748,
+  "e001": 13.964
+ },
+ "logically_identical": true,
+ "speedup": 1.486
+}
+```
+
+- **Tradeoffs:** None measured; SyntaxWarnings from repository code are now suppressed during parsing (diagnostic noise, not output).
+- **Decision:** 1.49x faster (not the >=2x expected: cProfile overstated pure-Python call overhead) with logically identical packs on real Django; kept.
+- **Follow-ups:** E001b: cache joined per-word analysis strings
+
+## E001b — Cache joined per-word analysis strings in analyzed_text
+
+- **Status:** rejected
+- **Hypothesis:** cProfile attributes 5.1 s to analyzed_terms; joining cached per-word strings with a comprehension removes most of it.
+- **Results:**
+
+```json
+{
+ "django_13768_compile_s_median": {
+  "e001": 14.6,
+  "e001b": 15.072
+ },
+ "output_identical": true
+}
+```
+
+- **Decision:** No measurable gain without the profiler (within noise). Reverted to keep the simpler code. Lesson: confirm profiler-guided micro-optimizations with uninstrumented paired timing.
+
+## E002 — Definition channel: identifiers a query names resolve to their defining blocks (held-out confirmed)
+
+- **Status:** kept
+- **Hypothesis:** Issue text names the code it concerns; resolving code-like identifiers against the definition-only symbol index and fusing their defining blocks into RRF ranks the definition above documentation and tests that repeat the prose.
+- **Run:** experiments/npkbench/runs/E002H-heldout (heldout, 407 tasks); dev-fast runs E000b/E002b/E005
+- **Commit:** b9f4732
+- **Files changed:** `npk/pack/select.py`, `tests/test_definition_channel.py`, `tests/test_compiled_contracts.py`
+- **Results:**
+
+```json
+{
+ "dev_fast_fix": {
+  "defs": [
+   0.285,
+   0.44,
+   0.479,
+   0.523,
+   0.607
+  ],
+  "no_defs": [
+   0.209,
+   0.301,
+   0.408,
+   0.474,
+   0.544
+  ]
+ },
+ "heldout_fix_file_recall_2K": {
+  "defs": 0.538,
+  "no_defs": 0.35
+ },
+ "heldout_fix_hunk_recall_1K_2K_4K_8K_16K": {
+  "defs": [
+   0.193,
+   0.309,
+   0.399,
+   0.475,
+   0.575
+  ],
+  "no_defs": [
+   0.136,
+   0.206,
+   0.302,
+   0.393,
+   0.49
+  ]
+ },
+ "heldout_fix_paired": {
+  "16K": "+0.086 CI [+0.059,+0.115] wins 51 losses 11",
+  "2K": "+0.103 CI [+0.071,+0.136] wins 66 losses 13"
+ },
+ "heldout_tests_hunk_recall": {
+  "defs": [
+   0.058,
+   0.105,
+   0.149,
+   0.22,
+   0.287
+  ],
+  "no_defs": [
+   0.082,
+   0.138,
+   0.183,
+   0.265,
+   0.324
+  ]
+ },
+ "heldout_tests_paired": {
+  "2K": "-0.033 CI [-0.055,-0.012] wins 9 losses 32"
+ },
+ "note": "The held-out run straddled the output-identical E014 scanner change (two fingerprints; equality verified), so fingerprints_stable=false is expected.",
+ "parameter_sweep": "ambiguity cap 3-25, strict/qualified extraction, channel length caps and half weight: within noise or pure fix->tests transfer"
+}
+```
+
+- **Tradeoffs:** Significant loss on the tests target (-2.4 to -4.5 points held-out): definition blocks displace test blocks. enable_definitions=False restores the old ranking.
+- **Decision:** Largest confirmed improvement: +5.7 to +10.3 points of held-out fix-target recall at every budget and +18.8 points of file recall at 2K, about 3x the tests-target cost; the two-target mean improves at every budget. Kept as default with the tradeoff documented.
+- **Follow-ups:** E016: recover the tests-target loss structurally (test-mate of the top implementation file)
+
+## E003 — File-level evidence aggregation (block score + alpha * file top-3 sum)
+
+- **Status:** rejected
+- **Hypothesis:** Several matching blocks in one file corroborate that the file is on topic; boosting its blocks improves ranking.
+- **Run:** experiments/npkbench/runs/E000b-rescore-and-e002-devfast
+- **Results:**
+
+```json
+{
+ "hunk_recall": {
+  "alpha_0.5": [
+   0.228,
+   0.33,
+   0.409,
+   0.487,
+   0.55
+  ],
+  "alpha_1.0": [
+   0.191,
+   0.311,
+   0.409,
+   0.458,
+   0.502
+  ],
+  "baseline": [
+   0.209,
+   0.301,
+   0.408,
+   0.474,
+   0.544
+  ]
+ },
+ "paired_alpha_0.5_vs_baseline": "no budget significant (e.g. 2K +0.029, CI [-0.019,+0.078])"
+}
+```
+
+- **Decision:** No significant gain at any budget; alpha 1.0 hurts at 16K. Discarded. File recall even drops at 4K+ (0.524 vs 0.592).
+
+## E004 — Skip and report never-indexed unindexable files instead of aborting the build
+
+- **Status:** kept
+- **Hypothesis:** Aborting a whole build on one NUL/non-UTF-8/oversized/credential-like file makes the product unusable on real repositories; skipping never-indexed files with an explicit report fixes that without silent evidence loss.
+- **Expected:** 0/103 dev-fast snapshots blocked (from 46/103); identical retrieval
+- **Run:** experiments/npkbench/runs/E004-rebuild-parity-devfast
+- **Commit:** b56e96a
+- **Files changed:** `npk/pack/compile.py`, `npk/pack/source_policy.py`, `npk/pack/contracts.py`, `npk/cli.py`, `tests/test_source_boundary.py`, `tests/test_source_scan_failures.py`, `benchmarks/contract_mutations.py`
+- **Results:**
+
+```json
+{
+ "compile_s_mean_4_workers": {
+  "E000": 25.82,
+  "E001+E004": 14.96
+ },
+ "skipped_sources_reported": "46/103 tasks; reasons nul 46, non_utf8 15, credential 5",
+ "snapshots_needing_harness_removal": {
+  "after": "0/103",
+  "before": "46/103"
+ },
+ "span_level_parity_with_E000b": "1545/1545 selections identical",
+ "tests": "1228 passed; 5 targeted mutants assertion-killed"
+}
+```
+
+- **Tradeoffs:** A file that is already indexed and becomes unindexable still aborts an update (no silent evidence loss). strict=True/--strict restores fail-closed builds. Credential text never reaches the artifact or the report.
+- **Decision:** Product can now compile every dev-fast snapshot, with explicit per-file reports and identical retrieval.
+
+## E005 — Rank coarse blocks, emit only the best-matching K method-level children of large blocks
+
+- **Status:** rejected
+- **Hypothesis:** Gold edits sit in large blocks (median 875 tokens); the gold method is the top-2 lexical child 82% of the time, so emitting children frees budget for more candidates.
+- **Run:** experiments/npkbench/runs/E005-cf-role-devfast-{fix,tests}
+- **Results:**
+
+```json
+{
+ "fix_target_hunk_recall": {
+  "k1": [
+   0.257,
+   0.306,
+   0.34,
+   0.379,
+   0.45
+  ],
+  "k2": [
+   0.299,
+   0.337,
+   0.377,
+   0.426,
+   0.511
+  ],
+  "k2_refs": [
+   0.299,
+   0.333,
+   0.382,
+   0.435,
+   0.502
+  ],
+  "k3": [
+   0.333,
+   0.387,
+   0.416,
+   0.46,
+   0.526
+  ],
+  "product(defs)": [
+   0.285,
+   0.44,
+   0.479,
+   0.523,
+   0.607
+  ]
+ },
+ "prototype_latency_ms_2K": 800,
+ "tests_target_hunk_recall": {
+  "k3": [
+   0.04,
+   0.079,
+   0.155,
+   0.233,
+   0.321
+  ],
+  "product(defs)": [
+   0.035,
+   0.064,
+   0.141,
+   0.24,
+   0.309
+  ]
+ }
+}
+```
+
+- **Decision:** Helps only at 1K; loses 5-10 pts at 2K-16K on the fix target: trimming blocks that would have fit drops gold lines (non-top children, class-level lines, class-end insertions) more often than the freed budget recovers. Follow-up E005c trims only blocks that no longer fit.
+- **Follow-ups:** E005c fit-or-trim (graceful degradation instead of skipping)
+
+## E005c — Top-block fit-or-trim: an oversized top-ranked Python block degrades to its best member spans
+
+- **Status:** kept
+- **Hypothesis:** Trimming hurts only when a block would have fit; when the top-ranked block cannot fit at all, emitting its most relevant members (exact line slices) is graceful degradation with no downside at larger budgets.
+- **Run:** experiments/npkbench/runs/E005f-product-trim-devfast
+- **Files changed:** `npk/pack/select.py`, `tests/test_top_block_trim.py`, `tests/test_python_members.py`, `tests/test_compiled_contracts.py`, `benchmarks/contract_mutations.py`
+- **Results:**
+
+```json
+{
+ "design": "No schema change: the file is rebuilt from its stored blocks (exact spans), parsed once, and members are cut with the compiler's own _class_member_spans; members overlapping the block are clipped (a method straddling a chunk boundary stays eligible); children are ranked by BM25-style overlap with file-local IDF (works under the query_only reader).",
+ "fix_hunk_recall_512_1K_2K_4K_8K_16K": {
+  "no_trim": [
+   0.123,
+   0.285,
+   0.44,
+   0.479,
+   0.523,
+   0.607
+  ],
+  "product_trim": [
+   0.262,
+   0.358,
+   0.44,
+   0.479,
+   0.523,
+   0.607
+  ],
+  "two_pack_prototype": [
+   0.254,
+   0.367,
+   0.44,
+   0.479,
+   null,
+   null
+  ]
+ },
+ "latency_ms_p50_1K": {
+  "no_trim": 63,
+  "trim": 69
+ },
+ "tests": "1238 passed; mutants definition_channel_disabled, definition_ambiguity_cap_ignored, top_block_trim_disabled assertion-killed",
+ "tests_hunk_recall": {
+  "no_trim": [
+   0.033,
+   0.035,
+   0.064,
+   0.141,
+   0.24,
+   0.309
+  ],
+  "product_trim": [
+   0.04,
+   0.04,
+   0.064,
+   0.141,
+   0.24,
+   0.309
+  ]
+ }
+}
+```
+
+- **Decision:** Strict improvement on dev-fast: +13.9 / +7.3 points at 512 / 1K on the fix target, +0.7 / +0.5 on tests, identical selections at 2K-16K. Every emitted span is exact source with its own span; a note records the trim. enable_trim=False restores skipping.
+
+## E006 — Implementation-first role prior (demote tests/docs/examples by a BM25 factor)
+
+- **Status:** rejected
+- **Hypothesis:** 57% of baseline tokens go to tests/docs while every fix edits implementation; a soft prior improves localization without dropping anything.
+- **Run:** experiments/npkbench/runs/E005-cf-role-devfast-{fix,tests}
+- **Results:**
+
+```json
+{
+ "budgets": "1K/2K/4K/8K/16K, dev-fast",
+ "fix_target_hunk_recall": {
+  "defs+role0.5": [
+   0.314,
+   0.463,
+   0.552,
+   0.591,
+   0.691
+  ],
+  "no_prior": [
+   0.285,
+   0.44,
+   0.479,
+   0.523,
+   0.607
+  ]
+ },
+ "tests_target_hunk_recall": {
+  "defs+role0.5": [
+   0.015,
+   0.019,
+   0.034,
+   0.044,
+   0.104
+  ],
+  "no_prior": [
+   0.035,
+   0.064,
+   0.141,
+   0.24,
+   0.309
+  ],
+  "role0.5_without_defs": [
+   0.015,
+   0.019,
+   0.029,
+   0.053,
+   0.111
+  ]
+ }
+}
+```
+
+- **Decision:** Benchmark gaming, confirmed by attack: the fix-target gain is bought by nearly eliminating recall of where maintainers put regression tests (4K: 0.141 -> 0.034). Not a default. Could only return as an explicit caller-declared intent.
+- **Follow-ups:** If revisited: caller-declared intent (implementation vs tests), never a silent default
+
+## E008 — Role portfolio: per-role budget shares (impl/tests/docs), soft shares, pure test reservation
+
+- **Status:** rejected
+- **Hypothesis:** Baseline role mix is lexical accident; explicit shares filled in fused rank order improve both the fix and the tests target.
+- **Run:** experiments/npkbench/runs/E008-portfolio-*, E008b-soft-portfolio-*, E008c-test-reservation-devfast
+- **Results:**
+
+```json
+{
+ "hard_shares_i70_t30_d0_fix_1K": 0.184,
+ "product_fix": [
+  0.285,
+  0.44,
+  0.479,
+  0.523,
+  0.607
+ ],
+ "product_tests": [
+  0.035,
+  0.064,
+  0.141,
+  0.24,
+  0.309
+ ],
+ "pure_test_reservation_40": {
+  "fix": [
+   0.278,
+   0.396,
+   0.453,
+   0.508,
+   0.568
+  ],
+  "tests": [
+   0.055,
+   0.146,
+   0.216,
+   0.287,
+   0.363
+  ]
+ },
+ "soft_i60_t30_d10": {
+  "fix": [
+   0.278,
+   0.392,
+   0.472,
+   0.534,
+   0.596
+  ],
+  "tests": [
+   0.044,
+   0.119,
+   0.172,
+   0.273,
+   0.34
+  ]
+ },
+ "soft_i60_t40_d0": {
+  "fix": [
+   0.288,
+   0.396,
+   0.492,
+   0.544,
+   0.6
+  ],
+  "tests": [
+   0.061,
+   0.156,
+   0.216,
+   0.289,
+   0.363
+  ]
+ }
+}
+```
+
+- **Decision:** Attack by decomposition: the arms that improve both targets do so by demoting documentation, which NPK-Bench cannot falsify (it has no documentation target); giving docs 10-20% removes most of the gain, and a pure test reservation only transfers recall from fix to tests (two-target mean within noise). Hard shares also lose 10 points at 1K. Not promoted.
+- **Follow-ups:** A documentation-target workload is needed before any docs demotion can be evaluated honestly
+
+## E009 — Callee expansion from named-definition seeds
+
+- **Status:** rejected
+- **Hypothesis:** Bugs often live one call away from the API an issue names; a channel of unambiguous definitions called by the top definition-channel seeds ranks gold that lexical and definition channels miss.
+- **Run:** experiments/npkbench/runs/E009-callee-devfast-{fix,tests}
+- **Results:**
+
+```json
+{
+ "fix": {
+  "product": [
+   0.285,
+   0.44,
+   0.479,
+   0.523,
+   0.607
+  ],
+  "seeds3": [
+   0.275,
+   0.43,
+   0.484,
+   0.532,
+   0.617
+  ],
+  "seeds5_k120": [
+   0.275,
+   0.43,
+   0.479,
+   0.542,
+   0.617
+  ]
+ },
+ "tests": {
+  "product": [
+   0.035,
+   0.064,
+   0.141,
+   0.24,
+   0.309
+  ],
+  "seeds3": [
+   0.035,
+   0.059,
+   0.134,
+   0.185,
+   0.274
+  ]
+ }
+}
+```
+
+- **Decision:** Fix-target changes stay within +/-2 points (noise at n=103) and the tests target loses up to 5.5 points. Precise seeds do not rescue graph expansion here; gold is mostly named or lexically matched directly.
+
+## E010 — Drop very-high-document-frequency terms from long queries
+
+- **Status:** inconclusive
+- **Hypothesis:** Common OR-terms make most blocks match (58% on Django) while contributing near-zero IDF; pruning them speeds up long queries without changing rankings much.
+- **Run:** experiments/npkbench/runs/E010-dfprune-devfast-{fix,tests}
+- **Results:**
+
+```json
+{
+ "fix": {
+  "all": [
+   0.285,
+   0.44,
+   0.479,
+   0.523,
+   0.607
+  ],
+  "df5": [
+   0.285,
+   0.426,
+   0.479,
+   0.524,
+   0.605
+  ]
+ },
+ "lexical_stage_ms_p50_p95_under_load": {
+  "all_terms": [
+   62.0,
+   230.0
+  ],
+  "df<=10%": [
+   29.8,
+   131.8
+  ],
+  "df<=5%": [
+   21.1,
+   80.0
+  ]
+ },
+ "tests": {
+  "all": [
+   0.035,
+   0.064,
+   0.141,
+   0.24,
+   0.309
+  ],
+  "df5": [
+   0.041,
+   0.055,
+   0.128,
+   0.244,
+   0.279
+  ]
+ }
+}
+```
+
+- **Decision:** ~3x faster lexical stage for long queries with fix-target recall within noise, but up to -3 points on the tests target at 16K. Latency is not a bottleneck at this scale (~30 ms uncontended); not promoted. Revisit for interactive/agent loops on very large repositories.
+
+## E011 — Learned pairwise re-ranker over the product's candidate pool
+
+- **Status:** rejected
+- **Hypothesis:** Gold is ranked first for 36% of issues but is in the top-100 pool for 79%; a pairwise logistic re-ranker over repository-agnostic candidate features closes part of that gap.
+- **Files changed:** `benchmarks/npkbench/ltr.py`
+- **Results:**
+
+```json
+{
+ "all_features": {
+  "fix": {
+   "base": [
+    0.136,
+    0.311,
+    0.476,
+    0.524
+   ],
+   "ltr": [
+    0.126,
+    0.262,
+    0.418,
+    0.515
+   ]
+  },
+  "tests": {
+   "base": [
+    0.058,
+    0.078,
+    0.107,
+    0.204
+   ],
+   "ltr": [
+    0.087,
+    0.155,
+    0.262,
+    0.33
+   ]
+  }
+ },
+ "protocol": "leave-one-repository-out CV on dev-fast; pairs from both targets with equal query weight; any-gold-block recall with whole-block greedy fill at 512/1K/2K/4K",
+ "role_blind_both": {
+  "fix": [
+   0.126,
+   0.301,
+   0.447,
+   0.524
+  ],
+  "tests": [
+   0.058,
+   0.068,
+   0.165,
+   0.243
+  ]
+ },
+ "role_blind_fix_only": {
+  "fix": [
+   0.126,
+   0.32,
+   0.456,
+   0.524
+  ],
+  "tests": [
+   0.058,
+   0.068,
+   0.117,
+   0.155
+  ]
+ },
+ "top_weights_all_features": {
+  "file_best_rank": -0.566,
+  "kind_chunk": -0.414,
+  "kind_class": 0.442,
+  "kind_section": -0.461,
+  "role_doc": -0.631,
+  "role_test": 0.509
+ }
+}
+```
+
+- **Decision:** With role features the model relearns documentation demotion and a fix->tests transfer (largest weights are role and doc-like kind proxies). Role-blind models do not beat the product's fused ranking (fix within +/-3 points). The remaining ranking headroom needs new evidence (semantic similarity, structure), not reweighting of existing channels.
+- **Follow-ups:** H11: dense embeddings as a new evidence source, with content-addressed vector reuse across snapshots
+
+## E012 — Dense similarity (MiniLM, bge-small) fused with the product's top-100 pool order
+
+- **Status:** rejected
+- **Hypothesis:** Dense query-block similarity is evidence the lexical/definition/relation channels lack; fusing it into the pool order recovers gold that ranks in the pool but below the budget.
+- **Baseline run:** experiments/npkbench/runs/E012-dense-devfast (npk_default, e012_pool_control arms)
+- **Run:** experiments/npkbench/runs/E012-dense-devfast
+- **Bench version:** npkbench-1.1 + docs-3 (rescored)
+- **Results:**
+
+```json
+{
+ "docs3_hunk_recall_1K_16K_13_tasks": {
+  "e012_bge": [
+   0.154,
+   0.154,
+   0.385,
+   0.538,
+   0.692
+  ],
+  "npk_default": [
+   0.0,
+   0.0,
+   0.231,
+   0.308,
+   0.538
+  ]
+ },
+ "fix_hunk_recall_1K_16K": {
+  "e012_bge": [
+   0.265,
+   0.332,
+   0.463,
+   0.548,
+   0.637
+  ],
+  "e012_minilm": [
+   0.215,
+   0.303,
+   0.38,
+   0.498,
+   0.657
+  ],
+  "e012_pool_control": [
+   0.28,
+   0.45,
+   0.489,
+   0.532,
+   0.613
+  ],
+  "npk_default": [
+   0.358,
+   0.44,
+   0.479,
+   0.523,
+   0.607
+  ]
+ },
+ "tests_hunk_recall_1K_16K": {
+  "e012_bge": [
+   0.093,
+   0.139,
+   0.179,
+   0.27,
+   0.365
+  ],
+  "e012_minilm": [
+   0.079,
+   0.128,
+   0.216,
+   0.267,
+   0.352
+  ],
+  "npk_default": [
+   0.04,
+   0.064,
+   0.141,
+   0.24,
+   0.309
+  ]
+ },
+ "utility_bge_vs_product_1K_16K": [
+  -0.027,
+  -0.021,
+  0.035,
+  0.076,
+  0.099
+ ]
+}
+```
+
+- **Tradeoffs:** Dense favors natural-language blocks (tests, docs) over code; helps at >=4K, hurts at <=2K.
+- **Decision:** Budget-dependent trade-off that fails the declared rule. bge-small vs product (dev-fast, paired): fix -9.2 [-17.5,-1.0] at 1K and -10.8 [-18.1,-3.9] at 2K, +2.6/+3.1 (n.s.) at 8K/16K; tests +5.3 [+1.6,+9.6] at 1K, +7.5 at 2K, +5.6 at 16K; docs (docs-3 rescored, 13 tasks) 0.000->0.154 at 1K, 0.538->0.692 at 16K. Utility U = -2.7/-2.1/+3.5/+7.6/+9.9 points at 1K-16K: negative at small budgets. Fusing at equal weight with the whole pool order halves every product channel's influence; MiniLM and a sharper dense weight (k=30) are worse on fix. Query-time encoding of 100 blocks costs seconds per query on CPU (37 s p50 cold).
+- **Follow-ups:** E012b: dense as one more channel inside the product's RRF (one of four), with the product's fill and trimming
+
+## E012b — Dense similarity as one channel inside the product's RRF (pool of 100)
+
+- **Status:** inconclusive
+- **Hypothesis:** E012 fused dense at equal weight with the whole product order; as one channel among lexical/definition/relation it should keep the small-budget fix precision while adding tests/docs recall.
+- **Run:** experiments/npkbench/runs/E012b-dense-channel-devfast
+- **Results:**
+
+```json
+{
+ "fix_1K_16K": {
+  "bge_channel": [
+   0.319,
+   0.406,
+   0.474,
+   0.565,
+   0.649
+  ],
+  "minilm_channel": [
+   0.299,
+   0.362,
+   0.464,
+   0.544,
+   0.644
+  ],
+  "npk_default": [
+   0.358,
+   0.44,
+   0.479,
+   0.523,
+   0.607
+  ]
+ },
+ "tests_1K_16K": {
+  "bge_channel": [
+   0.074,
+   0.128,
+   0.169,
+   0.258,
+   0.338
+  ],
+  "npk_default": [
+   0.04,
+   0.064,
+   0.141,
+   0.24,
+   0.309
+  ]
+ },
+ "utility_bge": [
+  0.002,
+  0.043,
+  0.03,
+  0.08,
+  0.084
+ ]
+}
+```
+
+- **Decision:** bge-small passes the quality rule, barely at 1K; the cost keeps it out of the default. bge vs product (dev-fast): fix -3.9/-3.4/-0.5/+4.2/+4.2 (none significant), tests +3.4*/+6.4*/+2.8/+1.8/+2.9, docs (13 tasks) +7.7/+15.4/+7.7/+23.1/+15.4; utility +0.2/+4.3/+3.0/+8.0/+8.4 points. MiniLM fails (fix -5.8*/-7.8* at 1-2K; utility -3.9 at 1K). A product form needs bge vectors for every block (compile time on Django rises from ~15 s to 10+ minutes on CPU) or query-time pool encoding (seconds per cold query). Candidate for an opt-in semantic mode (swap MiniLM for bge-small, pool-channel form); not a default.
+- **Follow-ups:** If the shipped semantic mode is revisited (M006), evaluate bge-small in the pool-channel form as its encoder
+
+## E013 — Sibling/near-duplicate collapse (measured before building)
+
+- **Status:** rejected
+- **Hypothesis:** Structurally repeated code (same method across DB backends) wastes a material share of the budget; collapsing siblings into one full copy plus references would reclaim it.
+- **Results:**
+
+```json
+{
+ "arm": "npk_default (E000b spans), dev-fast",
+ "exact_duplicate_text_share": {
+  "16K": 0.0,
+  "4K": 0.0
+ },
+ "share_of_selected_tokens_in_same_name_blocks_across_files": {
+  "16K": 0.031,
+  "4K": 0.017
+ }
+}
+```
+
+- **Decision:** At most 3.1% of selected tokens could be reclaimed on this workload; not worth a new representation now. Revisit for repetitive/vendored corpora or conversation logs.
+
+## E014 — Source scan without pathlib relative_to/is_relative_to (update latency)
+
+- **Status:** kept
+- **Hypothesis:** A one-file update of Django spends 2.1 of 2.8 s (profiled) in scan_source, mostly pathlib relative_to/is_relative_to; string prefix checks on the same resolved paths are semantically identical and much cheaper.
+- **Files changed:** `npk/pack/compile.py`
+- **Results:**
+
+```json
+{
+ "django_3.2K_files_update_seconds_median3": {
+  "noop_quick": {
+   "after": 0.384,
+   "before": 0.978
+  },
+  "noop_strict": {
+   "after": 0.679,
+   "before": 1.303
+  },
+  "one_file_quick": {
+   "after": 0.797,
+   "before": 1.219
+  },
+  "one_file_strict": {
+   "after": 1.052,
+   "before": 1.531
+  }
+ },
+ "fresh_compile_logically_identical": true,
+ "security_contract": "every file is still resolved (Path.resolve) and rejected before any read if it escapes the root; tests mocking resolve/stat/read_bytes pass",
+ "tests": "1238 passed"
+}
+```
+
+- **Decision:** 1.5-2.5x faster updates on a large repository with identical artifacts. Remaining one-file update cost is the global digest over FTS storage (future: incremental global integrity).
+
+## E015 — Documentation target for NPK-Bench (docs-1) and first docs-cost measurement
+
+- **Status:** inconclusive
+- **Hypothesis:** Documentation demotion (E006/E008 d0 arms) and the definition channel (E002) move recall away from topical documentation; a docs target built from the docs edited by the upstream fix commit makes that cost measurable instead of unfalsifiable.
+- **Run:** experiments/npkbench/runs/E015-docs-target-dev
+- **Bench version:** npkbench-1.1 + docs-1
+- **Results:**
+
+```json
+{
+ "docs_hunk_recall_dev_29": {
+  "budgets": [
+   1024,
+   2048,
+   4096,
+   8192,
+   16384
+  ],
+  "e002_defs_role05": [
+   0.0,
+   0.0,
+   0.0,
+   0.011,
+   0.098
+  ],
+  "e006_role05": [
+   0.0,
+   0.0,
+   0.0,
+   0.011,
+   0.063
+  ],
+  "e008b_soft_i60_t30_d10": [
+   0.046,
+   0.132,
+   0.247,
+   0.316,
+   0.362
+  ],
+  "e008c_test40": [
+   0.035,
+   0.035,
+   0.161,
+   0.247,
+   0.356
+  ],
+  "npk_default": [
+   0.0,
+   0.092,
+   0.236,
+   0.276,
+   0.425
+  ],
+  "npk_nodefs": [
+   0.092,
+   0.109,
+   0.247,
+   0.345,
+   0.425
+  ],
+  "npk_notrim": [
+   0.035,
+   0.092,
+   0.236,
+   0.276,
+   0.425
+  ]
+ }
+}
+```
+
+- **Decision:** Superseded by E015b. Inspection of the docs-1 gold found construction errors: the upstream-commit rule (first commit after base touching every fix file) picked a mass-reformat commit for pytest-5103 (19 doc example files) and a deprecation sweep for matplotlib-24265, and counted CONTRIBUTORS.txt and doc/users/prev_whats_new as topical docs. Directionally, documentation demotion collapsed docs recall (e006_role05: 0.000/0.000/0.000/0.011/0.063 at 1K-16K vs npk_default 0.000/0.092/0.236/0.276/0.425), and definitions+trim cost -9.2 points at 1K (CI [-19.5,-1.1], 0 wins/4 losses) and -6.9 at 8K. docs-3 (patch-overlap commit identification, widening only to the introducing PR merge, prose-only) is the corrected target; docs-2 was built but found to swallow branch-integration merges before any use.
+- **Follow-ups:** E015b: re-run on docs-3 gold (dev) and E015c (heldout) for the definition channel's docs cost; E019: Django documents in .txt reST, which the compiler cuts into 60-line windows; split by sections; E018: resolve named entities to the reST object directives that document them
+
+## E015b — Docs target docs-3: documentation cost of role priors and of the definition channel
+
+- **Status:** kept
+- **Hypothesis:** With a corrected documentation target, (a) documentation demotion costs documentation recall, and (b) the definition channel's code-first ranking displaces topical docs.
+- **Run:** experiments/npkbench/runs/E015b-docs3-dev, experiments/npkbench/runs/E015c-docs3-heldout
+- **Bench version:** npkbench-1.1 + docs-3
+- **Results:**
+
+```json
+{
+ "dev_docs_1K_16K": {
+  "e002_defs_role05": [
+   0.0,
+   0.0,
+   0.0,
+   0.013,
+   0.147
+  ],
+  "e006_role05": [
+   0.0,
+   0.0,
+   0.0,
+   0.013,
+   0.109
+  ],
+  "e008b_soft_i60_t30_d10": [
+   0.051,
+   0.186,
+   0.353,
+   0.391,
+   0.442
+  ],
+  "npk_default": [
+   0.0,
+   0.141,
+   0.301,
+   0.385,
+   0.513
+  ],
+  "npk_nodefs": [
+   0.103,
+   0.16,
+   0.314,
+   0.462,
+   0.513
+  ],
+  "npk_notrim": [
+   0.038,
+   0.141,
+   0.301,
+   0.385,
+   0.513
+  ]
+ },
+ "heldout_docs_1K_16K": {
+  "npk_default": [
+   0.137,
+   0.165,
+   0.305,
+   0.517,
+   0.602
+  ],
+  "npk_nodefs": [
+   0.095,
+   0.286,
+   0.406,
+   0.537,
+   0.617
+  ]
+ }
+}
+```
+
+- **Decision:** docs-3 is kept as NPK-Bench's third target. (a) Demotion is decisively harmful: e006_role05 vs product on dev docs -14.1/-30.1/-37.2/-40.4 points at 2K-16K (CIs exclude zero, 0 wins / 5-12 losses), confirming the E006/E008 rejections on evidence rather than suspicion. (b) The definition channel costs docs: dev -10.3 [-21.8,-1.3] at 1K; held-out (33 tasks, confirmation only) -12.1 [-24.2,-3.0] at 2K and -10.1 [-21.2,-1.0] at 4K. Under the declared utility E002 stays net positive (fix gains of 8-10 points dominate the 0.087-weighted docs loss). Top-block trimming is docs-neutral (held-out identical).
+- **Follow-ups:** E019 (reST sections for .txt) and E018 (documentation channel) aim to recover the definition channel's docs cost
+
+## E016 — Test-mate prototype: insert the test block mirroring the top implementation file
+
+- **Status:** rejected
+- **Hypothesis:** The definition channel's tests-target cost (E002) can be recovered structurally: the test file that mirrors the top-ranked implementation file by path convention holds the regression test.
+- **Run:** experiments/npkbench/runs/E016-testmate-devfast
+- **Decision:** Superseded by E016b. The prototype re-filled the budget itself without top-block trimming, so its -6.3 fix points at 1K were mostly the missing trim, not the insertion; its tests gains (+10.8 [+5.2,+17.0] at 2K for position 1) motivated the product-form E016b.
+- **Follow-ups:** E016b: product-form test mate inside the selector
+
+## E016b — Test mate in the product selector (placed right after the top implementation block)
+
+- **Status:** kept
+- **Hypothesis:** Placing the best query-matching block of the mirroring test file right after the top implementation block, inside the product's fill and trimming, recovers tests-target recall without a significant fix-target cost.
+- **Run:** experiments/npkbench/runs/E016b-test-mate-product-devfast, experiments/npkbench/runs/H001-mate-trim-heldout
+- **Files changed:** `npk/pack/select.py`, `benchmarks/npkbench/arms.py`, `tests/test_test_mate.py`
+- **Results:**
+
+```json
+{
+ "fix_1K_16K": {
+  "mate": [
+   0.358,
+   0.416,
+   0.46,
+   0.513,
+   0.602
+  ],
+  "nomate": [
+   0.358,
+   0.44,
+   0.479,
+   0.523,
+   0.607
+  ]
+ },
+ "heldout_fix_1K_16K": {
+  "mate": [
+   0.219,
+   0.303,
+   0.385,
+   0.472,
+   0.569
+  ],
+  "nomate": [
+   0.23,
+   0.309,
+   0.399,
+   0.475,
+   0.575
+  ]
+ },
+ "heldout_tests_1K_16K": {
+  "mate": [
+   0.07,
+   0.143,
+   0.194,
+   0.256,
+   0.303
+  ],
+  "nomate": [
+   0.058,
+   0.105,
+   0.149,
+   0.22,
+   0.287
+  ]
+ },
+ "heldout_utility": [
+  -0.00012,
+  0.03182,
+  0.02764,
+  0.03262,
+  0.01033
+ ],
+ "tests_1K_16K": {
+  "mate": [
+   0.077,
+   0.134,
+   0.19,
+   0.27,
+   0.337
+  ],
+  "nomate": [
+   0.04,
+   0.064,
+   0.141,
+   0.24,
+   0.309
+  ]
+ },
+ "utility_1K_16K": [
+  0.0368,
+  0.0446,
+  0.0228,
+  0.0191,
+  0.0223
+ ]
+}
+```
+
+- **Decision:** Kept as an opt-in mode (enable_test_mate=True, --test-mate); the held-out confirmation did not support a default change. Dev-fast: tests +3.7/+7.0/+4.9/+2.9/+2.8 points, fix changes not significant. Held-out H001 (407 issues; criteria committed before the run): tests +1.15 [+0.2,+2.3] / +3.8 [+1.6,+6.0] / +4.5 [+2.2,+7.1] / +3.6 [+2.0,+5.4] / +1.7 [+0.7,+2.9] points at 1K-16K (34 wins/6 losses at 2K); fix -1.15 [-2.2,-0.3] / -0.6 / -1.4 [-2.7,-0.2] / -0.3 / -0.6 [-1.3,-0.1]; docs ~0. Utility -0.012/+3.2/+2.8/+3.3/+1.0 points: negative (by 0.012 points) at 1K with a significant fix loss, so the pre-declared rule blocks a default change. A budget-gated variant (mate only at >=2K) is suggested by these numbers but must not be confirmed on the same held-out split.
+- **Follow-ups:** H001: held-out confirmation (tests, docs, fix) together with E005c trimming
+
+## E016c — Budget-gated test mate as the default (on from 2048 tokens)
+
+- **Status:** kept
+- **Hypothesis:** H001 showed the always-on test mate trades evenly at 1K (utility -0.012 points, significant fix loss) and gains clearly at 2K and above; gating it at 2K keeps the gain without the 1K cost. Designed from held-out results, so confirmed only on the fresh heldout-b.
+- **Run:** experiments/npkbench/runs/HB01-heldout-b
+- **Files changed:** `npk/pack/select.py`, `npk/cli.py`, `benchmarks/npkbench/arms.py`, `tests/test_test_mate.py`, `benchmarks/contract_mutations.py`, `README.md`, `CURRENT_ARCHITECTURE.md`
+- **Results:**
+
+```json
+{
+ "heldout_b_fix_1K_16K": {
+  "mate_always": [
+   0.174,
+   0.232,
+   0.34,
+   0.42,
+   0.522
+  ],
+  "product_mate_off": [
+   0.178,
+   0.244,
+   0.348,
+   0.428,
+   0.526
+  ]
+ },
+ "heldout_b_tests_1K_16K": {
+  "mate_always": [
+   0.071,
+   0.13,
+   0.167,
+   0.219,
+   0.277
+  ],
+  "product_mate_off": [
+   0.048,
+   0.073,
+   0.108,
+   0.182,
+   0.255
+  ]
+ },
+ "utility_gated": [
+  0.0,
+  0.04511,
+  0.05023,
+  0.02786,
+  0.01875
+ ]
+}
+```
+
+- **Decision:** Passes the criteria declared in NEXT_STEPS.md before HB01 (heldout-b, 400 fresh issues). Gated vs product: 1K identical by construction; tests +5.7 [+3.4,+8.1] / +6.0 [+3.7,+8.4] / +3.7 [+2.0,+5.5] / +2.3 [+1.0,+3.7] points at 2K-16K; fix -1.1 [-2.6,+0.3] / -0.9 [-2.0,+0.2] / -0.9 [-1.8,-0.1] / -0.4 [-1.0,-0.0]; utility 0.0/+4.5/+5.0/+2.8/+1.9. Significant fix losses occur only where utility is clearly positive. The new default equals the evaluated composition (mate off at 1K, evaluated mate from 2K) on all 515 dev-fast selections. enable_test_mate: None (default, gated) / True / False; CLI --test-mate auto|always|never; mutant test_mate_gate_ignored is killed.
+
+## E017 — Context map: a budget share for ranked locations listed without text
+
+- **Status:** kept
+- **Hypothesis:** Callers that can open files need to know where relevant code is more than they need its text; a one-line-per-place map (path:start-end kind name, Python classes as members) of the ranking beyond the text selection locates more gold per token than full text.
+- **Run:** experiments/npkbench/runs/E017-context-map-devfast
+- **Files changed:** `npk/pack/select.py`, `npk/pack/__init__.py`, `npk/cli.py`, `tests/test_context_map.py`
+- **Results:**
+
+```json
+{
+ "fix_located_1K_16K": {
+  "map10": [
+   0.409,
+   0.455,
+   0.498,
+   0.599,
+   0.675
+  ],
+  "map100": [
+   0.515,
+   0.583,
+   0.665,
+   0.704,
+   0.714
+  ],
+  "map25": [
+   0.411,
+   0.484,
+   0.574,
+   0.636,
+   0.704
+  ],
+  "map50": [
+   0.46,
+   0.529,
+   0.607,
+   0.694,
+   0.704
+  ]
+ },
+ "fix_text_1K_16K": {
+  "map0": [
+   0.358,
+   0.44,
+   0.479,
+   0.523,
+   0.607
+  ],
+  "map25": [
+   0.312,
+   0.382,
+   0.45,
+   0.489,
+   0.571
+  ],
+  "map50": [
+   0.262,
+   0.358,
+   0.44,
+   0.479,
+   0.523
+  ]
+ },
+ "tests_located_1K_16K": {
+  "map0": [
+   0.04,
+   0.064,
+   0.141,
+   0.24,
+   0.309
+  ],
+  "map25": [
+   0.061,
+   0.152,
+   0.231,
+   0.315,
+   0.375
+  ]
+ }
+}
+```
+
+- **Tradeoffs:** Located is not read: the caller must open the listed spans. Useful for agents with file access; for a single-call context the text-only default stays better.
+- **Decision:** Kept as an opt-in output mode (select(map_share=...), --map-share), not a default: full-text recall falls as the map share grows. With 25% of the budget as a map (dev-fast, paired vs the product's full text): locatable fix recall +5.3/+4.4/+9.6/+11.3/+9.7 points at 1K-16K (all CIs exclude zero), tests +2.1/+8.8/+9.0/+7.4/+6.5, docs (13 tasks) 0.000->0.077 at 1K, 0.231->0.462 at 4K; full-text fix recall -4.6/-5.8/-2.9/-3.4/-3.6. A 25% map at 2K locates 0.484 of fix hunks, the product's full text at 4K 0.479. Map only (100%): 0.515 located at 1K vs 0.358 in text.
+- **Follow-ups:** Held-out confirmation of the located gain; Measure agent task success with and without the map (needs an agent harness)
+
+## E018 — Documentation channel on top of reST sectioning (E019)
+
+- **Status:** rejected
+- **Hypothesis:** reST object directives (.. method::, .. setting::, .. class:: ...) declare which entity a page documents; resolving the entities an issue names to those directives (a second definition-style channel over 'documents' symbols) would recover the definition channel's documentation cost (E015b) without demoting anything.
+- **Run:** experiments/npkbench/runs/E018-doc-entities-dev-docs
+- **Decision:** Built on E019, which was rejected. On docs (dev, 26 tasks) the channel added +10.3/+5.1/+7.7/+3.8/-2.6 points over E019 alone, but the combination only matched the main compiler beyond 1K. The channel alone on the main compiler was tested as E018b. The code-target run of this combination was stopped as superseded.
+
+## E018b — Documentation channel (named entities -> reST object directives) on the main compiler
+
+- **Status:** rejected
+- **Hypothesis:** reST object directives (.. method::, .. setting::, .. class:: ...) declare which entity a page documents; resolving the entities an issue names to those directives (a second definition-style channel over 'documents' symbols) would recover the definition channel's documentation cost (E015b) without demoting anything.
+- **Baseline run:** experiments/npkbench/runs/E015b-docs3-dev, experiments/npkbench/runs/E016b-test-mate-product-devfast (npk_nomate)
+- **Run:** experiments/npkbench/runs/E018b-doc-channel-dev-docs, experiments/npkbench/runs/E018b-doc-channel-devfast
+- **Files changed:** `npk/pack/compile.py`, `npk/pack/select.py`, `tests/test_doc_entity_channel.py`
+- **Decision:** Trades code for documentation. Docs (dev, 26 tasks): +14.1 [+2.6,+26.9] points at 1K (5 wins/0 losses), +5.8 at 2K, -2.6/-1.3/0 beyond. Dev-fast code targets vs the same selector without the channel: fix -2.4/-1.0/-5.3 [-9.7,-1.5]/-1.0/0.0 (0 wins/6 losses at 4K), tests -0.2/-1.9/-3.9 [-7.8,-1.0]/-1.6/-0.6. Utility -1.9/-2.2/-9.9/-2.6/-0.6 points: negative at every budget. Django documents nearly every entity, so the channel lifts documentation for most queries at the expense of the code the issue is about; documentation matters for 8.7% of tasks.
+
+## E019 — Split .txt files with reST section structure as reST (Django documentation)
+
+- **Status:** rejected
+- **Hypothesis:** Django writes its documentation as reST in .txt files, which the compiler cut into anonymous 60-line windows; section blocks named by heading path would rank topical documentation better.
+- **Baseline run:** experiments/npkbench/runs/E015b-docs3-dev, experiments/npkbench/runs/E016b-test-mate-product-devfast (npk_nomate)
+- **Run:** experiments/npkbench/runs/E019-rst-text-dev-docs, experiments/npkbench/runs/E019-rst-text-devfast
+- **Files changed:** `npk/pack/compile.py`
+- **Decision:** No gain on any target. docs (dev, 26 tasks): +3.8/-2.6/-10.9/-3.8/-1.3 points at 1K-16K, none significant (2 wins/5 losses at 4K); dev-fast vs the same selector on the main compiler: fix 0.0/-1.9/-1.9/+1.0/0.0, tests -0.5/0.0/-0.5/+1.5/+1.0, docs 0/0/-7.7/0/-7.7 (13 tasks); utility -0.5/-1.9/-3.1/+2.4/+0.3 points. Compile time +15% (17.3 s vs 15.0 s per Django pack) from more, smaller blocks. Smaller named sections do not rank the edited lines better than windows do.
+
+## E022 — Segment-aware lexical retrieval: separate channels for issue prose and code
+
+- **Status:** rejected
+- **Hypothesis:** 80/103 issues contain code (median 36% of words); one OR query lets long reproduction scripts outvote the prose. Separate prose and code lexical channels give each an equal RRF vote.
+- **Run:** experiments/npkbench/runs/E022-segments-devfast
+- **Decision:** Fails the declared rule at 1K. e022_split vs product (dev-fast): fix -2.4/-2.4/+2.4/+2.6/0.0 (none significant), tests +1.8/+4.4/+5.3/+3.3/+5.3 (significant at 16K), docs 0/+7.7/0/+7.7/0; utility -0.7/+2.6/+7.6/+6.6/+5.3 points. Adding only a code or only a prose channel to the full-query channel is weaker (full_plus_prose: fix -4.4 at 2K, significant). The tests gain overlaps what the test mate (E016b) already recovers; not tuned further on dev-fast to avoid fitting variants to it.
+
+## E023 — Import-aware entity extraction and prose-weighted definition votes
+
+- **Status:** rejected
+- **Hypothesis:** Failure analysis (django-11964): module paths of import statements in reproduction code (django.utils.translation) become entities and give strong definition votes to unrelated blocks (trans_real.translation, OGRGeomType.django, TestCase). Dropping import module paths and lowercase non-final dotted parts, and halving votes for names that occur only in code segments, would sharpen the definition channel.
+- **Run:** experiments/npkbench/runs/E023-entities-devfast
+- **Decision:** No measurable effect. A reimplementation control reproduced the product exactly (all 515 selections). Import-aware tail extraction vs product (dev-fast): fix -0.5/-0.5/+1.5/-0.5/0.0, tests 0.0/+0.5/0.0/+1.9/-0.5, at most 4 tasks changed per budget; code-half weighting and the combination are equally flat (utility within +-2 points, mixed sign). The ambiguity cap already discards most module-path names, so the traced failure is rare in aggregate. The simpler product stays.
+
+## E024 — Bulk integrity leaves (one ordered scan per table) and batched framing
+
+- **Status:** rejected
+- **Hypothesis:** Compile-time sealing computes each file's integrity leaf with 7 small queries (21K on Django) and frames 500K values one call at a time; one ordered scan per table feeding incremental per-file hashes, and inlined framing, give identical digests faster (profile: ~2 s of a 21 s profiled compile).
+- **Run:** experiments/npkbench/runs/E024-bulk-integrity
+- **Files changed:** `npk/pack/integrity.py`, `tests/test_incremental_integrity.py`, `benchmarks/contract_mutations.py`
+- **Decision:** Correct but not worth its complexity. Digests are byte-identical (4 Django packs; new equality test across all local tables; two mutants killed), but paired compile timing gives 1.018x (12.86 -> 12.64 s median) and verify ~3% (9.4-9.8 s -> 8.8-9.3 s). The cold-pack microbenchmark (1.4 s -> 0.5 s) overstated the in-compile gain because sealing reads hot pages; verify is dominated by the deliberate FTS source-parity rebuild. Not merged: +40 lines in integrity-critical code for ~2%.
+
+## E025 — Parameter sweep: BM25 field weights (E025), candidate depth (E026), RRF constant (E027)
+
+- **Status:** rejected
+- **Hypothesis:** Constants never tuned on an external benchmark (field weights 1/1/1, candidate_limit 60, RRF k 60) leave recall on the table.
+- **Run:** experiments/npkbench/runs/E025-params-devfast
+- **Decision:** Defaults sit near a local optimum; no setting passes the rule. Field weights: name x2 / path x2 / both x2 change fix by at most +3.2 points (both x2 at 16K, the only significant cell) while costing tests -1.7 at 4K (utility -1.4); halving name/path weights loses up to -2.4. Candidate depth: 30 hurts (fix -3.4 at 4K, significant); 120 and 240 give +0.5 to +1.9 points, never significant (utility +0.2 to +3.1). RRF k=20 costs 1 point at 1-2K; k=120 is identical. A reimplementation control reproduced the product exactly. Held-out was not consulted.
+
+## E030 — Top-block trimming for every language (ranked line windows of an oversized non-Python top block)
+
+- **Status:** rejected
+- **Hypothesis:** Non-Python covering blocks are large, and trimming is Python-only; ranking 20- or 40-line windows of an oversized top block by file-local BM25 should recover small-budget recall as E005c did for Python.
+- **Run:** experiments/npkbench/runs/E030-trim-any-multidev
+- **Decision:** No effect on ood-multi-dev: fix +0.4/-0.1 points at 512/1K for 20-line windows (2 wins/2 losses), -0.1/-0.1 for 40-line windows, identical from 2K; tests +0.6 at 512-1K (one task). Trimming helps only when the top-ranked block holds the fix; outside Python the fix sites rank at median 112-401, so the non-Python gap is ranking, not packing.
+
+## E031 — Strip issue-template structure (short headings, checklists, HTML comments) from queries
+
+- **Status:** kept
+- **Hypothesis:** Issue forms wrap the reporter's words in section headings, checklists and HTML-comment instructions; those words are rare in code but common in CONTRIBUTING.md, READMEs and changelogs, which then outrank code. Removing them before retrieval (title always kept) should move code up without losing anything the reporter wrote.
+- **Run:** experiments/npkbench/runs/HC01-query-clean-heldout-c, experiments/npkbench/runs/E031b-query-clean-dev, experiments/npkbench/runs/E031-query-clean-devfast, experiments/npkbench/runs/E031-query-clean-multidev
+- **Files changed:** `npk/pack/select.py`, `npk/cli.py`, `tests/test_query_cleaning.py`, `benchmarks/contract_mutations.py`, `benchmarks/npkbench/arms.py`, `README.md`, `CURRENT_ARCHITECTURE.md`, `NEXT_STEPS.md`
+- **Results:**
+
+```json
+{
+ "dev_utility_points": [
+  1.0,
+  0.7,
+  1.6,
+  2.5,
+  0.4
+ ],
+ "equivalence_dev_fast": "515/515 identical",
+ "heldout_c_utility_points": [
+  0.25,
+  0.54,
+  1.26,
+  1.86,
+  2.57
+ ],
+ "mutants": {
+  "query_cleaning_disabled": "killed",
+  "query_cleaning_drops_title": "killed",
+  "query_cleaning_reports_cleaned_query": "killed"
+ }
+}
+```
+
+- **Decision:** Promoted after the fresh heldout-c confirmation (HC01, criteria declared before the run): fix +0.7/+0.9/+1.2 points at 4K/8K/16K and tests +0.4 (1K) / +1.4 (16K), all significant; utility +0.25 to +2.57, no significant loss. Dev (E031b, 300): utility +1.0/+0.7/+1.6/+2.5/+0.4. Mixed on multilingual dev (utility -0.9 at 4K), which is not part of the rule. Product form: PackSelector(enable_query_cleaning=True) by default, CLI --raw-query to disable; cleaning applies once before every channel and Selection.query keeps the caller's text. The product form equals the evaluated prototype on all 515 dev-fast selections; three new mutants (cleaning disabled, title dropped, cleaned query reported) are killed. Benchmark arm npk_rawquery is the previous product.
+
+## E032 — Bare member names and modifier-prefixed declarations as definition symbols
+
+- **Status:** rejected
+- **Hypothesis:** Brace-language methods are stored only under qualified names (JsonReader.nextString), so the definition channel never matches a method an issue names; DEF_RE also misses pub fn / export function / public static / def self.x. Recording bare member names and allowing modifiers should help non-Python ranking.
+- **Baseline run:** experiments/npkbench/runs/OMD01-multilingual-dev, experiments/npkbench/runs/E031-query-clean-devfast
+- **Run:** experiments/npkbench/runs/E032-def-symbols-multidev, experiments/npkbench/runs/E032-def-symbols-devfast
+- **Files changed:** `npk/pack/compile.py`
+- **Decision:** Mixed outside Python and no effect on Python. ood-multi-dev vs the product (OMD01): fix -0.4/+0.3/-1.2/-0.4/+0.3 points (none significant; wins and losses balanced), tests +0.3 to +0.6; utility -0.1/+0.7/-1.2/+0.2/+0.6 (negative at 1K and 4K). By language at 2K: JS/TS +4.3, Java +1.5, PHP +0.3, Rust -4.8, others 0. dev-fast (Python): all 515 selections identical. More definition candidates displace lexical ones in some languages; a language-specific form would need more data per language than ood-multi-dev has.
+
+## E033 — Ruby splitter: def/class/module ... end blocks (matched by indentation) instead of 60-line windows
+
+- **Status:** rejected
+- **Hypothesis:** Ruby files are cut into anonymous 60-line windows; method-level named blocks should rank Ruby fix and test sites better.
+- **Baseline run:** experiments/npkbench/runs/OMD01-multilingual-dev
+- **Run:** experiments/npkbench/runs/E033-ruby-split-multidev
+- **Files changed:** `npk/pack/compile.py`, `tests/test_ruby_split.py`
+- **Decision:** Fails the rule on the 28 Ruby issues of ood-multi-dev: fix +8.3 (1K, 5 wins/1 loss) / -0.4 / -1.4 / -3.6 / -10.9 [-22.8,-0.8] points (the 16K loss is significant: small method blocks lose the incidental coverage of neighboring hunks that windows gave); tests +0.9 / +8.3 / +8.3 / +20.4 [+7.4,+37.0] / +5.6 (minitest methods become findable units); utility +9.2/+7.9/+6.8/+16.6/-5.4. Promising for tests, but 28 issues are too few to tune a variant without fitting noise; a class-level-block design with member trimming (as for Python) would need a larger Ruby dev set.
+
+## E034 — Weight the issue title's terms in the lexical channel
+
+- **Status:** kept
+- **Hypothesis:** The lexical channel deduplicates query terms, so the title (the reporter's one-line summary) counts no more than traceback, reproduction or template words. Repeating title terms in the FTS5 OR (bm25 sums repeated phrases) weights them.
+- **Run:** experiments/npkbench/runs/E034-title-weight-devfast, experiments/npkbench/runs/E034b-title-weight-sweep-devfast, experiments/npkbench/runs/E034-title-weight-multidev, experiments/npkbench/runs/E034-E035-E036-dev, experiments/npkbench/runs/HD01-heldout-d
+- **Decision:** Large dev-fast gains, widening with weight. x1 control identical to the product (515/515). x2: utility +3.6/+6.0/+6.5/+11.8/+9.9 points (tests +5.4* to +8.4* from 2K). x3: fix +1.0/+1.0/+1.8/+6.8*/+4.7, tests +2.9*/+8.7*/+9.8*/+9.3*/+9.5*, docs +15.4 at 1K-8K (2-3 issues); utility +5.2/+10.9/+12.8/+17.3/+14.1, no significant loss. Sweep of x4/x6 and a separate title channel (E034b) queued on dev-fast, then the full dev split; confirmation would use heldout-d. E034b sweep on dev-fast against the new default (with E031 cleaning): x3 utility +4.4/+8.3/+8.6/+12.0/+13.8 (tests significant at every budget, fix never negative); x4 +5.7/+9.6/+8.6/+15.2/+13.6; x6 +5.4/+5.2/+7.5/+15.3/+13.1 (fix -1.5 at 2K); title as its own RRF channel +2.2/+5.8/+15.8/+11.3/+13.6 (fix slightly negative at 1-2K); both +3.3/+4.4/+10.0/+14.0/+14.0 (fix -4.5 at 2K); title-only lexical query -0.7 at 2K (the body matters: weight the title, do not replace the body). x3 and x4 go to the full dev split (E034-E035-E036-dev). Non-Python (ood-multi-dev, 186 issues, 41 repositories' dev half): x3 fix +3.0/+1.9/+6.5*/+6.8*/+8.2* points, tests +3.6*/+0.8/+3.9*/+3.8*/+3.7, utility +6.6/+2.7/+10.4/+10.5/+11.8, no significant loss: the gain generalizes beyond Python. Product form prepared on local branch exp/e034p (title_weight, default 3; equals the prototype on 515/515 dev-fast selections and title_weight=1 equals the previous default on 515/515; two mutants killed). Full dev (300): x3 utility +5.8/+8.8/+10.1/+10.8/+15.4 points, x4 +6.6/+8.7/+10.5/+14.0/+16.4 (fix significant from 2K, tests at every budget, no significant loss); on the 197 issues outside dev-fast x4 is +7.0/+8.1/+10.9/+13.1/+18.2. By the declared rule x4 (higher mean utility) goes to heldout-d (HD01). HD01: x4 passes on heldout-d (fix +2.2 to +5.4 points significant at 2K-16K, tests +2.9 to +10.6 at every budget, mean utility 9.54), but E039 (title x3 with query term frequency) passed with a higher mean utility (9.99) and the declared rule promotes one of two uncombined alternatives; title weighting ships as part of E039 (x3).
+
+## E035 — Choose the test mate's file with lexical evidence
+
+- **Status:** rejected
+- **Hypothesis:** The mate mirrors the top implementation file's path and keeps only the best-mirroring files; on dev-fast at 4K it lands in a gold test file in 36/103 issues, the lexically top test file in 37, and the two agree in 15. Considering every mirroring test file (mirror_any) or fusing mirror strength with lexical file rank (fused) should pick the regression-test file more often.
+- **Run:** experiments/npkbench/runs/E034-E035-E036-dev, experiments/npkbench/runs/HD01-heldout-d
+- **Decision:** Full dev (300): mirror_any utility 0/+2.9/+2.9/+1.1/+0.4 points (tests +2.6* at 4K), fused 0/+2.6/+3.7/+0.9/+0.5 (fix +1.2* and tests +2.1* at 4K); 1K is unchanged by construction (mate off). On the 197 issues outside dev-fast (where the rules were not designed) mirror_any stays >= 0 at every budget (0/+2.4/+1.2/+0.8/0) but fused falls to -0.14 at 8K, so by the declared rule mirror_any goes to heldout-d (HD01). HD01 (heldout-d): fails; fix -0.9 points at 4K is a significant loss and utility is -0.14 at 16K (tests +1.8 at 4K). The dev gain did not replicate.
+
+## E036 — Module header (imports) of the top implementation file
+
+- **Status:** rejected
+- **Hypothesis:** About a quarter of the fix hunks missed at 4K inside an already-selected file are import edits in the file's first module-level block; placing that header (<= budget/8) right after the file's top block should find them and show a reader which names are in scope.
+- **Run:** experiments/npkbench/runs/E034-E035-E036-dev, experiments/npkbench/runs/HD01-heldout-d
+- **Decision:** Full dev (300): one file utility +1.1/+0.7/+0.7/+0.8/+3.3 points (fix +1.3* at 1K, +2.2* at 8K, +3.2* at 16K; tests -0.2 to -1.1, not significant); two files +1.1/+1.7/+1.5/+1.9/+3.5. Outside dev-fast the two-file variant falls to -0.3 at 4K with tests -1.6* at 8K, while one file stays +0.9/+0.9/+0.3/+0.4/+3.6, so by the declared rule the one-file header goes to heldout-d (HD01). HD01 (heldout-d): fix +2.8/+2.2/+2.4/+2.9 points at 2K-16K (significant) and utility +1.0 to +2.9, but tests -0.7 at 2K is a significant loss (upper bound -0.00004), which the declared criteria forbid. A header variant that keeps the fix gain without displacing test blocks at 2K (for example placed only from 4K) would need a fresh held-out split.
+
+## E037 — Morphological query expansion (Snowball stems or plural forms from the pack vocabulary)
+
+- **Status:** rejected
+- **Hypothesis:** The analyzer never stems, so issue prose ('choices', 'serialization') misses code spellings ('choice', 'serializer'); adding index terms that share a stem (or a singular/plural form) to the lexical OR should recover them.
+- **Run:** experiments/npkbench/runs/E037-stem-expand-devfast
+- **Decision:** Fails the rule on dev-fast. Snowball (up to 3 variants per term; a Django query grows from 73 to 166 terms): fix -2.6/-4.5*/-2.1/+1.8/+0.3 points, tests -1.5/-0.5/-2.4/-5.1*/-6.2*, utility -4.1/-4.4/-3.1/-2.7/-7.2. Plural forms only: fix -1.5/-1.9/-0.5/+1.1/+1.1, tests +0.9/+1.8/-2.6/-1.7/-2.2, utility -0.6/-0.2/-2.4/-1.2/-1.7. Variants add common words (even ~ evening, supports, issues) whose BM25 terms outweigh the rare misspelled identifiers they were meant to reach. The product has no dependencies, so nothing would have shipped without an in-repository rule set anyway.
+
+## E038 — Static Model2Vec embeddings (potion-base-8M / potion-retrieval-32M) as a semantic channel for code
+
+- **Status:** rejected
+- **Hypothesis:** E012b's bge-small channel passed the rule from 2K but its CPU cost kept it out; static embeddings (a token table, mean-pooled; about 15 s to index a 15K-block Django pack) might keep part of the gain at almost no cost.
+- **Run:** experiments/npkbench/runs/E038-static-channel-devfast
+- **Decision:** Fails the rule on dev-fast in every form. Pool-of-100 with potion-base-8M: fix -6.6*/-7.4*/-4.0/-0.5/-2.9 points, utility -3.9/-3.2/-1.4/+5.1/-4.0. Pool with potion-retrieval-32M: fix -4.0/-8.4*/-5.5/-2.4/-4.5, utility -0.6/-3.4/+0.2/0.0/-6.9. Full-pack index (32M): fix -3.2*/-7.4*/-5.8/-4.4/-2.3, tests +4.3* at 1K, utility +1.7/-1.3/-1.4/-2.4/-3.8. Mean-pooled static vectors are too coarse for code: as a fusion channel they displace lexical and definition candidates. The semantic gap for code still needs a contextual encoder (E012b) or a different use of static vectors (not as an RRF channel).
+
+## E039 — Query term frequency in the lexical channel
+
+- **Status:** kept
+- **Hypothesis:** The lexical channel deduplicates query terms, so a word the reporter repeats throughout the issue counts no more than one mentioned once; repeating each term min(cap, 1 + floor(log2 tf)) times in the FTS5 OR restores BM25's query-side tf.
+- **Run:** experiments/npkbench/runs/HD01-heldout-d, experiments/npkbench/runs/E039-query-tf-devfast, experiments/npkbench/runs/E034-E035-E036-dev
+- **Files changed:** `npk/pack/select.py`, `npk/cli.py`, `tests/test_title_weight.py`, `tests/test_query_cleaning.py`, `benchmarks/contract_mutations.py`, `benchmarks/npkbench/arms.py`, `benchmarks/npkbench/report.py`, `README.md`, `CURRENT_ARCHITECTURE.md`, `NEXT_STEPS.md`
+- **Decision:** Promoted after HD01 (heldout-d, 401 unused issues, criteria declared before the run): fix +0.1/+1.4/+2.9/+3.2/+4.6 points (significant from 2K), tests +2.8/+5.8/+8.5/+8.8/+12.2 (significant at every budget), utility +2.9/+7.2/+11.3/+11.9/+16.7, no significant loss; its mean utility (9.99) beat the other passing candidate, E034 title x4 (9.54). Full dev: +6.9/+6.8/+10.5/+11.6/+17.1. Product form: title_weight=3 and tf_cap=3 by default (CLI --title-weight/--tf-cap); each term of a multi-line query repeats min(tf_cap, 1 + floor(log2 tf)) times in the lexical OR plus title_weight - 1 if it is in the first line; single-line queries (chat memory) are unweighted. Equals the evaluated prototype on 515/515 dev-fast selections, and title_weight=1, tf_cap=1 equals the previous default on 515/515. Mutants killed: title_weight_ignored, query_tf_ignored, single_line_queries_weighted, title_weight_whole_query. Benchmark arms npk_unweighted (E039 off) and npk_query_baseline (E031 and E039 off). Cost (measured after promotion): FTS5 bm25() runs per phrase and per matching row, and weighting raises the phrase count 1.6-1.8x, so Django lexical ranking takes about 1.9x as long (median 51 -> 107 ms at depth 1000; matching alone 8 -> 18 ms) and median selection time rises about 55% (heldout-d at 4K: 70 -> 109 ms with four workers; p95 246 -> 469 ms). An earlier 'about 15%' figure came from E034 x3 on dev-fast and understated it for large repositories.
+
+## E040 — Code names in the issue title vote more in the definition channel
+
+- **Status:** rejected
+- **Hypothesis:** The definition channel gives every code name the query mentions the same vote; a name that also appears in the title is the issue's subject and should vote more (x2 or x4), on top of E034's title weighting.
+- **Run:** experiments/npkbench/runs/E040-title-defs-devfast
+- **Decision:** No effect on dev-fast: against title x3 alone, x2 and x4 title votes change 1-2 issues per budget (fix +1.0 at 1K, tests -1.0 at 2K and 8K; utility +1.0/-1.0/0/-1.0/0 for x2 and +1.0/-0.6/+1.0/-1.0/0 for x4). Title names are usually few and already decisive in the definition channel's ranking.
+
+## E041 — Title weighting in top-block trimming's member ranking
+
+- **Status:** rejected
+- **Hypothesis:** When the best block alone exceeds the budget, trimming ranks its members by file-local BM25 over unique query terms; weighting title terms (x4) there should pick the member the issue is about.
+- **Run:** experiments/npkbench/runs/E041-title-members-devfast
+- **Decision:** No effect on dev-fast at 512-16K: hunk recall identical to title x4 alone on every issue and budget (member order changes in a few selections without changing which gold lines are covered). Trimming mostly acts at small budgets, where the top block's best member is already decided by the rarest query terms.
+
+## E042 — Top-file module header on the E039 default: only from 4K, or capped at budget//16
+
+- **Status:** rejected
+- **Hypothesis:** E036 failed held-out only on a tests loss at 2K while its fix gains held at 4K-16K; placing the header only from 4K, or with a tighter cap, should keep the fix gain without displacing test blocks.
+- **Run:** experiments/npkbench/runs/E042-header-dev
+- **Decision:** Fails the dev rule declared for HE01 (no significant loss), so nothing went to heldout-e. Full dev vs the E039 default: from-4K fix +2.2/+2.1/+2.0 points at 4K/8K/16K (significant) but tests -1.2 at 8K (significant); cap budget//16 fix +0.7 to +2.0 (significant at 1K, 2K, 8K, 16K) and the same tests -1.2 at 8K; the original E036 header likewise. The header's tokens displace tail test blocks; the loss is identical across variants at 8K/16K because the same header is placed there. The trade (about +2 fix for -1 tests points) has positive utility but the declared criteria forbid significant losses; changing that criterion is a policy decision, not something to tune per experiment.
+
+## E043 — Cap queries at 512 distinct lexical terms; append backticked literals in query order
+
+- **Status:** kept
+- **Hypothesis:** bm25() cost grows with query terms and matching rows, and E039 repeats terms, so pasted logs with thousands of distinct words take tens of seconds; keeping the first 512 distinct terms (above the p99 of every split) bounds the cost without touching ordinary issues. Separately, explicit literals were appended by iterating a set, whose order depends on PYTHONHASHSEED.
+- **Run:** experiments/npkbench/runs/E043-term-cap-long-queries
+- **Files changed:** `npk/pack/select.py`, `tests/test_query_term_determinism.py`, `benchmarks/contract_mutations.py`, `benchmarks/npkbench/data.py`, `benchmarks/npkbench/prototypes/term_cap.py`, `README.md`, `CURRENT_ARCHITECTURE.md`, `NEXT_STEPS.md`
+- **Decision:** Kept as a robustness guard. Queries under the cap are unchanged by construction (dev-fast: 511/515 selections identical to the E039 run; the 4 differences are pylint-7080, which has 522 terms). Latency on Django (4K): 1,000 / 5,000 / 20,000 synthetic identifiers 8.4 / 39 / 114 s -> 2.2 / 3.0 / 4.1 s. On the ten benchmark issues above the cap (long-queries split, heldout-e excluded): median latency 1.2 s -> 0.74 s (max 3.5 -> 1.5 s); fix 0/0/-8.3/-10.0/+1.4 and tests +10/+10/+10/+10/0 points vs uncapped, none significant (n=10; 43 of 50 issue-budgets identical). The literal-order fix removes hash-seed dependence (six seeds give one order); on the exposed dev-fast issue, selections were already identical across seeds. Mutants query_term_cap_ignored and explicit_literals_in_hash_order are killed.
+
+## E044 — A second test mate (for the second-ranked implementation file) at large budgets
+
+- **Status:** rejected
+- **Hypothesis:** Regression-test recall is the lowest target (held-out 0.42 at 16K vs 0.64 for fix) and the test mate places one test block; at large budgets a second mate, for the second-ranked implementation file, should find more regression-test sites at little cost.
+- **Run:** experiments/npkbench/runs/E044-second-mate-dev, experiments/npkbench/runs/E044-second-mate-devfast
+- **Decision:** Does not replicate. Full dev (300) vs the default: from-8K tests +0.8 (8K, not significant) and +0.95 (16K, lower bound barely above 0), fix -0.17/-0.17, utility +0.30/+0.11 (mean 0.08); from-4K fails (fix -2.6 at 4K, significant). On the 197 dev issues outside dev-fast, where it was not screened, the from-8K variant has utility -0.9 / -0.7 at 8K/16K (fix -0.7/-0.5, tests -0.2/+1.2): the full-dev pass rests on the dev-fast issues. The HE01 plan declared for E044 would have sent the from-8K variant to heldout-e; that confirmation was deliberately not run, which can only prevent a promotion, so heldout-e stays unused for a stronger candidate. Dev-fast screen: tests +2.75 at 8K (significant), utility +2.9/+1.0 at 8K/16K.
+
+## E045 — A cross-encoder reorders the top 10 fused candidates (ms-marco MiniLM, bge-reranker-base)
+
+- **Status:** rejected
+- **Hypothesis:** Top-1 precision limits 1K-2K recall (the first gold block is ranked first for 38 of 103 dev-fast issues) and re-weighting existing features cannot fix it (E011); a cross-encoder that reads the issue and each candidate together is new evidence and might reorder the head correctly.
+- **Run:** experiments/npkbench/runs/E045-rerank-dev
+- **Decision:** Fails decisively on the full dev split (screened there directly). MiniLM: fix -15.8/-12.8/-8.8/-1.1/-0.3 points at 1K-16K (significant at 1K-4K), tests +4.3 (1K, significant)/+3.7/+1.7/-0.6/-0.7, utility -11.0/-9.0/-6.7/-1.6/-1.4. bge-reranker-base: fix -14.8/-11.7/-8.0/-0.4/+0.1 (significant at 1K-4K), utility -11.0/-12.1/-5.0/-1.7/-0.4. Both web-passage rerankers prefer prose-like blocks (tests, docs) that read like the issue over the implementation code; they also cost 1.9 s (MiniLM) and 10.5 s (bge) median per query on one CPU thread. A code-aware reranker would be needed; general-purpose ones are not an opt-in candidate.
+
+## E046 — Modifier-prefixed declarations and bare member names as JS/TS/Java definitions (compile time)
+
+- **Status:** rejected
+- **Hypothesis:** E032's structural definitions (declarations after export/public/static/... modifiers, and a method's bare name) helped JS/TS and Java on ood-multi-dev but hurt Rust; scoped at compile time to JavaScript, TypeScript and Java, they should let the definition channel find more fix sites on poly-dev without the Rust cost.
+- **Baseline run:** experiments/npkbench/runs/P001-polybench-dev
+- **Run:** experiments/npkbench/runs/E046-modified-defs-polydev
+- **Bench version:** npkbench-1.1
+- **Files changed:** `npk/pack/compile.py`
+- **Decision:** Fails the dev rule on poly-dev (199 issues; vs P001's default, same issues, the compiler change is the only difference). Fix +2.53 (1K, significant) / +1.01 / +1.38 (significant) / +0.57 (significant) / +0.22 points; tests -0.82 / -0.76 / -0.30 (significant) / -0.89 (significant) / -0.27; utility +1.7 / +0.3 / +1.1 / -0.3 / -0.04. The gain is mostly Java (fix +4.2 at 1K, +2.4 at 4K) with Java's regression-test recall down 0.7-1.9 points; TypeScript is unchanged. Java's test mate cannot mirror FooTest.java to Foo.java (E047), so when definitions change the top implementation file the mate lands on an arbitrary test of the package; E046 is to be re-screened on top of E047 if E047 is kept. Patch saved in the run directory (e046.patch). Compile +5% (13.4 s vs 12.8 s mean), packs +2%.
+
+## E046b — E046 (JS/TS/Java member and modifier definitions) re-screened on top of E047's test conventions
+
+- **Status:** rejected
+- **Hypothesis:** E046's regression-test losses came from the test mate landing on arbitrary Java tests when definitions changed the top implementation file; with E047's conventions the mate follows the file, so E046's fix gain should survive without the tests loss.
+- **Baseline run:** experiments/npkbench/runs/E047-test-conventions-polydev
+- **Run:** experiments/npkbench/runs/E046b-defs-on-e047-polydev
+- **Bench version:** npkbench-1.1
+- **Decision:** The E046 compiler reproduces E046 exactly (deterministic). E046 + e047_strict vs the current default on poly-dev: fix +2.53 (1K, significant) / +1.23 / +1.93 (significant) / +0.97 / +0.29, tests -0.82 / +2.35 / +0.14 / -1.29 / -0.27, utility +1.7 / +3.5 / +2.1 / -0.30 / +0.03: fails U>=0 at 8K. Against E047 alone, E046 still costs tests at 8K (-0.74: three Java issues each lose a test hunk, none gain) while adding fix +0.65: bare member names such as get/value/equals give many methods a definition vote, displacing test blocks at the budget's tail. The qualified form (E049: Type.member only when the issue names the type) is the precise alternative.
+
+## E047 — Test-file conventions beyond Python: JS/TS/Java/Go/C/Ruby test paths and CamelCase test affixes for the test mate
+
+- **Status:** kept
+- **Hypothesis:** TEST_PATH knows only Python's conventions, so colocated JS/TS tests (Button.test.js, __tests__/) count as implementation files and get no mate, and Java's FooTest.java never mirrors Foo.java (the mate ties among every test of the package). Recognizing each language's conventions should put the right regression-test file next to the top implementation block (offline, the mate file is a gold test file for 51 instead of 24 of 173 poly-dev tests-target issues).
+- **Run:** experiments/npkbench/runs/E047-test-conventions-polydev, experiments/npkbench/runs/E047-test-conventions-multidev, experiments/npkbench/runs/E047-test-conventions-devfast, experiments/npkbench/runs/PB-E047-polydevb-main, experiments/npkbench/runs/PH01-poly-heldout, experiments/npkbench/runs/E047p-product-devfast, experiments/npkbench/runs/E047p-product-polydev
+- **Bench version:** npkbench-1.1
+- **Files changed:** `npk/pack/select.py`, `tests/test_test_mate.py`, `benchmarks/contract_mutations.py`
+- **Decision:** Confirmed on poly-heldout by PH01 (133 issues, 122 with test edits; criteria declared in NEXT_STEPS.md before the run): tests +1.82 / +0.90 / +1.62 / +1.53 points at 2K / 4K / 8K / 16K (significant at 2K, 8K, 16K), fix +0.02 / +0.14 / +0.03 / +0.12, 1K unchanged by construction; utility >= 0 at every budget (mean +1.23), no significant loss. Dev screens: poly-dev-b (371) tests +2.28 / +2.72 / +2.01 / +0.90 (all significant), gains in material-ui and serverless (colocated *.test.js); poly-dev (199) tests +2.45 at 2K but utility -0.22 at 8K from two issues (the reason for the larger poly-dev-b screen); ood-multi-dev utility >= 0 everywhere. Product form (TEST_PATH conventions, _test_path_parts, named-mirror rule in _mate_score) reproduces e047_strict on dev-fast (515/515) and poly-dev (995/995); Python selections are unchanged apart from one Django issue. Mutants polyglot_test_paths_ignored, test_affix_ignored and unnamed_mirror_accepted are killed.
+
+## E048 — Only a brace type's header fragment defines its name (compile time)
+
+- **Status:** rejected
+- **Hypothesis:** The brace splitter emits a type's members as blocks and the rest of the type body as class_context fragments, every one named after the type; each counts as a definition of the type name. In a Java pack 39% of blocks are such fragments (8,639 of 13,115 have at most 10 tokens, many a lone brace), and 300 classes exceed the ambiguity cap of 10 so their names never resolve. If only the fragment holding the declaration defines the name, a type named in an issue resolves to its declaration.
+- **Baseline run:** experiments/npkbench/runs/E047-test-conventions-polydev
+- **Run:** experiments/npkbench/runs/E048-class-header-defs-polydev, experiments/npkbench/runs/PB-E048-E049-polydevb-e048
+- **Bench version:** npkbench-1.1
+- **Files changed:** `npk/pack/compile.py`
+- **Decision:** Fails on poly-dev-b (371 fresh issues; the declared C2 screen). The E048 compiler alone vs the current default: utility -0.54 / -1.13 / -0.97 / -0.32 / -0.06 at 1K-16K (fix -0.19 / -0.34 / -0.57 / -0.29 / -0.06, tests -0.35 / -0.80 / -0.41 / -0.03 / 0.00; none significant, all negative). C2 (E048 + E049 + E047): fix -1.11 / -0.71 at 4K / 8K (significant), utility -0.47 at 1K, and worse than E047 alone (mean utility -0.20 against it). The junk class fragments cost almost no budget, and voting the class name to its header alone removes votes that happened to reach useful fragments (fields and constants between methods). poly-dev screen: neutral alone, mean utility +1.03 with E049+E047. Patch saved as PB-E048-E049-polydevb-e048/e048.patch; the fragment and ambiguity-cap findings stay recorded above.
+
+## E049 — Qualified member references (Type#member, Type::member, Type.member) resolve brace-language method blocks
+
+- **Status:** rejected
+- **Hypothesis:** Brace-language method blocks are named Type.member and that qualified name is their only definition symbol (Java methods have no def/function keyword), while query entities split dotted references into parts and drop prose-like member names; a method named in an issue therefore never resolves. Adding Type.member for each reference whose owner is a type name lets the definition channel vote for the method itself.
+- **Baseline run:** experiments/npkbench/runs/E047-test-conventions-polydev
+- **Run:** experiments/npkbench/runs/E049-member-refs-polydev, experiments/npkbench/runs/PB-E048-E049-polydevb-e048
+- **Bench version:** npkbench-1.1
+- **Decision:** Not promotable. poly-dev: utility >= 0 at every budget but no significant gain (fix +1.40 at 1K, CI [-0.07, +3.16]); only 10 of 199 issues use Type#member. poly-dev-b was screened only in the declared C2 combination on the E048 compiler, which failed (fix -1.11 / -0.71 at 4K / 8K); E049's own share there is not positive (E048+E047 with vs without E049: fix -1.11 vs -0.63 at 4K). A qualified reference helps only when the issue names both the type and the member, which is rare; kept as a recorded idea, not a default.
+
+## E050 — Fit-or-trim for lower-ranked Python classes (not only the top block)
+
+- **Status:** rejected
+- **Hypothesis:** The fill skips a lower-ranked block that no longer fits and moves on to smaller, lower-ranked blocks. On dev-fast (E039 default) the skipped blocks ranked above the last admitted one hold 32 missed fix hunks at 2K (21% of all) and 43 test hunks, mostly large Python classes, and file-local member ranking puts the gold member first in 9 of 11 such cases among the first three skipped classes. Admitting the best members of the first skipped classes should recover them.
+- **Run:** experiments/npkbench/runs/E050-trim-ranked-dev, experiments/npkbench/runs/E050b-trim-ranked-gymdev
+- **Bench version:** npkbench-1.1
+- **Decision:** Rejected by the declared plan. E050b (first three non-fitting classes, one member each, from 2K) on gym-dev (326 SWE-Gym issues, 11 Python repositories never used for tuning; control identical 1630/1630): fix +1.35 at 2K (significant), +0.30 / +0.28 / +0.30 at 4K-16K, but tests -1.75 at 2K (significant loss) and -0.87 at 8K; utility 0 / -0.39 / +0.36 / -0.58 / +0.20 (mean -0.08). On fresh repositories the trimmed members take budget from test blocks: a transfer between targets, not new recall. Full dev (earlier): fix +3.1 to +3.3 at 2K (significant) with utility below zero at 1K and 16K. heldout-e stays unused.
+
+## E051 — Definition ambiguity counted per (file, name) site instead of per block
+
+- **Status:** rejected
+- **Hypothesis:** A Python class longer than MAX_BLOCK_TOKENS becomes line windows that each count as a definition of its name, so a class of more than ten windows is ignored by the definition channel (9 of 102 dev-fast issues name one: QuerySet, Poly, DataArray, Mul, Integral). Counting sites keeps such names voting.
+- **Run:** experiments/npkbench/runs/E051-def-sites-dev
+- **Bench version:** npkbench-1.1
+- **Decision:** Clearly negative on the full dev split. e051_sites (all windows of a site vote): fix -0.22 / -0.56 / +1.06 / -1.44 / -1.61, tests -0.34 / +0.02 / -0.89 / -1.46 / -1.49 at 1K-16K (tests significant from 4K), utility -0.56 / -0.54 / -0.16 / -3.05 / -3.08 (mean -1.48). e051_sites_top2: fix -1.72 at 8K (significant), mean utility -1.07. The 197 issues outside dev-fast agree (fix -2.4 / -2.1 at 8K, significant). The per-block cap is doing useful work: names defined by several blocks of one file (methods such as get or save across classes, overloads, windows) would otherwise vote with full weight and flood the channel.
+
+## E052 — Environment/version dumps stripped from the retrieval query (issue-form cleaning, part 2)
+
+- **Status:** kept
+- **Hypothesis:** Issue templates ask for show_versions()/version_info()/doctor output: dozens of package: version lines whose names match the project's version-printing module and its test (pandas' _print_versions.py ranks first for 8 of 30 gym-dev pandas issues). Removing such blocks from the retrieval query, as E031 removes template scaffolding, lets the issue's own words rank.
+- **Run:** experiments/npkbench/runs/E052-env-dump-gymdev, experiments/npkbench/runs/E052-env-dump-dev, experiments/npkbench/runs/GH01-gym-heldout, experiments/npkbench/runs/E052p-product-devfast, experiments/npkbench/runs/E052p-product-gymdev
+- **Bench version:** npkbench-1.1
+- **Files changed:** `npk/pack/select.py`, `tests/test_query_cleaning.py`, `benchmarks/contract_mutations.py`
+- **Decision:** Confirmed on gym-heldout by GH01 (300 fresh SWE-Gym issues; criteria declared before the run): fix +0.51 / +1.44 / +0.96 / +0.62 / +0.12 at 1K-16K (significant at 1K-4K), tests +0.75 / +1.09 / +1.20 / +1.55 / +1.40 (significant from 2K), utility >= 0 everywhere (mean +1.92), no significant loss. Screens: gym-dev (326) tests +0.7 to +1.2 (significant at 1K, 2K, 4K, 16K), fix not significant, mean utility +1.22; dev (300, 15 queries change) no significant loss, mean +0.23. Product form (inside _strip_issue_template, so enable_query_cleaning/--raw-query cover it) cleans all 1,382 screened queries exactly as the prototype and reproduces its selections (dev-fast 515/515, gym-dev 1630/1630). Mutants environment_dump_kept, environment_dump_ranks_version_module and environment_booleans_counted are killed.
+
+## E053 — URLs in queries keep only their informative parts
+
+- **Status:** kept
+- **Hypothesis:** URL scheme, host and GitHub scaffolding add https/github/com/blob/project-name words to many issues (gym-dev 151 of 326, poly-dev 122 of 199; SWE-bench Lite has none), matching READMEs, docs and CI files; with repetition weighting several links count up to three times. Dropping images, attachments and GitHub issue links, reducing source links to their repository path and other URLs to path and fragment words should remove the noise.
+- **Run:** experiments/npkbench/runs/E053-E054-gymdev, experiments/npkbench/runs/E053-E054-polydevb, experiments/npkbench/runs/PHB01-poly-heldout-b
+- **Bench version:** npkbench-1.1
+- **Files changed:** `npk/pack/select.py`, `npk/cli.py`, `tests/test_query_cleaning.py`, `tests/test_release_notes.py`, `benchmarks/contract_mutations.py`
+- **Decision:** Confirmed on poly-heldout-b by PHB01 (320 fresh JS/TS issues; criteria declared before the run): e053_urls: fix +1.83 to +3.30 at every budget (all significant), tests significant from 2K, mean utility +4.14; the combination e053_e054 also passes (mean +4.72), so both ship together. Screens: poly-dev-b screen (371): passes the standard rule. Fix +0.68 / +0.90 / +0.83 / +2.01 / +1.49 at 1K-16K (significant at 2K, 8K, 16K), tests +0.39 to +1.02, utility >= 0 everywhere (mean +1.82). gym-dev (326): no significant change (mean utility +0.39). Candidate under the declared plan; PHB01 on poly-heldout-b decides (with e054 and the combination e053_e054).
+
+## E054 — Historical release notes go to the end of the ranking
+
+- **Status:** kept
+- **Hypothesis:** Changelogs, release notes and release blog posts describe past changes in the issue's vocabulary and rank high (9.2% of 2K lines on poly-dev-b, 2.4-3.0% on gym-dev and ood-multi-dev), while the default finds 2 of 74 release-note fix hunks and the docs target excludes them; moving them behind all other candidates frees budget for code and tests.
+- **Run:** experiments/npkbench/runs/E053-E054-gymdev, experiments/npkbench/runs/E053-E054-polydevb, experiments/npkbench/runs/PHB01-poly-heldout-b
+- **Bench version:** npkbench-1.1
+- **Files changed:** `npk/pack/select.py`, `npk/cli.py`, `tests/test_query_cleaning.py`, `tests/test_release_notes.py`, `benchmarks/contract_mutations.py`
+- **Decision:** Confirmed on poly-heldout-b by PHB01 (320 fresh JS/TS issues; criteria declared before the run): e054_notes_last: fix +1.18 / +1.30 / +1.71 at 2K-8K and tests +0.43 to +0.63 at 2K-8K (significant), mean utility +1.41; the combination e053_e054 also passes (mean +4.72), so both ship together. Screens: poly-dev-b screen (371; control identical 1855/1855): passes the standard rule. Tests +0.65 / +0.56 / +1.32 at 1K-4K and fix +1.13 at 4K (significant), fix -0.13 at 16K (not significant), utility >= 0 everywhere (mean +1.38). gym-dev also passed (mean +0.51). Candidate; PHB01 on poly-heldout-b decides.
+
+## E055 — Traceback frames as a ranked retrieval channel
+
+- **Status:** rejected
+- **Hypothesis:** A traceback names the functions the failure passed through; the frame's own function holds a fix hunk in 38 of 64 dev and 32 of 49 gym-dev issues with tracebacks, and the default covers only 29/45 (dev) and 20/57 (gym-dev) of those hunks at 1K. Ranking the blocks that define the frames' functions, innermost first, as an RRF channel should lift those sites into small budgets.
+- **Expected:** Fix gains at 1K-4K on issues with tracebacks; other issues unchanged by construction.
+- **Run:** experiments/npkbench/runs/E055-traceback-dev
+- **Bench version:** npkbench-1.1
+- **Files changed:** `benchmarks/npkbench/prototypes/traceback_frames.py`
+- **Decision:** dev screen (300; control identical 1500/1500): e055_frames fix -0.22 / +0.28 / +1.50 / +1.00 / +0.67 at 1K-16K (significant at 4K), tests -0.25 to +0.42 (none significant), utility -0.22 at 1K; e055_frames3 fix -1.06 at 1K and tests -0.84 at 4K (significant). Under the declared plan neither can be a candidate (utility < 0 at 1K on dev), so E055 is rejected; the 1K loss motivates E055b.
+
+## E055b — Traceback-frame channel from 2K only
+
+- **Status:** rejected
+- **Hypothesis:** E055's traceback channel gains fix sites from 2K (dev: +1.50 at 4K, significant) but displaces default blocks at 1K; gated at 2K like the test mate, the gains should remain without the 1K cost.
+- **Expected:** Fix gains at 2K-8K on gym-dev (49 of 326 issues carry tracebacks); 1K identical by construction.
+- **Run:** experiments/npkbench/runs/E055-traceback-gymdev, experiments/npkbench/runs/HE01-heldout-e
+- **Bench version:** npkbench-1.1
+- **Files changed:** `benchmarks/npkbench/prototypes/traceback_frames.py`
+- **Decision:** Rejected by HE01 on heldout-e (384 fresh issues): fix +0.00 / +0.32 / +0.06 / +0.30 / -0.04, tests +0.00 / -0.13 / -0.18 / -0.18 / -0.39, utility -0.12 at 4K and -0.43 at 16K (mean -0.05), no significant gain. Screens had passed (gym-dev mean utility +0.41; dev cells seen before definition). The opportunity was measured on those very splits, which is why the declared plan reserved a fresh split: it did not replicate.
+
+## E056 — Long weighted lexical queries scored one weight class at a time (latency)
+
+- **Status:** kept
+- **Hypothesis:** FTS5 bm25() costs about matching rows x phrases and E039's repetition weights multiply phrases; scoring one weight class at a time over distinct terms and summing weight*bm25 per row gives the same ranking at a fraction of the time for queries above 128 phrases.
+- **Expected:** Identical selections; long-query median 175 -> ~90 ms, worst case 2.5 s -> ~1.2 s.
+- **Run:** experiments/npkbench/runs/E056p-lexical-split-dev, experiments/npkbench/runs/E056p-lexical-split-gymdev
+- **Bench version:** npkbench-1.1
+- **Files changed:** `npk/pack/select.py`, `tests/test_lexical_split.py`, `benchmarks/contract_mutations.py`
+- **Decision:** Merged as the default. Rankings identical on 586 of 586 checks over 293 cached packs (depths 60 and 1000); the product form selects identically to the default on all 1,500 dev selections (run E056p-lexical-split-dev) and all 1,630 gym-dev selections (E056p-lexical-split-gymdev). The 134 queries above 128 phrases take 91 ms instead of 175 ms at the median and 1.2 s instead of 2.5 s at worst; first-call latency on the 498-phrase moto-6204 query is 0.45 s instead of 1.9 s under equal load (the run's 14.9 s outlier was a cold, CPU-contended first call on a fresh pack). Gym-dev p50 99 -> 75 ms, p99 1.7 s -> 0.5 s. Three tests (weights, path/ordinal ties across the limit, random long queries) and three contract mutants, all killed.
+
+## E057 — Install and home-directory path prefixes removed from the query
+
+- **Status:** rejected
+- **Hypothesis:** Traceback and warning paths start with the reporter's environment (site-packages, lib/python3.x, home directories); those words (site, packages, lib, local, python3, usr, home, venv) are repeated per frame, weighted up to 3x by E039, and some are code words, so they pull unrelated blocks. Removing the prefixes (keeping package-relative paths) should help Python issues with tracebacks.
+- **Expected:** Fix/tests gains on dev and gym-dev issues with tracebacks (61 of 300 and 57 of 326 queries change).
+- **Run:** experiments/npkbench/runs/E057-install-paths-dev, experiments/npkbench/runs/E057-install-paths-gymdev
+- **Bench version:** npkbench-1.1
+- **Files changed:** `benchmarks/npkbench/prototypes/install_paths.py`
+- **Decision:** Both screens fail the standard rule; not a candidate, so gym-heldout-b stays unused. dev (300; 114 of 1500 selections change): fix +0.00 / +0.33 / +0.00 / -0.17 / +0.00 points at 1K-16K, tests +0.34 / +0.00 / +0.00 / +0.51 / +0.34, docs +0.00, none significant, utility >= 0 everywhere (mean +0.27). gym-dev (326; 133 of 1630 change): fix +0.00 at every budget, tests +0.10 / +0.00 / +0.04 / -0.21 / +0.26, utility -0.21 at 8K (mean +0.04). The prefix words (site, packages, lib, python3, home, venv, ...) are a median 10% of the analyzed terms of 18-19% of queries, but removing them barely moves the ranking: their weight in BM25 is small (common words).
+
+## E058 — Index authored source and test file types the scanner skips; keep env/venv source directories
+
+- **Status:** rejected
+- **Hypothesis:** The scan whitelist and the env/venv/dist/secrets directory names hide whole file types from the pack (C++ .cc/.hh, .mjs/.cjs, .vue/.svelte, Cython, yacc/lex, Tcl, protobuf, mypy .test, Jest .snap, coreutils' src/uu/env/): gold hunks in them are unfindable at any rank (fix 0-4% of hunks, tests up to 58% on JS splits). Indexing the authored types should raise recall where they matter and cost nothing elsewhere.
+- **Expected:** Small fix gains (coverage ceiling +0-4%), larger tests gains on mypy (.test), Redis (.tcl) and C++ (.cc) tests; no loss on unaffected repositories.
+- **Run:** experiments/npkbench/runs/E058-coverage-devfast, -multidev, -gymdev, -polydevb, E058b-coverage-multidev; diagnostics E058-snap-split.*, E058-suffix-attribution*; patch e058-prototype.patch in E058-coverage-devfast, E058c-identity-gymdev20, E058c-coverage-multidev, E058c-coverage-polydevb, E058d-coverage-{devfast,multidev,gymdev,polydevb}, E058d-confirm-gymheldoutb, E058d-guard-multisample
+- **Bench version:** npkbench-1.1
+- **Files changed:** `npk/pack/compile.py`, `benchmarks/npkbench/arms.py`, `tests/test_suffix_profiles.py`
+- **Decision:** Screens (plan, rule and variants in NEXT_STEPS): dev-fast identical in 510 of 515 selections, no recall change. ood-multi-dev: e058_core and e058_core_test fail (tests +3.8 to +7.5 points, significant at every budget, but fix -0.8 to -1.4, significant at 16K; all of it redis, where Tcl test windows outrank the C implementation; fmt's .cc tests alone give +50 to +62 test points). E058b (no Tcl): e058_notcl_test tests +2.3 to +3.5 (significant), fix -0.06 to +0.44, mean utility +3.05, passes. gym-dev: e058_core_test passes (tests +0.3 / +0.3 / +0.9 / +0.9 / +2.2, significant at 2K, 4K, 16K; fix not significant; mean +0.79). poly-dev-b (371 issues): e058_core and e058_core_test FAIL: fix -0.13 / -0.02 / -0.20 / -0.25 / -0.73 (significant at 8K and 16K), tests -0.56 / +0.16 / -0.03 / -0.06 / -0.39, utility -0.69 / +0.13 / -0.23 / -0.31 / -1.12 (mean -0.44). The loss is single-file components: newly selected .svelte spans (104-544 per budget, sveltejs/svelte's thousands of test fixtures, 67 issues) and .vue (26-75, prettier fixtures), none at a fix site; 7 of the 9 issues losing fix recall at 16K have .svelte blocks among their added spans. The .snap arm: tests +1.1 to +2.5 (significant from 2K) for fix -0.7 to -1.5 (significant at 2K-8K) - the usual transfer, never promoted. No candidate under the E058 plan. E058c declared in NEXT_STEPS before any run: profile core_nosfc_test (no .vue/.svelte, no Tcl, no .snap), screens poly-dev-b and ood-multi-dev, then the declared confirmations on gym-heldout-b and poly-heldout-c and a guard on ood-multi-sample. E058c (no .vue/.svelte): identical to e058_core_test on 20 gym-dev issues; ood-multi-dev passes (tests +2.3 to +3.5, significant at every budget, mean utility +3.06); poly-dev-b utility +0.02 / -0.05 / +0.00 / +0.00 / -0.42 (one issue's test hunk at 16K; no significant loss) - negative at 2K and 16K, so not a candidate under the declared rule. Per-group attribution of gold covered by newly selected spans over all screens: .test 48 test hunks, .cc 23 test hunks, .y 10 fix hunks; Cython, protobuf and JS/TS-module suffixes cover none. E058d declared in NEXT_STEPS before any run: profile core_min_test (C++ family, .y/.l, .test, env/venv rule), screens dev-fast, ood-multi-dev, gym-dev, poly-dev-b, then the declared confirmations and guard. E058d (C++ family, yacc/lex, .test, env/venv rule): screens pass (gym-dev mean utility +0.78, ood-multi-dev +3.08, dev-fast and poly-dev-b identical) but the fresh confirmation E058d-confirm-gymheldoutb FAILS: tests +0.96 / +1.35 / +2.26 / +2.27 / +3.02 (significant at every budget), fix -0.63 / -1.01 / -0.19 / -0.76 / -0.56 (significant at 2K, 8K, 16K), all of it mypy's .test files displacing fix blocks (15 of 30 issues change; the other 224 are identical). Guard on ood-multi-sample: no significant effect (tests +0.47 to +1.89, fix -0.05 to -0.44, all intervals reach zero). poly-heldout-c not run (identity proof: no kept suffix and no env/venv directory in any of its trees). Rejected as a whole; the env/venv rule continues as E059 (declared in NEXT_STEPS before its runs).
+- **Follow-ups:** E; 0; 5; 9; :;  ; e; n; v; /; v; e; n; v;  ; d; i; r; e; c; t; o; r; i; e; s;  ; k; e; p; t;  ; u; n; l; e; s; s;  ; v; i; r; t; u; a; l; e; n; v; s;  ; (; h; a; r; m;  ; c; h; e; c; k; ,;  ; c; o; r; r; e; c; t; n; e; s; s;  ; c; l; a; s; s; ); .;  ; O; p; e; n;  ; p; r; o; d; u; c; t;  ; q; u; e; s; t; i; o; n; s; :;  ; c; a; l; l; e; r; -; d; e; c; l; a; r; e; d;  ; o; p; t; i; o; n;  ; f; o; r;  ; .; t; e; s; t;  ; d; a; t; a;  ; f; i; l; e; s; ,;  ; r; e; p; o; r; t;  ; u; n; i; n; d; e; x; e; d;  ; s; u; f; f; i; x;  ; c; o; u; n; t; s;  ; i; n;  ; c; o; m; p; i; l; e;  ; s; t; a; t; s; ,;  ; c; r; e; d; e; n; t; i; a; l; -; n; a; m; e;  ; r; u; l; e; .
+
+## E059 — Keep source directories named env or venv unless they are virtualenvs
+
+- **Status:** kept
+- **Hypothesis:** The scan skips every directory named env or venv, so a source package called env (conan/tools/env, coreutils' src/uu/env, nushell's src/env, trino's launcher env) vanishes from the pack without a trace and its hunks are unfindable at any rank. Keeping them unless they hold a virtualenv marker (pyvenv.cfg, bin/activate, Scripts/activate) should recover them at no cost elsewhere.
+- **Run:** experiments/npkbench/runs/E059-env-{gymheldoutb,gymdev,polydevb,multidev,multisample}, E059p-product-* (diagnostics E059-harm-check.*, E059-product-equality.*)
+- **Decision:** Accepted under the harm-check standard declared before any run (a correctness fix confined to repositories with such a directory, in the class of E004/E056; no significant-gain requirement): on the affected repositories of five splits (gym-heldout-b 51 issues, gym-dev 90, poly-dev-b 33, ood-multi-dev 11, ood-multi-sample 12) utility is >= 0 at every budget and there is no significant loss. Selections change in 3 issues, all gains: gym-dev conan 2 of 30 issues fix +3.67 / +3.33 / +3.33 points at 4K / 8K / 16K (split level +1.22 / +1.11 / +1.11), ood-multi-dev coreutils 1 of 2 issues fix +6.25 from 4K (split level +1.14); everything else, including the fresh gym-heldout-b (conan, hydra, mypy typeshed venv) and ood-multi-sample, is exactly equal to the default. Product form _excluded_dir in npk/pack/compile.py (credential names, dot directories and every other excluded name unchanged), tests/test_source_directories.py, five mutants (all killed); the product's default equals the prototype arm on 1,925 of 1,925 cells (197 issues x 5 budgets x fix and tests); full suite 1,322 passed.
+- **Follow-ups:** O; p; e; n;  ; p; r; o; d; u; c; t;  ; q; u; e; s; t; i; o; n; s;  ; f; r; o; m;  ; E; 0; 5; 8; :;  ; c; a; l; l; e; r; -; d; e; c; l; a; r; e; d;  ; o; p; t; i; o; n;  ; f; o; r;  ; .; t; e; s; t;  ; d; a; t; a;  ; f; i; l; e; s; ,;  ; r; e; p; o; r; t;  ; u; n; i; n; d; e; x; e; d;  ; s; u; f; f; i; x;  ; c; o; u; n; t; s;  ; i; n;  ; c; o; m; p; i; l; e;  ; s; t; a; t; s; ,;  ; c; r; e; d; e; n; t; i; a; l; -; n; a; m; e;  ; r; u; l; e; .
+
+## GH01 — gym-heldout confirmation of E052 (environment dumps stripped from the query)
+
+- **Status:** kept
+- **Hypothesis:** E052, which passed its declared gym-dev and dev screens, improves fix and regression-test recall on 300 SWE-Gym issues never used for development (10 Python repositories SWE-bench does not use).
+- **Run:** experiments/npkbench/runs/GH01-gym-heldout
+- **Bench version:** npkbench-1.1
+- **Decision:** Passes the pre-declared criteria. e052_env vs npk_default: fix +0.51 / +1.44 / +0.96 / +0.62 / +0.12 points at 1K-16K (significant at 1K, 2K, 4K), tests +0.75 / +1.09 / +1.20 / +1.55 / +1.40 (significant from 2K), utility +1.26 / +2.52 / +2.15 / +2.15 / +1.51 (mean +1.92), no significant loss. Default on gym-heldout: fix 0.142 / 0.189 / 0.299 / 0.418 / 0.479, tests 0.062 / 0.118 / 0.164 / 0.227 / 0.316. gym-heldout is now spent.
+
+## H001 — Held-out confirmation: test mate (E016b), top-block trimming (E005c), context map (E017)
+
+- **Status:** kept
+- **Hypothesis:** Dev-fast decisions hold on 407 held-out issues under criteria committed before the run (NEXT_STEPS.md, commit e822844).
+- **Run:** experiments/npkbench/runs/H001-mate-trim-heldout
+- **Bench version:** npkbench-1.1 + docs-3
+- **Decision:** E005c confirmed: trimming vs no trimming, fix +3.8 points at 1K (significant), identical at >=2K; utility +2.9/0/0/0/0. E017 confirmed: located fix recall with a 25% map +9.6/+12.3/+13.0/+11.4/+7.2 points over the default's full text, tests +5.3/+5.2/+7.7/+8.0/+8.2 (all CIs exclude zero). E016b confirmed only as a tradeoff: tests up at every budget, fix down 0.3-1.4 points; the 1K utility is -0.012 points with a significant fix loss, so it ships opt-in. Full current default on held-out (definition channel + trimming): fix 0.230/0.309/0.399/0.475/0.575 at 1K-16K (before this loop 0.136/0.206/0.302/0.393/0.490).
+
+## HB01 — Confirmation on heldout-b: budget-gated test mate (E016c) and replication of E002+E005c
+
+- **Status:** kept
+- **Hypothesis:** Criteria declared in NEXT_STEPS.md (commit c5ebfe0) before the run.
+- **Run:** experiments/npkbench/runs/HB01-heldout-b
+- **Decision:** E016c passes (see its record). The definition channel and trimming replicate on fresh data: fix +6.5/+5.8/+9.0/+8.0/+8.3 points at 1K-16K over no-definitions/no-trim (all CIs exclude zero); tests -1.9 to -3.3 (the known tradeoff). Product on heldout-b (mate off): fix 0.178/0.244/0.348/0.428/0.526.
+
+## HC01 — Confirmation on heldout-c: issue-form cleaning of queries (E031)
+
+- **Status:** kept
+- **Hypothesis:** Criteria declared in NEXT_STEPS.md (commit a97b080) before the run: utility d_fix + 0.99 d_tests >= 0 at every budget, a significant fix or tests gain at one or more budgets, and no significant loss for any target at any budget.
+- **Run:** experiments/npkbench/runs/HC01-query-clean-heldout-c
+- **Results:**
+
+```json
+{
+ "heldout_c_fix_1K_16K": {
+  "clean": [
+   0.1922,
+   0.2631,
+   0.3572,
+   0.4203,
+   0.508
+  ],
+  "raw": [
+   0.1938,
+   0.2588,
+   0.3504,
+   0.4111,
+   0.4957
+  ]
+ },
+ "heldout_c_tests_1K_16K": {
+  "clean": [
+   0.043,
+   0.1004,
+   0.1317,
+   0.1905,
+   0.2697
+  ],
+  "raw": [
+   0.0389,
+   0.0993,
+   0.1257,
+   0.1809,
+   0.2562
+  ]
+ },
+ "utility_points": [
+  0.25,
+  0.54,
+  1.26,
+  1.86,
+  2.57
+ ]
+}
+```
+
+- **Decision:** E031 passes all three criteria on 400 unused issues (0 errors). e031_clean vs product: fix -0.2 [-0.7,+0.2] / +0.4 [-0.3,+1.2] / +0.7 [+0.2,+1.3] / +0.9 [+0.3,+1.7] / +1.2 [+0.4,+2.3] points at 1K-16K (16 wins/2 losses at 16K); tests +0.4 [+0.0,+0.9] / +0.1 / +0.6 / +0.9 / +1.4 [+0.2,+2.7]; utility +0.25/+0.54/+1.26/+1.86/+2.57. Product on heldout-c (raw query): fix 0.194/0.259/0.350/0.411/0.496, tests 0.039/0.099/0.126/0.181/0.256.
+
+## HD01 — Confirmation on heldout-d: E034 title x4, E039 (tf + title x3), E035 mirror_any, E036 header, and combinations
+
+- **Status:** kept
+- **Hypothesis:** Selection rule and criteria declared in NEXT_STEPS.md (commit 508218c) before the run; candidates chosen on the full dev split by that rule (commit 8fee79a).
+- **Run:** experiments/npkbench/runs/HD01-heldout-d
+- **Results:**
+
+```json
+{
+ "mean_utility_points": {
+  "combo_qtf3_title3_mate_any_header1": 10.926,
+  "combo_qtf3_title4_mate_any_header1": 12.219,
+  "combo_title4_header1": 11.633,
+  "combo_title4_mate_any": 9.74,
+  "combo_title4_mate_any_header1": 11.887,
+  "e034_title_x4": 9.537,
+  "e035_mirror_any": 0.219,
+  "e036_header": 2.04,
+  "e039_qtf_cap3_title3": 9.99
+ }
+}
+```
+
+- **Decision:** 401 unused issues, 0 errors; unrounded paired-bootstrap bounds. E034 x4 passes (utility +4.2/+6.3/+9.8/+11.4/+15.9 points, mean 9.54). E039 passes (+2.9/+7.2/+11.3/+11.9/+16.7, mean 9.99). E035 mirror_any fails (fix -0.9 at 4K significant, utility -0.14 at 16K). E036 header fails: fix +2.8/+2.2/+2.4/+2.9 points at 2K-16K (significant) but tests -0.7 at 2K is a significant loss (upper bound -0.00004; the rounded report first showed it as non-significant, so report.paired now flags significance from unrounded bounds). The passing E034 and E039 are alternative lexical weightings with no arm combining them, so by the declared rule only the candidate with the higher mean utility, E039, is promoted. Combination arms that include E035 or E036 pass (e.g. title x4 + header: mean 11.6) but combine failing components and are not eligible; a header variant would need a fresh confirmation.
+
+## HE01 — heldout-e confirmation of E055b (traceback frames from 2K)
+
+- **Status:** rejected
+- **Hypothesis:** E055b, which passed its declared gym-dev screen (and whose channel gained fix sites at 4K on dev), improves fix and regression-test recall on 384 fresh Python issues (heldout-e).
+- **Run:** experiments/npkbench/runs/HE01-heldout-e
+- **Bench version:** npkbench-1.1
+- **Decision:** Fails the pre-declared criteria (control identical 1920/1920; 172 of 1920 selections change). e055_frames_2k vs npk_default: fix +0.00 / +0.32 / +0.06 / +0.30 / -0.04 points at 1K-16K, tests +0.00 / -0.13 / -0.18 / -0.18 / -0.39, none significant; utility +0.00 / +0.19 / -0.12 / +0.13 / -0.43 (mean -0.05), below zero at 4K and 16K. The gym-dev and dev gains (opportunity measured on those splits) did not replicate on 384 fresh Python issues. Default on heldout-e (E053+E054 product): fix 0.214 / 0.296 / 0.397 / 0.475 / 0.560, tests 0.110 / 0.212 / 0.278 / 0.357 / 0.437. heldout-e is now spent; the E055b product form (exp/e055p) is not merged, its patch is saved here.
+
+## M000 — Baseline: conversation memory (LongMemEval-S dev, 100 questions)
+
+- **Status:** kept
+- **Hypothesis:** Establish how well the unchanged product compiler/selector retrieves evidence turns from ~120K-token chat histories materialized as dated markdown sessions.
+- **Run:** experiments/npkbench/runs/M000-memory-baseline-dev
+- **Results:**
+
+```json
+{
+ "by_type_turn_recall_1K": {
+  "knowledge-update": 0.867,
+  "multi-session": 0.552,
+  "single-session-assistant": 0.833,
+  "single-session-preference": 0.361,
+  "single-session-user": 0.929,
+  "temporal-reasoning": 0.601
+ },
+ "compile_s_mean": 0.25,
+ "evidence_session_recall": {
+  "1K": 0.868,
+  "256": 0.756,
+  "2K": 0.904,
+  "4K": 0.925,
+  "512": 0.802,
+  "8K": 0.959
+ },
+ "evidence_turn_recall": {
+  "1K": 0.688,
+  "256": 0.529,
+  "2K": 0.749,
+  "4K": 0.795,
+  "512": 0.612,
+  "8K": 0.838
+ },
+ "oracle_tokens_mean": 188,
+ "pack_mb_mean": 1.61,
+ "query_ms_p50": 2.0
+}
+```
+
+- **Decision:** Reference point for the second workload family. Weak spots: multi-session aggregation and implicit preferences.
+- **Follow-ups:** session-diverse packing for multi-session questions; sub-turn granularity for long assistant turns
+
+## M001 — Source-diverse packing (per-file score decay) for multi-session memory questions
+
+- **Status:** rejected
+- **Hypothesis:** Multi-session questions need evidence from several sessions; decaying a candidate's score by the number of already-selected blocks from its file spreads the budget and raises evidence recall.
+- **Run:** experiments/npkbench/runs/M001-diversity-memory-dev
+- **Results:**
+
+```json
+{
+ "budgets": "256/512/1K/2K/4K/8K",
+ "evidence_structure": "evidence turns adjacent in 6/714 cases; multi-evidence questions span >1 session in 283/297; 842 user vs 54 assistant evidence turns",
+ "session_recall": {
+  "control_1K": 0.868,
+  "control_8K": 0.959,
+  "penalty_0.5_1K": 0.883,
+  "penalty_0.5_8K": 0.995
+ },
+ "turn_recall": {
+  "control": [
+   0.529,
+   0.612,
+   0.688,
+   0.749,
+   0.795,
+   0.838
+  ],
+  "penalty_0.5": [
+   0.509,
+   0.542,
+   0.53,
+   0.583,
+   0.629,
+   0.719
+  ],
+  "penalty_1": [
+   0.509,
+   0.532,
+   0.52,
+   0.555,
+   0.591,
+   0.658
+  ]
+ }
+}
+```
+
+- **Decision:** Turn recall falls 10-16 points: fused RRF scores are nearly flat (1/60..1/120), so any per-file decay reorders almost the whole ranking toward weakly matching fresh sessions. Session coverage rises but evidence turns are lost.
+- **Follow-ups:** If diversity is revisited, apply it on raw BM25 scores with a relevance floor, not on RRF ranks
+
+## M002 — Relevance-density ordering (fused score / tokens^alpha) before greedy fill
+
+- **Status:** rejected
+- **Hypothesis:** Conversation evidence sits in short user turns (median 80 tokens) while long assistant turns (p90 632) consume small budgets; preferring compact candidates raises evidence recall.
+- **Run:** experiments/npkbench/runs/M002-density-memory-dev
+- **Results:**
+
+```json
+{
+ "budgets": "256/512/1K/2K/4K/8K",
+ "single_session_assistant_turn_recall": {
+  "alpha_0.25": [
+   0.083,
+   0.083,
+   0.333,
+   0.667,
+   0.75,
+   0.917
+  ],
+  "control": [
+   0.083,
+   0.5,
+   0.833,
+   0.833,
+   0.917,
+   0.917
+  ]
+ },
+ "turn_recall": {
+  "alpha_0.25": [
+   0.495,
+   0.661,
+   0.763,
+   0.842,
+   0.864,
+   0.884
+  ],
+  "alpha_0.5": [
+   0.413,
+   0.607,
+   0.726,
+   0.804,
+   0.864,
+   0.884
+  ],
+  "control": [
+   0.529,
+   0.612,
+   0.688,
+   0.749,
+   0.795,
+   0.838
+  ]
+ }
+}
+```
+
+- **Decision:** Aggregate gain is a disguised role prior: it comes from LongMemEval's composition (842/896 evidence turns are user turns) and collapses the question type whose evidence is in long assistant turns (1K: 0.833 -> 0.333). Not a default. Pursue finer units for long turns instead.
+- **Follow-ups:** paragraph-level splitting of long sections (keeps assistant evidence retrievable)
+
+## M003 — Paragraph-level units for long conversation turns (data-level layout test)
+
+- **Status:** rejected
+- **Hypothesis:** Long assistant turns waste small budgets; one block per paragraph (turns > 1,200 chars) keeps assistant evidence retrievable without a length prior.
+- **Run:** experiments/npkbench/runs/M003-paragraph-units-memory-dev
+- **Results:**
+
+```json
+{
+ "budgets": "256/512/1K/2K/4K/8K",
+ "session_recall_1K": {
+  "paragraph_units": 0.901,
+  "turn_units": 0.868
+ },
+ "turn_recall": {
+  "paragraph_units": [
+   0.44,
+   0.601,
+   0.667,
+   0.76,
+   0.831,
+   0.838
+  ],
+  "turn_units": [
+   0.529,
+   0.612,
+   0.688,
+   0.749,
+   0.795,
+   0.838
+  ]
+ }
+}
+```
+
+- **Decision:** Mixed: +1.1/+3.6 at 2K/4K and better session coverage, but -8.9/-1.1/-2.1 at 256/512/1K. Turn-level units stay; no compiler change.
+
+## M004 — Dense similarity on conversation memory (pool fusion, bge-small / MiniLM)
+
+- **Status:** kept
+- **Hypothesis:** Conversation-memory questions are natural-language and paraphrase their evidence (21 of 191 evidence turns at 2K are never retrieved lexically); dense similarity fused with the lexical pool order recovers evidence.
+- **Run:** experiments/npkbench/runs/M004-dense-memory-dev
+- **Results:**
+
+```json
+{
+ "bge_minus_default_ci95": {
+  "1024": [
+   -0.015,
+   0.102
+  ],
+  "2048": [
+   0.028,
+   0.116
+  ],
+  "256": [
+   -0.009,
+   0.095
+  ],
+  "4096": [
+   0.028,
+   0.13
+  ],
+  "512": [
+   -0.044,
+   0.109
+  ],
+  "8192": [
+   0.021,
+   0.101
+  ]
+ },
+ "hunk_recall_256_8K": {
+  "e012_bge": [
+   0.571,
+   0.646,
+   0.73,
+   0.819,
+   0.872,
+   0.895
+  ],
+  "e012_minilm": [
+   0.574,
+   0.626,
+   0.705,
+   0.796,
+   0.839,
+   0.879
+  ],
+  "npk_default": [
+   0.529,
+   0.612,
+   0.688,
+   0.749,
+   0.795,
+   0.838
+  ]
+ }
+}
+```
+
+- **Decision:** Significant gains on memory-dev (100 questions): bge-small +4.1/+3.4/+4.3/+7.0/+7.7/+5.8 points at 256-8K (CI excludes zero at 2K, 4K, 8K); MiniLM +4.4/+1.4/+1.7/+4.7/+4.4/+4.1 (significant at 4K, 8K). By type (bge): multi-session +8 to +13, single-session-preference +17 to +22, temporal +5 to +13; knowledge-update -3 to -13 at 256-1K. The same fusion hurts code at small budgets (E012), so it cannot be a global default. Productized as the documented semantic/hybrid configuration for chat histories (M006: most of the gain with the shipped MiniLM path).
+- **Follow-ups:** M006: shipped hybrid mode on memory-dev; If a dense form wins memory without hurting code, make it the recommended mode for conversation/prose packs
+
+## M005 — Time-window channel for dated conversation memory
+
+- **Status:** rejected
+- **Hypothesis:** Relative time expressions (two weeks ago, last Tuesday, in February) resolved against the question date select the sessions that hold the evidence; lexical candidates inside the window form an extra RRF channel.
+- **Run:** experiments/npkbench/runs/M005-time-window-memory-dev
+- **Decision:** No effect: identical to the product except one win at 4K (+0.5 points; temporal-reasoning 0.732 -> 0.751 at 4K). Pre-run analysis predicted a small ceiling: LongMemEval-S histories span 10-90 days, so period expressions cover every session (reporting lag makes the window run to the question date), and only 3 of 17 parsable memory-dev questions get a selective point window.
+
+## M006 — The shipped semantic/hybrid mode on conversation memory
+
+- **Status:** kept
+- **Hypothesis:** The product's existing opt-in semantic compile (local MiniLM embeddings for every block) plus hybrid retrieval (whole-index cosine channel and symbol channel in the RRF) delivers most of M004's prototype dense gain on chat histories.
+- **Run:** experiments/npkbench/runs/M006-shipped-hybrid-memory-dev
+- **Files changed:** `README.md`
+- **Results:**
+
+```json
+{
+ "hunk_recall_256_8K": {
+  "npk_default": [
+   0.529,
+   0.612,
+   0.688,
+   0.749,
+   0.795,
+   0.838
+  ],
+  "npk_hybrid": [
+   0.575,
+   0.626,
+   0.69,
+   0.784,
+   0.839,
+   0.909
+  ]
+ }
+}
+```
+
+- **Decision:** Kept as the documented configuration for conversation memory (no code change). vs lexical default on memory-dev: +4.5 [+0.4,+9.0] / +1.4 / +0.3 / +3.5 / +4.4 [+0.2,+9.2] / +7.1 [+2.8,+12.2] points at 256-8K; largest on preferences (0.67 -> 1.00 at 8K) and multi-session (0.74 -> 0.83 at 8K). Within about 3 points of M004's bge-small pool fusion (-3.3 at 4K, +1.3 at 8K) and indistinguishable from MiniLM pool fusion. Cost: 48.9 s compile per history (one CPU thread) vs 0.25 s; query p50 5.9 ms vs 1.9 ms. Held-out (MH01, 370 questions): confirmed at 4K (+4.2) and 8K (+6.0), neutral at 2K and below; the recommendation is scoped to 4K+ budgets.
+- **Follow-ups:** Swap the semantic encoder to bge-small if its pool-fusion edge (+3.3 at 4K) survives memory-heldout
+
+## M007 — Chat-memory queries are unchanged by E031 and E039 (sanity check)
+
+- **Status:** kept
+- **Hypothesis:** Issue-form cleaning keeps a query's first line and title/repetition weighting applies only to multi-line queries; LongMemEval questions are single-line (0 of 470 multi-line), so memory selections must be identical.
+- **Run:** experiments/npkbench/runs/M007-query-handling-memory-dev
+- **Decision:** memory-dev: all 600 selections (100 questions x 256-8K) of the new default equal npk_query_baseline (neither E031 nor E039).
+
+## M008 — Memory workload unchanged after E047 (test conventions) and E052 (environment dumps)
+
+- **Status:** kept
+- **Hypothesis:** Neither change should touch chat-memory selections: E047 only affects the test mate (code packs) and E052 only removes version-dump blocks, which conversation questions do not contain.
+- **Baseline run:** experiments/npkbench/runs/M007-query-handling-memory-dev
+- **Run:** experiments/npkbench/runs/M008-memory-after-e047-e052
+- **Bench version:** npkbench-1.1
+- **Decision:** memory-dev (100 LongMemEval-S tasks x 6 budgets): all 600 npk_default selections are identical to M007's.
+
+## MH01 — Held-out confirmation of the semantic/hybrid chat-memory configuration (M006)
+
+- **Status:** kept
+- **Hypothesis:** M006's gains on memory-dev (+4.5*/+1.4/+0.3/+3.5/+4.4*/+7.1* points at 256-8K) hold on the 370 memory-heldout questions.
+- **Run:** experiments/npkbench/runs/MH01-hybrid-memory-heldout
+- **Results:**
+
+```json
+{
+ "hunk_recall_256_8K": {
+  "npk_default": [
+   0.562,
+   0.685,
+   0.748,
+   0.805,
+   0.84,
+   0.871
+  ],
+  "npk_hybrid": [
+   0.569,
+   0.678,
+   0.76,
+   0.827,
+   0.881,
+   0.931
+  ]
+ }
+}
+```
+
+- **Decision:** Confirmed at 4K and above only. Hybrid vs lexical: +0.7/-0.7/+1.1/+2.2 (none significant) at 256-2K; +4.2 [+2.2,+6.4] at 4K (38 wins/6 losses) and +6.0 [+4.2,+8.1] at 8K (42/0). The 256-token gain seen on dev did not replicate. By type at 8K: preferences 0.71 -> 0.92, multi-session 0.78 -> 0.85, temporal 0.87 -> 0.92; knowledge-update is lower at 512-1K. README now recommends the mode for chat histories read with 4K tokens or more. Compile cost 44.6 s vs 0.22 s per history.
+
+## O001 — Out-of-distribution check on six never-used repositories (SWE-bench Lite dev)
+
+- **Status:** kept
+- **Hypothesis:** The kept changes are not specific to the 12 development repositories.
+- **Run:** experiments/npkbench/runs/O001-ood-generalization
+- **Results:**
+
+```json
+{
+ "fix_1K_16K": {
+  "no_defs_no_trim": [
+   0.304,
+   0.37,
+   0.565,
+   0.652,
+   0.667
+  ],
+  "no_trim_mate_on": [
+   0.348,
+   0.522,
+   0.652,
+   0.674,
+   0.674
+  ],
+  "product": [
+   0.5,
+   0.507,
+   0.652,
+   0.674,
+   0.674
+  ],
+  "product_mate_on": [
+   0.5,
+   0.522,
+   0.652,
+   0.674,
+   0.674
+  ]
+ }
+}
+```
+
+- **Decision:** Generalizes on the fix target (23 issues: sqlfluff, pvlib, astroid, pydicom, marshmallow, pyvista). Definition channel + trimming vs neither: fix +19.6 [+4.3,+37.0] / +13.8 / +8.7 / +2.2 / +0.7 points at 1K-16K; tests -5/-10/-7.5/-7.5/-2.5 (not significant, same direction as held-out). Trimming alone: fix +15.2 [+2.2,+30.4] at 1K, identical beyond. Test mate (opt-in): tests +5/+15/+10/+5/+5 with no fix loss (20 tasks, lower CI bounds at zero).
+
+## OM01 — Non-Python generalization: SWE-bench Multilingual sample (114 issues, 41 repositories)
+
+- **Status:** kept
+- **Hypothesis:** NeuralPack's advantage over standard RAG, and the definition channel's gain, hold outside Python (measurement only; declared in NEXT_STEPS.md before the run).
+- **Run:** experiments/npkbench/runs/OM01-multilingual
+- **Results:**
+
+```json
+{
+ "fix_1K_16K": {
+  "bm25_60line_split": [
+   0.036,
+   0.06,
+   0.087,
+   0.141,
+   0.173
+  ],
+  "bm25_chars1000_split": [
+   0.068,
+   0.082,
+   0.134,
+   0.145,
+   0.238
+  ],
+  "no_defs_no_trim": [
+   0.093,
+   0.113,
+   0.156,
+   0.233,
+   0.302
+  ],
+  "product": [
+   0.11,
+   0.164,
+   0.197,
+   0.269,
+   0.32
+  ]
+ }
+}
+```
+
+- **Decision:** Holds, at lower absolute recall. Product fix recall 0.110/0.164/0.197/0.269/0.320 at 1K-16K (Python held-out: 0.230/0.303/...). vs BM25 over 60-line chunks: fix +7.4 to +14.8 points and tests +2.4 to +9.8 (all significant); vs ~1,000-character chunks: fix +4.2 (n.s.) / +8.2 / +6.2 / +12.3 / +8.2 (significant from 2K). The definition channel helps outside Python: +5.1/+4.1/+3.6 points at 2K-8K (significant), decisive for Go (2K: 0.002 -> 0.202) and Ruby (0.000 -> 0.125). By language at 2K: PHP 0.33, Go 0.20, Java 0.20 (chunk baseline 0.27), Rust 0.18, Ruby 0.13, JS/TS 0.12 (flat to 8K), C/C++ 0.09. Weak spots (JS/TS, C/C++, Java) must be analyzed on ood-multi-dev, never on this sample.
+
+## OMD01 — Multilingual dev split: product vs chunk baseline, and where non-Python fix sites are lost
+
+- **Status:** kept
+- **Hypothesis:** Diagnose the non-Python weakness on ood-multi-dev (186 issues) rather than on the measurement sample.
+- **Run:** experiments/npkbench/runs/OMD01-multilingual-dev
+- **Decision:** Kept as the development baseline for non-Python work. Product fix 0.146/0.212/0.259/0.328/0.383 at 1K-16K vs ~1,000-character-chunk BM25 0.093/0.120/0.165/0.223/0.270; no-definitions 0.122/0.162/0.209/0.286/0.357. Loss at 2K by language (share of gold hunks): selected 3-4% for C/C++, JS/TS and Rust vs 16-19% for Java, Go, PHP and Ruby. Most misses are ranking losses: missed hunks' covering blocks rank at median 112-401 (C/C++ 401); 13-29% are never retrieved. Covering blocks are large for C/C++ (median 1,086 tokens) and JS/TS (735).
+
+## P001 — First measurement on SWE-PolyBench poly-dev (Java/JS/TS): default vs query baseline vs B002
+
+- **Status:** kept
+- **Hypothesis:** Measurement only, before any tuning on poly-dev: how the current default (E031/E039/E043 query handling) does on 199 Java, JavaScript and TypeScript issues from 12 repositories, against the product without query handling (npk_query_baseline) and a BM25 baseline over 1,000-character chunks (B002).
+- **Run:** experiments/npkbench/runs/P001-polybench-dev
+- **Commit:** da4f293
+- **Bench version:** npkbench-1.1
+- **Decision:** 199 issues (173 with test edits), 0 errors, 199 packs (mean compile 12.8 s, 34.9 MB). Fix hunk recall at 1K-16K: default 0.195/0.244/0.319/0.404/0.476, npk_query_baseline 0.134/0.182/0.259/0.318/0.387, B002 0.087/0.121/0.176/0.240/0.297. Regression tests: 0.113/0.185/0.276/0.378/0.418 vs 0.082/0.117/0.191/0.269/0.343 vs 0.051/0.077/0.118/0.184/0.263. The query handling passes the declared rule on this new language set (fix +6.0 to +8.9 points, tests +3.1 to +11.0, all significant; mean utility +14.5); against B002 fix +10.8 to +17.9 points (1.6-2.2x) and tests +6.2 to +19.4 (all significant). By language (fix at 2K/16K): Java (74) 0.262/0.486, JavaScript (75) 0.218/0.440, TypeScript (50) 0.258/0.514; TypeScript gains most from query handling (+10 to +19 points). Median selection latency 68-100 ms. Poly-dev is now the development set for JS/TS/Java work; these numbers are the reference before tuning.
+
+## PH01 — poly-heldout confirmation of E047 (test-file conventions beyond Python)
+
+- **Status:** kept
+- **Hypothesis:** E047, selected on poly-dev-b by the declared rule (C2 = E048+E049+E047 failed there), improves JS/TS/Java regression-test recall without costing fix recall on issues never used for development.
+- **Run:** experiments/npkbench/runs/PH01-poly-heldout
+- **Bench version:** npkbench-1.1
+- **Decision:** Passes the pre-declared criteria: utility d_fix + 0.99 d_tests >= 0 at every budget (0 / +1.82 / +1.03 / +1.64 / +1.64), significant tests gains at 2K (+1.82, CI [+0.08, +4.13]), 8K (+1.62) and 16K (+1.53), no significant loss. Default fix recall on poly-heldout 0.160 / 0.198 / 0.287 / 0.363 / 0.425, tests 0.119 / 0.177 / 0.259 / 0.318 / 0.391; with E047 tests 0.119 / 0.195 / 0.268 / 0.334 / 0.407. poly-heldout is now spent.
+
+## PHB01 — poly-heldout-b confirmation of E053 (URLs) and E054 (release notes last)
+
+- **Status:** kept
+- **Hypothesis:** E053 and E054, which passed their declared poly-dev-b and gym-dev screens, improve fix and regression-test recall on 320 JS/TS SWE-PolyBench issues never used for development (material-ui, prettier, serverless, svelte), alone and combined.
+- **Run:** experiments/npkbench/runs/PHB01-poly-heldout-b
+- **Bench version:** npkbench-1.1
+- **Decision:** Passes the pre-declared criteria for both arms and the combination (control identical 1600/1600). e053_urls: fix +1.83 / +2.50 / +3.30 / +2.63 / +2.74 at 1K-16K (all significant), tests +0.55 / +2.22 / +1.77 / +1.10 / +2.13 (significant from 2K), mean utility +4.14. e054_notes_last: fix +0.44 / +1.18 / +1.30 / +1.71 / +0.05 (significant at 2K-8K), tests +0.39 / +0.48 / +0.43 / +0.63 / +0.46 (significant at 2K-8K), mean +1.41. e053_e054: fix +1.56 / +2.45 / +3.62 / +3.54 / +3.04 and tests +1.45 / +2.32 / +2.06 / +1.08 / +2.56, all significant, mean +4.72; no significant loss anywhere. Default on poly-heldout-b: fix 0.162 / 0.214 / 0.318 / 0.418 / 0.484, tests 0.068 / 0.170 / 0.240 / 0.330 / 0.413; with both: fix 0.177 / 0.238 / 0.354 / 0.454 / 0.515. poly-heldout-b is now spent.
+
+## R002 — README re-measurement on heldout: the default after E031 and E039
+
+- **Status:** kept
+- **Hypothesis:** Measurement only (heldout was spent on earlier confirmations; E031 and E039 were decided on heldout-c and heldout-d).
+- **Run:** experiments/npkbench/runs/R002-readme-heldout-e039
+- **Decision:** 407 issues, 0 errors. New default vs npk_query_baseline (which reproduces the previous README row exactly, 0.230/0.303/0.385/0.472/0.569): fix 0.254/0.346/0.452/0.571/0.638 (+2.3/+4.3/+6.8/+9.9/+7.0 points, all significant), tests 0.089/0.180/0.252/0.338/0.423 (+3.0/+3.7/+5.8/+8.2/+12.0, all significant), docs +1.5/+8.5/+0.8/-3.4/+3.1 (none significant). Against the B001 chunk-BM25 baseline: fix 2.0-2.5x (significant at every budget), tests 1.5-2.1x (significant from 2K), docs no longer significantly different at any budget (at 2K 0.25 vs 0.31; was 0.17 vs 0.31).
+
+## R003 — README re-measurement on the multilingual sample: the default after E031 and E039
+
+- **Status:** kept
+- **Hypothesis:** Measurement only (ood-multi-sample, never used for decisions).
+- **Run:** experiments/npkbench/runs/R003-readme-multilingual-e039
+- **Decision:** 114 issues, 0 errors. New default vs npk_query_baseline: fix 0.198/0.260/0.301/0.364/0.455 vs 0.110/0.164/0.197/0.269/0.320 (+8.9/+9.7/+10.4/+9.5/+13.5 points, all significant), tests +2.4/+3.1/+6.7/+12.4/+10.8 (significant except 2K). Against B002 (BM25 over 1,000-character chunks): fix +13.0 to +21.9 points (2.2-3.2x), tests +4.6 to +17.4 (1.9-2.6x), all significant. Non-Python recall moved from about half of Python's to about three quarters (0.260 vs 0.346 at 2K).
+
+## R004 — README re-measurement on heldout: the default after E047 and E052
+
+- **Status:** kept
+- **Hypothesis:** Measurement only (heldout, spent for decisions): E047 (test-file conventions beyond Python) and E052 (environment-dump cleaning) should barely move SWE-bench Verified, which has few colocated JS tests or version dumps.
+- **Baseline run:** experiments/npkbench/runs/R002-readme-heldout-e039
+- **Run:** experiments/npkbench/runs/R004-readme-heldout-e047-e052
+- **Bench version:** npkbench-1.1
+- **Decision:** 407 issues, 0 errors. Against R002 (E039 default): fix 0.254 / 0.343 / 0.456 / 0.572 / 0.638 vs 0.254 / 0.346 / 0.452 / 0.571 / 0.638 (none significant), tests 0.090 / 0.183 / 0.257 / 0.344 / 0.428 vs 0.089 / 0.180 / 0.252 / 0.338 / 0.423 (+0.1 to +0.6, not significant), docs identical except -1.5 at 4K (one issue); utility >= 0 at every budget (mean +0.44). Against the identifier-split chunk-BM25 baseline: fix 2.0-2.5x, tests 1.5-2.1x, as before. README table updated to these numbers.
+
+## R005 — README re-measurement on the multilingual sample: the default after E047 and E052
+
+- **Status:** kept
+- **Hypothesis:** Measurement only (ood-multi-sample, never used for decisions): E047's test conventions (Go, Ruby, PHP, C/C++, Java, JS/TS) and E052's dump cleaning on the 114-issue multilingual sample.
+- **Baseline run:** experiments/npkbench/runs/R003-readme-multilingual-e039
+- **Run:** experiments/npkbench/runs/R005-readme-multilingual-e047-e052
+- **Bench version:** npkbench-1.1
+- **Decision:** 114 issues, 0 errors. Against R003 (E039 default): fix 0.198 / 0.253 / 0.304 / 0.364 / 0.455 vs 0.198 / 0.260 / 0.301 / 0.364 / 0.455 (-0.67 at 2K, not significant), tests 0.079 / 0.122 / 0.185 / 0.269 / 0.317 vs 0.079 / 0.108 / 0.166 / 0.260 / 0.307 (+1.4 / +1.9 / +0.9 / +0.9 at 2K-16K, not significant); utility >= 0 everywhere (mean +0.95). Against B002 (R003's arm, same issues): fix +13.0 to +21.9 points (1.9-3.1x), tests +4.6 to +18.3 (2.4-3.0x), all significant. Correction: the README and R003 had stated 2.2-3.2x (fix) and 1.9-2.6x (tests); R003's own numbers give 1.9-3.2x and 2.3-2.6x (the 16K fix ratio is 1.91). README corrected.
+
+## R006 — README held-out table re-measured with E053 + E054 + E056 (measurement only)
+
+- **Status:** kept
+- **Hypothesis:** Re-measure the README's held-out SWE-bench Verified numbers (407 issues) with the current default, after URL cleaning (E053), release notes last (E054) and split lexical scoring (E056) were merged.
+- **Run:** experiments/npkbench/runs/R006-readme-heldout-e053-e054
+- **Bench version:** npkbench-1.1
+- **Decision:** Default: fix 0.258 / 0.349 / 0.465 / 0.580 / 0.644, tests 0.088 / 0.184 / 0.266 / 0.353 / 0.451, docs 0.152 / 0.220 / 0.271 / 0.487 / 0.645 at 1K-16K. Against R004 (E047+E052 default; 1295 of 2035 selections identical): fix +0.46 / +0.57 / +0.94 / +0.73 / +0.56 (significant at 4K), tests -0.12 / +0.09 / +0.84 / +0.89 / +2.29 (significant at 4K, 8K, 16K), docs -3.03 at 2K (n.s.; 33 issues), utility >= 0 at every budget (mean +1.42). Against the identifier-split BM25-over-chunks baseline: fix 2.0-2.6x (significant everywhere), tests 1.5-2.2x (significant from 2K), docs gap not significant at any budget (2K: 0.311 vs 0.220, CI [-0.27, +0.08]).
+
+## R007 — README re-measurement on the multilingual sample: the default after E053, E054 and E056 (measurement only)
+
+- **Status:** kept
+- **Hypothesis:** Re-measure the README's SWE-bench Multilingual sample numbers (114 issues, never used for decisions) with the current default.
+- **Run:** experiments/npkbench/runs/R007-readme-multilingual-e053-e054
+- **Bench version:** npkbench-1.1
+- **Decision:** 114 issues, 0 errors. Default: fix 0.202 / 0.258 / 0.312 / 0.372 / 0.468, tests 0.079 / 0.122 / 0.190 / 0.286 / 0.322 at 1K-16K. Against R005 (E047+E052 default; 287 of 570 selections identical): fix +0.38 / +0.49 / +0.77 / +0.80 / +1.30 points, tests +0.00 / +0.00 / +0.47 / +1.70 / +0.47, none significant, utility >= 0 everywhere (mean +1.27): no loss on Go, Rust, PHP, Ruby, C/C++, Java or JS/TS in aggregate. Against B002 (R003's arm, same issues): fix +13.4 to +23.0 points (2.0-3.2x), tests +4.6 to +18.8 (2.4-3.0x), all significant.
+
+## SC01 — Side condition: E053 + E054 on SWE-bench Multilingual development issues (Go, Rust, PHP, Ruby, C/C++, Java, JS/TS)
+
+- **Status:** kept
+- **Hypothesis:** E053 (URL cleaning) and E054 (release notes last), confirmed on JS/TS and screened on Python, do not hurt the other languages they now apply to.
+- **Run:** experiments/npkbench/runs/SC01-multidev-before-e053-e054, experiments/npkbench/runs/SC01-multidev-after-e053-e054
+- **Bench version:** npkbench-1.1
+- **Decision:** Passes (action rule declared before the result: no significant loss at any budget and utility >= 0 at every budget). ood-multi-dev, 186 issues, before (tree without E053/E054) vs after: fix +0.78 / +1.29 / +1.22 / +1.66 / +1.33 points at 1K-16K (significant at 2K, 4K, 8K), tests +0.29 / +0.88 / +0.29 / +0.00 / -1.17 (none significant), utility >= 0 everywhere (mean +1.31); 452 of 930 selections change. By language fix recall never falls (PHP +3.2 to +4.3, Go up to +3.9, Rust up to +5.9, JS/TS up to +4.4, Ruby up to +2.2, C/C++ +3.9 at 4K, Java unchanged); the one lost cell is a single changelog-only issue at 16K, which E054 demotes by design. Both changes stay.

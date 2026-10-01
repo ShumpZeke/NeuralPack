@@ -18,16 +18,20 @@ def pack(tmp_path):
 def test_repeated_query_cache_hit_and_identity(pack):
     _, artifact = pack
     selector = PackSelector(artifact, enable_cache=True)
+    computed = []
+    original = selector._select_once
+    selector._select_once = lambda *args, **kwargs: computed.append(1) or original(*args, **kwargs)
     # First query (miss)
     q1 = selector.select("get_a", budget_tokens=512)
-    assert len(selector._cache) == 1
-    # Second query (hit)
+    assert len(selector._cache) == 1 and computed
+    # Second query (hit): served from the cache without recomputing the selection.
+    # (Comparing wall-clock latencies here was flaky under machine load.)
+    computed.clear()
     q2 = selector.select("get_a", budget_tokens=512)
+    assert not computed
     assert q1.context_text() == q2.context_text()
     assert q1.total_tokens == q2.total_tokens
     assert [e.span for e in q1.evidence] == [e.span for e in q2.evidence]
-    # Cache hit latency should be sub-millisecond
-    assert q2.latency_ms <= q1.latency_ms
 
 
 def test_update_invalidates_query_cache(pack):

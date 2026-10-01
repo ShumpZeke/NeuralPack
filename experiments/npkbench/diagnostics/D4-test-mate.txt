@@ -1,0 +1,18 @@
+278 tasks with test gold and a cached pack; mate placed in 208
+mate covers a gold test hunk in 31 tasks (11.2% of tasks)
+mate block tokens: p25 77 p50 191 p75 516 p90 904 max 1449
+covering mates, budget: fits after the blocks before it | block fits alone but not after | block larger than budget
+   1K:  11 |  13 |   7   (share of all tasks that a perfect trim could add: <= 7.2%)
+   2K:  27 |   4 |   0   (share of all tasks that a perfect trim could add: <= 1.4%)
+   4K:  31 |   0 |   0   (share of all tasks that a perfect trim could add: <= 0.0%)
+   8K:  31 |   0 |   0   (share of all tasks that a perfect trim could add: <= 0.0%)
+  16K:  31 |   0 |   0   (share of all tasks that a perfect trim could add: <= 0.0%)
+mate file is a gold test file in 77 of 278 tasks (27.7%); some block of that file covers gold in 77 (27.7%); the mate block does in 31 (11.2%)
+  conditional on the mate file being a gold file: mate block hits 40.3%
+covering mates larger than 2K tokens by repo: {}
+
+tasks whose mate file is a gold file: 77; blocks per such file: median 19
+  of which the mate block misses: 46
+  mate block hits: covering block counted from the end of the file: last 8, last two 11, last three 14 of 31;  from the start: first 12
+  mate block misses: covering block counted from the end of the file: last 15, last two 17, last three 20 of 46;  from the start: first 8
+  relative position of the first covering block in the file for the misses (quintiles from the start): [13, 6, 4, 6, 17]

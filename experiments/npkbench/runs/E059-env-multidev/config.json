@@ -1,0 +1,37 @@
+{
+ "split": "ood-multi-dev",
+ "arms": [
+  "e059_env"
+ ],
+ "budgets": [
+  1024,
+  2048,
+  4096,
+  8192,
+  16384
+ ],
+ "tasks": 11,
+ "task_ids_sha256": "1e9e78fe08e6132557c807477343ba21cd9390ebbb389ec3c77db0e4d0370606",
+ "repos": "astral-sh/ruff,axios/axios,nushell/nushell,uutils/coreutils",
+ "limit": 0,
+ "targets": [
+  "fix",
+  "tests"
+ ],
+ "ephemeral_packs": true,
+ "load": [],
+ "environment": {
+  "git_commit": "68960298638fb15f095b024da624228d8491e033",
+  "git_dirty": false,
+  "python": "3.12.3",
+  "sqlite": "3.45.1",
+  "platform": "Linux-6.18.44-fc-v50-x86_64-with-glibc2.39",
+  "cpus": 4,
+  "bench_version": "npkbench-1.1"
+ },
+ "started_unix": 1790846880.215957,
+ "source_digest": "45fae5945e307ac36395b65727a91cd973ecab834e48dc2e3244cd0f80f3b5cf",
+ "compiler_fingerprints": {
+  "e059_env": "1209ce77e40e5ae3"
+ }
+}

@@ -1,0 +1,37 @@
+{
+ "split": "gym-heldout-b",
+ "arms": [
+  "e059_env"
+ ],
+ "budgets": [
+  1024,
+  2048,
+  4096,
+  8192,
+  16384
+ ],
+ "tasks": 51,
+ "task_ids_sha256": "c66c0caad77f617a8eff7cbe6a8cd581a4084b8637cef883be315909fd9e261a",
+ "repos": "conan-io/conan,facebookresearch/hydra,python/mypy",
+ "limit": 0,
+ "targets": [
+  "fix",
+  "tests"
+ ],
+ "ephemeral_packs": true,
+ "load": [],
+ "environment": {
+  "git_commit": "68960298638fb15f095b024da624228d8491e033",
+  "git_dirty": false,
+  "python": "3.12.3",
+  "sqlite": "3.45.1",
+  "platform": "Linux-6.18.44-fc-v50-x86_64-with-glibc2.39",
+  "cpus": 4,
+  "bench_version": "npkbench-1.1"
+ },
+ "started_unix": 1790846453.110074,
+ "source_digest": "45fae5945e307ac36395b65727a91cd973ecab834e48dc2e3244cd0f80f3b5cf",
+ "compiler_fingerprints": {
+  "e059_env": "1209ce77e40e5ae3"
+ }
+}

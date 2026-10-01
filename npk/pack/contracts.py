@@ -57,6 +57,17 @@ def require_manifest_values(manifest):
             raise PackError(f'unsupported artifact {key} policy; recompile')
     if manifest.get('embedding_status') not in ('disabled', 'unavailable', 'empty', 'indexed'):
         raise PackError('unsupported artifact embedding_status; recompile')
+    if 'skipped_sources' in manifest:
+        try:
+            skipped = json.loads(manifest['skipped_sources'])
+        except ValueError:
+            skipped = None
+        from .source_policy import SKIP_REASONS
+        if (not isinstance(skipped, list) or any(
+                not isinstance(item, dict) or set(item) != {'path', 'reason'}
+                or not isinstance(item['path'], str) or item['reason'] not in SKIP_REASONS
+                for item in skipped)):
+            raise PackError('invalid artifact skipped_sources report; recompile')
 
 
 def require_content_metadata(con, manifest, counts):

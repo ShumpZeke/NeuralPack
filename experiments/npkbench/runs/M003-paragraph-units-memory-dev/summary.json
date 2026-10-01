@@ -1,0 +1,177 @@
+{
+ "arms": {
+  "npk_default": {
+   "budgets": {
+    "1024": {
+     "all_found": 0.59,
+     "fallback": 0,
+     "file_recall": 0.9013,
+     "hunk_recall": 0.6668,
+     "hunk_recall_repo_macro": 0.6563,
+     "latency_ms_p50": 3.23,
+     "latency_ms_p95": 8.37,
+     "line_recall": 0.6421,
+     "n": 100,
+     "tokens_mean": 1011.5
+    },
+    "2048": {
+     "all_found": 0.7,
+     "fallback": 0,
+     "file_recall": 0.9465,
+     "hunk_recall": 0.76,
+     "hunk_recall_repo_macro": 0.7636,
+     "latency_ms_p50": 3.5,
+     "latency_ms_p95": 9.01,
+     "line_recall": 0.7395,
+     "n": 100,
+     "tokens_mean": 2033.7
+    },
+    "256": {
+     "all_found": 0.35,
+     "fallback": 0,
+     "file_recall": 0.7527,
+     "hunk_recall": 0.4403,
+     "hunk_recall_repo_macro": 0.4337,
+     "latency_ms_p50": 3.95,
+     "latency_ms_p95": 10.9,
+     "line_recall": 0.4071,
+     "n": 100,
+     "tokens_mean": 247.1
+    },
+    "4096": {
+     "all_found": 0.77,
+     "fallback": 0,
+     "file_recall": 0.9847,
+     "hunk_recall": 0.8307,
+     "hunk_recall_repo_macro": 0.8644,
+     "latency_ms_p50": 3.4,
+     "latency_ms_p95": 8.61,
+     "line_recall": 0.8032,
+     "n": 100,
+     "tokens_mean": 4059.7
+    },
+    "512": {
+     "all_found": 0.5,
+     "fallback": 0,
+     "file_recall": 0.8173,
+     "hunk_recall": 0.6012,
+     "hunk_recall_repo_macro": 0.612,
+     "latency_ms_p50": 2.78,
+     "latency_ms_p95": 8.28,
+     "line_recall": 0.5582,
+     "n": 100,
+     "tokens_mean": 503.0
+    },
+    "8192": {
+     "all_found": 0.77,
+     "fallback": 0,
+     "file_recall": 0.9922,
+     "hunk_recall": 0.8382,
+     "hunk_recall_repo_macro": 0.8691,
+     "latency_ms_p50": 3.33,
+     "latency_ms_p95": 9.44,
+     "line_recall": 0.8148,
+     "n": 100,
+     "tokens_mean": 6228.0
+    }
+   },
+   "ranking": {
+    "all_found_in_pool": 87,
+    "n": 100,
+    "tokens_to_all_median": 424,
+    "tokens_to_all_median_all_tasks": 679,
+    "tokens_to_first_median": 211
+   }
+  },
+  "oracle_blocks": {
+   "budgets": {
+    "1024": {
+     "all_found": 1.0,
+     "fallback": 0,
+     "file_recall": 1.0,
+     "hunk_recall": 1.0,
+     "hunk_recall_repo_macro": 1.0,
+     "latency_ms_p50": 0.0,
+     "latency_ms_p95": 0.0,
+     "line_recall": 0.9472,
+     "n": 100,
+     "tokens_mean": 160.6
+    },
+    "2048": {
+     "all_found": 1.0,
+     "fallback": 0,
+     "file_recall": 1.0,
+     "hunk_recall": 1.0,
+     "hunk_recall_repo_macro": 1.0,
+     "latency_ms_p50": 0.0,
+     "latency_ms_p95": 0.0,
+     "line_recall": 0.9472,
+     "n": 100,
+     "tokens_mean": 160.6
+    },
+    "256": {
+     "all_found": 1.0,
+     "fallback": 0,
+     "file_recall": 1.0,
+     "hunk_recall": 1.0,
+     "hunk_recall_repo_macro": 1.0,
+     "latency_ms_p50": 0.0,
+     "latency_ms_p95": 0.0,
+     "line_recall": 0.9472,
+     "n": 100,
+     "tokens_mean": 160.6
+    },
+    "4096": {
+     "all_found": 1.0,
+     "fallback": 0,
+     "file_recall": 1.0,
+     "hunk_recall": 1.0,
+     "hunk_recall_repo_macro": 1.0,
+     "latency_ms_p50": 0.0,
+     "latency_ms_p95": 0.0,
+     "line_recall": 0.9472,
+     "n": 100,
+     "tokens_mean": 160.6
+    },
+    "512": {
+     "all_found": 1.0,
+     "fallback": 0,
+     "file_recall": 1.0,
+     "hunk_recall": 1.0,
+     "hunk_recall_repo_macro": 1.0,
+     "latency_ms_p50": 0.0,
+     "latency_ms_p95": 0.0,
+     "line_recall": 0.9472,
+     "n": 100,
+     "tokens_mean": 160.6
+    },
+    "8192": {
+     "all_found": 1.0,
+     "fallback": 0,
+     "file_recall": 1.0,
+     "hunk_recall": 1.0,
+     "hunk_recall_repo_macro": 1.0,
+     "latency_ms_p50": 0.0,
+     "latency_ms_p95": 0.0,
+     "line_recall": 0.9472,
+     "n": 100,
+     "tokens_mean": 160.6
+    }
+   },
+   "ranking": {}
+  }
+ },
+ "builds": {
+  "72f3bc0c237eeddd": {
+   "compile_s_mean": 0.38,
+   "compile_s_total": 37.8,
+   "pack_mb_mean": 2.04,
+   "packs": 100,
+   "tasks_with_blockers": 0
+  }
+ },
+ "elapsed_s": 22.1,
+ "errors": 0,
+ "fingerprints_stable": true,
+ "tasks": 100
+}

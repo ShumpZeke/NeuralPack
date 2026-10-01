@@ -339,8 +339,92 @@ MUTANTS = [
      "tests/test_pack_snapshots.py::test_query_cannot_mix_old_candidate_ids_with_a_concurrently_committed_update"),
     ("schema_transaction_bypass", "npk/pack/compile.py", None, None,
      "tests/test_compile_transactions.py::test_all_schema_and_tracking_creation_share_the_build_transaction"),
-    ("credential_screen_bypass", "npk/pack/source_policy.py", "check_source", "return None",
-     "tests/test_source_boundary.py::test_credential_shaped_source_aborts_without_publication"),
+    ("definition_channel_disabled", "npk/pack/select.py", "_definition_channel", "return []",
+     "tests/test_definition_channel.py::test_named_definition_outranks_documentation_that_repeats_the_prose"),
+    ("definition_ambiguity_cap_ignored", "npk/pack/select.py", "_definition_channel",
+     "globals()['MAX_DEFINITION_AMBIGUITY'] = 10**9",
+     "tests/test_definition_channel.py::test_ambiguous_names_cast_no_vote"),
+    ("top_block_trim_disabled", "npk/pack/select.py", "_member_spans", "return []",
+     "tests/test_top_block_trim.py::test_top_block_that_cannot_fit_emits_its_best_member"),
+    ("test_mate_disabled", "npk/pack/select.py", "_test_mate", "return None",
+     "tests/test_test_mate.py::test_mate_follows_top_implementation_block"),
+    ("test_mate_deep_ranking_misread", "npk/pack/select.py", "_test_mate",
+     "deep = list(reversed(deep)) if deep else deep",
+     "tests/test_test_mate.py::test_reused_ranking_matches_a_dedicated_query"),
+    ("test_mate_gate_ignored", "npk/pack/select.py", None, None,
+     "tests/test_test_mate.py::test_default_mate_is_budget_gated"),
+    ("query_term_cap_ignored", "npk/pack/select.py", None, None,
+     "tests/test_query_term_determinism.py::test_long_queries_keep_the_first_distinct_terms_and_explicit_literals"),
+    ("explicit_literals_in_hash_order", "npk/pack/select.py", None, None,
+     "tests/test_query_term_determinism.py::test_explicit_literal_order_is_independent_of_hash_seed"),
+    ("title_weight_ignored", "npk/pack/select.py", None, None,
+     "tests/test_title_weight.py::test_title_terms_outweigh_the_body"),
+    ("query_tf_ignored", "npk/pack/select.py", None, None,
+     "tests/test_title_weight.py::test_repeated_terms_count_more"),
+    ("single_line_queries_weighted", "npk/pack/select.py", None, None,
+     "tests/test_title_weight.py::test_single_line_query_is_unweighted"),
+    ("title_weight_whole_query", "npk/pack/select.py", None, None,
+     "tests/test_title_weight.py::test_title_terms_outweigh_the_body"),
+    ("query_cleaning_disabled", "npk/pack/select.py", "_strip_issue_template", "return query",
+     "tests/test_query_cleaning.py::test_template_words_no_longer_pull_the_contributing_guide"),
+    ("release_notes_not_demoted", "npk/pack/select.py", None, None,
+     "tests/test_release_notes.py::test_release_notes_go_after_code"),
+    ("release_notes_prose_check_dropped", "npk/pack/select.py", "_release_notes",
+     "return bool(_RELEASE_WORDS.search(path))",
+     "tests/test_release_notes.py::test_code_named_like_release_notes_keeps_its_rank"),
+    ("environment_dump_kept", "npk/pack/select.py", "_strip_environment", "return lines",
+     "tests/test_query_cleaning.py::test_environment_dump_is_removed"),
+    ("environment_dump_ranks_version_module", "npk/pack/select.py", "_strip_environment", "return lines",
+     "tests/test_query_cleaning.py::test_version_listing_no_longer_pulls_the_version_module"),
+    ("environment_booleans_counted", "npk/pack/select.py", None, None,
+     "tests/test_query_cleaning.py::test_configuration_and_code_are_kept"),
+    ("env_directories_always_excluded", "npk/pack/compile.py", None, None,
+     "tests/test_source_directories.py::test_source_directories_named_env_are_kept_but_virtualenvs_are_not"),
+    ("virtualenv_pyvenv_marker_ignored", "npk/pack/compile.py", None, None,
+     "tests/test_source_directories.py::test_source_directories_named_env_are_kept_but_virtualenvs_are_not"),
+    ("virtualenv_bin_activate_ignored", "npk/pack/compile.py", None, None,
+     "tests/test_source_directories.py::test_source_directories_named_env_are_kept_but_virtualenvs_are_not"),
+    ("virtualenv_scripts_activate_ignored", "npk/pack/compile.py", None, None,
+     "tests/test_source_directories.py::test_source_directories_named_env_are_kept_but_virtualenvs_are_not"),
+    ("other_excluded_directories_unlocked", "npk/pack/compile.py", None, None,
+     "tests/test_source_directories.py::test_other_excluded_directories_stay_excluded_whatever_they_hold"),
+    ("url_scaffolding_kept", "npk/pack/select.py", "_strip_urls", "return line",
+     "tests/test_query_cleaning.py::test_link_scaffolding_no_longer_pulls_the_readme"),
+    ("github_source_link_path_dropped", "npk/pack/select.py", None, None,
+     "tests/test_query_cleaning.py::test_urls_keep_only_their_informative_parts"),
+    ("url_title_rewritten", "npk/pack/select.py", None, None,
+     "tests/test_query_cleaning.py::test_a_url_in_the_title_is_kept"),
+    ("url_image_patterns_unbounded", "npk/pack/select.py", None, None,
+     "tests/test_query_cleaning.py::test_unterminated_markup_is_scanned_in_linear_time"),
+    ("data_uri_kept", "npk/pack/select.py", None, None,
+     "tests/test_query_cleaning.py::test_inline_base64_images_are_removed_whole"),
+    ("lexical_split_ignores_weights", "npk/pack/select.py", None, None,
+     "tests/test_lexical_split.py::test_weights_decide_the_order"),
+    ("lexical_split_ties_by_row", "npk/pack/select.py", None, None,
+     "tests/test_lexical_split.py::test_ties_are_ordered_by_path_across_the_limit"),
+    ("lexical_split_boundary_ties_dropped", "npk/pack/select.py", None, None,
+     "tests/test_lexical_split.py::test_ties_are_ordered_by_path_across_the_limit"),
+    ("query_cleaning_drops_title", "npk/pack/select.py", None, None,
+     "tests/test_query_cleaning.py::test_first_line_and_long_headings_are_kept"),
+    ("query_cleaning_reports_cleaned_query", "npk/pack/select.py", None, None,
+     "tests/test_query_cleaning.py::test_selection_reports_the_callers_query"),
+    ("polyglot_test_paths_ignored", "npk/pack/select.py", None, None,
+     "tests/test_test_mate.py::test_colocated_js_test_is_the_mate"),
+    ("test_affix_ignored", "npk/pack/select.py", "_test_path_parts", "return _path_parts(path)",
+     "tests/test_test_mate.py::test_java_test_class_mirrors_its_subject"),
+    ("unnamed_mirror_accepted", "npk/pack/select.py", None, None,
+     "tests/test_test_mate.py::test_shared_generic_parts_are_no_mirror"),
+    ("test_mate_paths_never_refreshed", "npk/pack/select.py", "_place_test_mate",
+     "self._test_paths_key = manifest.get('root_sha256', '')",
+     "tests/test_test_mate.py::test_mate_sees_test_files_added_by_an_update"),
+    ("credential_screen_bypass", "npk/pack/source_policy.py", "credential_kind", "return None",
+     "tests/test_source_boundary.py::test_credential_shaped_source_is_never_published[nvidia-compile]"),
+    ("credential_update_bypass", "npk/pack/source_policy.py", "credential_kind", "return None",
+     "tests/test_source_boundary.py::test_credential_shaped_source_is_never_published[nvidia-update]"),
+    ("indexed_unsupported_silently_skipped", "npk/pack/compile.py", "scan_source", "indexed = set()",
+     "tests/test_source_scan_failures.py::test_invalid_utf8_cannot_silently_change_source_meaning"),
+    ("unsupported_source_not_reported", "npk/pack/compile.py", "scan_source", "skipped = None",
+     "tests/test_source_scan_failures.py::test_initial_compile_reports_and_skips_unindexable_source[nul]"),
     ("literal_artifact_uri_bypass", "npk/pack/format.py", None, None,
      "tests/test_pack_paths.py::test_artifact_path_is_literal_across_compile_query_update_and_verify"),
     ("missing_pack_creation", "npk/pack/format.py", "connect", "create = True",
@@ -445,6 +529,113 @@ def main():
                 assert isinstance(matches[0].values[0], ast.Constant) and matches[0].values[0].value is True
                 matches[0].values[0] = ast.Constant(value=False)
                 changed = ast.unparse(ast.fix_missing_locations(tree))+'\n'
+            elif name in ("polyglot_test_paths_ignored", "unnamed_mirror_accepted"):
+                target, replacement = {
+                    "polyglot_test_paths_ignored": (
+                        '    r"|(^|/)__tests__/|\\.(test|spec)\\.[cm]?[jt]sx?$"\n', ""),
+                    "unnamed_mirror_accepted": ("    if not score:\n        return 0.0\n", ""),
+                }[name]
+                if source.count(target) != 1:
+                    raise ValueError(f"{name} target is no longer unique")
+                changed = source.replace(target, replacement)
+            elif name == "release_notes_not_demoted":
+                target = "        if self.demote_release_notes:\n"
+                if source.count(target) != 1:
+                    raise ValueError("release-note demotion is no longer unique")
+                changed = source.replace(target, "        if False:\n")
+            elif name == "github_source_link_path_dropped":
+                target = 'return " " + "/".join(parts[4:]).split("#", 1)[0] + " "'
+                if source.count(target) != 1:
+                    raise ValueError("GitHub source-link rule is no longer unique")
+                changed = source.replace(target, 'return " "')
+            elif name in ("url_image_patterns_unbounded", "data_uri_kept"):
+                target, replacement = {
+                    "url_image_patterns_unbounded": (
+                        r'r"!\[[^\]]{0,500}\]\([^)]{0,2000}\)|<img\b[^>]{0,2000}>"',
+                        r'r"!\[[^\]]*\]\([^)]*\)|<img\b[^>]*>"'),
+                    "data_uri_kept": ('_URL_IMAGE.sub(" ", _DATA_URI.sub(" ", line))', '_URL_IMAGE.sub(" ", line)'),
+                }[name]
+                if source.count(target) != 1:
+                    raise ValueError("URL image rule is no longer unique")
+                changed = source.replace(target, replacement)
+            elif name == "url_title_rewritten":
+                target = "lines[:1] + [_strip_urls(line) for line in lines[1:]]"
+                if source.count(target) != 1:
+                    raise ValueError("URL title rule is no longer unique")
+                changed = source.replace(target, "[_strip_urls(line) for line in lines]")
+            elif name in ("lexical_split_ignores_weights", "lexical_split_ties_by_row",
+                          "lexical_split_boundary_ties_dropped"):
+                target, replacement = {
+                    "lexical_split_ignores_weights": ("factor = float(weight)", "factor = 1.0"),
+                    "lexical_split_ties_by_row": ("kept.sort(key=lambda b: (total[b], place[b][0], place[b][1]))",
+                                                  "kept.sort(key=lambda b: total[b])"),
+                    "lexical_split_boundary_ties_dropped": (
+                        "while end < len(ordered) and total[ordered[end]] == boundary:",
+                        "while False:"),
+                }[name]
+                if source.count(target) != 1:
+                    raise ValueError("lexical split target is no longer unique")
+                changed = source.replace(target, replacement)
+            elif name in ("env_directories_always_excluded", "virtualenv_pyvenv_marker_ignored",
+                          "virtualenv_bin_activate_ignored", "virtualenv_scripts_activate_ignored",
+                          "other_excluded_directories_unlocked"):
+                target, replacement = {
+                    "env_directories_always_excluded": ('if name in ("env", "venv"):', 'if False:'),
+                    "virtualenv_pyvenv_marker_ignored": ('for marker in ("pyvenv.cfg", ', 'for marker in ("no-such-marker", '),
+                    "virtualenv_bin_activate_ignored": ('os.path.join("bin", "activate"),', 'os.path.join("bin", "no-such-marker"),'),
+                    "virtualenv_scripts_activate_ignored": ('os.path.join("Scripts", "activate")))',
+                                                            'os.path.join("Scripts", "no-such-marker")))'),
+                    "other_excluded_directories_unlocked": ('    if name not in EXCLUDED_DIRS:\n        return False\n',
+                                                            '    return False\n'),
+                }[name]
+                if source.count(target) != 1:
+                    raise ValueError("source directory target is no longer unique")
+                changed = source.replace(target, replacement)
+            elif name == "environment_booleans_counted":
+                target = 'r"\\d+\\.\\d+|^(None|not installed)$"'
+                if source.count(target) != 1:
+                    raise ValueError("environment value rule is no longer unique")
+                changed = source.replace(target, 'r"\\d+\\.\\d+|^(None|not installed|True|False)$"')
+            elif name == "test_mate_gate_ignored":
+                target = "budget >= TEST_MATE_MIN_BUDGET if self.enable_test_mate is None"
+                if source.count(target) != 1:
+                    raise ValueError("test-mate budget gate is no longer unique")
+                changed = source.replace(target, "True if self.enable_test_mate is None")
+            elif name in ("query_term_cap_ignored", "explicit_literals_in_hash_order"):
+                target, replacement, count = {
+                    "query_term_cap_ignored": ("if len(unique) <= MAX_QUERY_TERMS:", "if True:", 1),
+                    "explicit_literals_in_hash_order": (
+                        "terms.extend(term for term in _explicit_literals(query) if term not in terms)",
+                        "terms.extend(term for term in explicit if term not in terms)", 2),
+                }[name]
+                if source.count(target) != count:
+                    raise ValueError(f"{name} target changed")
+                changed = source.replace(target, replacement)
+            elif name in ("title_weight_ignored", "query_tf_ignored", "single_line_queries_weighted"):
+                target, replacement = {
+                    "title_weight_ignored": ("reps += title_weight - 1", "pass"),
+                    "query_tf_ignored": ("reps = min(tf_cap, 1 + int(math.log2(max(1, counts.get(term, 1)))))",
+                                         "reps = 1"),
+                    "single_line_queries_weighted": (
+                        "if not newline or not body.strip() or (title_weight == 1 and tf_cap == 1):",
+                        "if title_weight == 1 and tf_cap == 1:"),
+                }[name]
+                if source.count(target) != 1:
+                    raise ValueError(f"{name} target is no longer unique")
+                changed = source.replace(target, replacement)
+            elif name == "title_weight_whole_query":
+                target = 'title, newline, body = query.strip().partition("\\n")'
+                if source.count(target) != 1:
+                    raise ValueError("title split is no longer unique")
+                changed = source.replace(target, 'title, newline, body = query.strip(), "\\n", query')
+            elif name in ("query_cleaning_drops_title", "query_cleaning_reports_cleaned_query"):
+                target, replacement = {
+                    "query_cleaning_drops_title": ("kept = lines[:1]", "kept = []"),
+                    "query_cleaning_reports_cleaned_query": ("            sel.query = query\n", ""),
+                }[name]
+                if source.count(target) != 1:
+                    raise ValueError("query-cleaning guard is no longer unique")
+                changed = source.replace(target, replacement)
             elif name == "known_compound_vocabulary_guard_bypassed":
                 target = "return whole or expanded"
                 if source.count(target) != 1:
@@ -564,7 +755,7 @@ def main():
             basetemp = root / "basetemp" / name
             basetemp.mkdir(parents=True, exist_ok=True)
             env = dict(os.environ)
-            env["PYTHONPATH"] = f"{snapshot};{repo / '.venv/Lib/site-packages'}"
+            env["PYTHONPATH"] = os.pathsep.join([str(snapshot), str(repo / '.venv/Lib/site-packages')])
             try:
                 proc = subprocess.run([sys.executable, "-B", "-m", "pytest", test, "-q",
                                        "-p", "no:cacheprovider", f"--basetemp={basetemp}",

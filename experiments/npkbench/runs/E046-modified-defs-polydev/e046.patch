@@ -1,0 +1,48 @@
+From 541469f070daa939045b7ca13d8f5196fe059fb9 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Sun, 27 Sep 2026 06:54:35 +0000
+Subject: [PATCH] E046 (experiment): modifier-prefixed declarations and bare
+ member names as JS/TS/Java definitions
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01D7rZygmWjP9fbuvC5cX97z
+---
+ npk/pack/compile.py | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/npk/pack/compile.py b/npk/pack/compile.py
+index 2d021f5..c741bb1 100644
+--- a/npk/pack/compile.py
++++ b/npk/pack/compile.py
+@@ -654,6 +654,14 @@ def _python_raise_sites(source: str) -> List[Tuple[int, int, str]]:
+ IDENT_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]{2,}")
+ DEF_RE = re.compile(r"^\s*(?:def|class|function|fn|func|type|struct|interface)\s+([A-Za-z_][A-Za-z0-9_]*)", re.MULTILINE)
+ CONST_RE = re.compile(r"^\s*([A-Z_][A-Z0-9_]{2,})\s*[:=]", re.MULTILINE)
++# E046 (experiment): JS/TS/Java declarations usually carry modifiers (export function,
++# public static final class, export default abstract class) that DEF_RE misses, and
++# issues cite members by their bare name (JsonReader.nextString -> nextString).
++MODIFIED_DEF_LANGUAGES = frozenset({"javascript", "typescript", "java"})
++MODIFIED_DEF_RE = re.compile(
++    r"^\s*(?:(?:export|default|async|public|private|protected|static|final|abstract|"
++    r"const|override|readonly|declare|synchronized|native)\s+)*"
++    r"(?:function\*?|class|interface|enum|type|record)\s+([A-Za-z_$][A-Za-z0-9_$]*)", re.MULTILINE)
+ IMPORT_RE = re.compile(r"^\s*(?:from\s+([\w.]+)\s+import|import\s+([\w.]+))", re.MULTILINE)
+ 
+ 
+@@ -674,6 +682,13 @@ def _extract_symbols(block: RawBlock, language: str = "unknown") -> None:
+         seen.setdefault(m.group(1), ("constant", True))
+     if block.name:
+         seen.setdefault(block.name, ("definition", True))
++    if language in MODIFIED_DEF_LANGUAGES:
++        for m in MODIFIED_DEF_RE.finditer(block.text):
++            seen.setdefault(m.group(1), ("definition", True))
++        if block.name and "." in block.name:
++            member = block.name.rsplit(".", 1)[1]
++            if member:
++                seen.setdefault(member, ("definition", True))
+     block.symbols = [(n, k, d) for n, (k, d) in seen.items()]
+     block.imports = [m.group(1) or m.group(2) for m in IMPORT_RE.finditer(block.text)]
+ 
+-- 
+2.43.0
+

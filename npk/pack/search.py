@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import re
-from typing import Iterable, List, Set, Tuple
+from typing import Dict, Iterable, List, Set, Tuple
 
 
 WORDS = re.compile(r"\w+", re.UNICODE)
@@ -28,21 +28,44 @@ suppress suppresses suppressed suppressing
 mention mentions mentioned mentioning literal literals string strings""".split())
 
 
+def _word_terms(word: str) -> Tuple[str, ...]:
+    """Analysis of one ``\\w+`` word: the word, then its identifier pieces."""
+    pieces: List[str] = []
+    for piece in word.split("_"):
+        camel = CAMEL.findall(piece)
+        if len(camel) > 1:
+            pieces.extend(part.lower() for part in camel)
+        else:
+            pieces.append(piece.lower())
+    original = word.lower()
+    if len(pieces) > 1:
+        return (original, *(part for part in pieces if part and part != original))
+    return (original,)
+
+
+# Source vocabularies are small relative to their token streams (a Django
+# checkout repeats ~120K distinct words across ~6M occurrences), so per-word
+# memoization removes most analysis work. The cache is bounded and the analysis
+# is a pure function of the word, so hits and misses give identical output.
+_WORD_CACHE: Dict[str, Tuple[str, ...]] = {}
+_WORD_CACHE_LIMIT = 1 << 18
+
+
+def _cached_word_terms(word: str) -> Tuple[str, ...]:
+    terms = _WORD_CACHE.get(word)
+    if terms is None:
+        terms = _word_terms(word)
+        if len(_WORD_CACHE) >= _WORD_CACHE_LIMIT:
+            _WORD_CACHE.clear()
+        _WORD_CACHE[word] = terms
+    return terms
+
+
 def analyzed_terms(text: str) -> List[str]:
     """Keep whole Unicode words and add ASCII identifier components."""
     out: List[str] = []
     for word in WORDS.findall(text):
-        pieces: List[str] = []
-        for piece in word.split("_"):
-            camel = CAMEL.findall(piece)
-            if len(camel) > 1:
-                pieces.extend(part.lower() for part in camel)
-            else:
-                pieces.append(piece.lower())
-        original = word.lower()
-        out.append(original)
-        if len(pieces) > 1:
-            out.extend(part for part in pieces if part and part != original)
+        out.extend(_cached_word_terms(word))
     return out
 
 

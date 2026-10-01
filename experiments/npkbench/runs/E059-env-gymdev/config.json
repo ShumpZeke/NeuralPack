@@ -1,0 +1,37 @@
+{
+ "split": "gym-dev",
+ "arms": [
+  "e059_env"
+ ],
+ "budgets": [
+  1024,
+  2048,
+  4096,
+  8192,
+  16384
+ ],
+ "tasks": 90,
+ "task_ids_sha256": "9c66a979741162cc3b0545cfbc6f082e2ade140a3f7a4dff83c911180f46d5ae",
+ "repos": "conan-io/conan,facebookresearch/hydra,python/mypy",
+ "limit": 0,
+ "targets": [
+  "fix",
+  "tests"
+ ],
+ "ephemeral_packs": true,
+ "load": [],
+ "environment": {
+  "git_commit": "68960298638fb15f095b024da624228d8491e033",
+  "git_dirty": false,
+  "python": "3.12.3",
+  "sqlite": "3.45.1",
+  "platform": "Linux-6.18.44-fc-v50-x86_64-with-glibc2.39",
+  "cpus": 4,
+  "bench_version": "npkbench-1.1"
+ },
+ "started_unix": 1790846547.3259153,
+ "source_digest": "45fae5945e307ac36395b65727a91cd973ecab834e48dc2e3244cd0f80f3b5cf",
+ "compiler_fingerprints": {
+  "e059_env": "1209ce77e40e5ae3"
+ }
+}

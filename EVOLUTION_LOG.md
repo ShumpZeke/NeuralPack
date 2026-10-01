@@ -3862,3 +3862,69 @@ repositories with a stable structured-output model and fixed timeouts. Compare
 both relation settings and hybrid retrieval using answer outcomes, retained spans,
 candidate coverage, selected tokens, latency, memory, provider usage, and v8
 verification together before changing a runtime default.
+
+## Cycle 39 — an external benchmark, and the changes it justified
+
+OBSERVE: Earlier cycles judged NeuralPack on questions its developers wrote (the
+CRISP needles and 12-15 behavior oracles), whose data are not in this snapshot. There
+was no external, held-out measure of context selection, so no promotion could be
+trusted. The first profile of the product on real repositories found that 46 of 103
+SWE-bench snapshots could not be compiled at all: one unindexable file aborted the
+build.
+
+HYPOTHESIZE: SWE-bench issues are queries nobody at NeuralPack wrote, and the
+maintainers' fixes mark what must be found. A pinned, held-out benchmark on them
+(NPK-Bench), scored on three targets at once (the fix, the regression-test site and
+topical documentation), makes improvements measurable and gaming visible.
+
+MEASURE: NPK-Bench (`benchmarks/npkbench/`) covers dev (SWE-bench Lite, 300 issues),
+dev-fast (103), held-out (Verified minus Lite, 407) and conversation memory
+(LongMemEval-S, 470 questions). Every dataset is pinned by revision and SHA-256. It
+reports paired-bootstrap comparisons, and every experiment is recorded in
+`experiments/npkbench/EXPERIMENTS.jsonl`. The decision rule was declared in advance:
+a frequency-weighted utility `d_fix + 0.99 d_tests + 0.087 d_docs` must stay
+non-negative at every budget, with a significant gain on the addressed target, then
+be confirmed once on held-out. Kept, each on that evidence:
+- E001: one cached AST parse per file; 1.49x faster compiles, identical artifacts.
+- E004: skip-and-report unindexable never-indexed files, taking blocked snapshots
+  from 46/103 to 0.
+- E002: the definition channel; held-out fix recall up 5.7 to 10.3 points at
+  1K-16K.
+- E005c: top-block trimming; +13.9 / +7.3 points at 512 / 1K.
+- E014: string-prefix scanning; one-file updates 1.5-2.5x faster.
+- E017: an opt-in context map; a 25% map share at 2K locates as much as full text
+  at 4K.
+Dev-fast fix recall went from 0.209 / 0.301 / 0.408 / 0.474 / 0.544 to
+0.358 / 0.440 / 0.479 / 0.523 / 0.607 at 1K-16K.
+
+ATTACK: Scoring every selection on tests and documentation exposed four wins that
+were transfers:
+- Role priors (E006) raised fix recall by collapsing tests.
+- Portfolios (E008) moved recall between targets.
+- A learned re-ranker (E011) rediscovered the role prior.
+- Density ordering for conversations (M002) was a role prior in disguise.
+Once built correctly (docs-3), the documentation target showed that demotion costs
+14-40 docs points. Its first two constructions were wrong (a mass-reformat commit,
+branch-integration merges) and were rebuilt before any decision used them. A
+profiler overstated a parse-cache win (E001b), and paired timing rejected it.
+
+REJECT:
+- Structural expansions: E003 file aggregation, E005 coarse-to-fine emission for
+  every block, E009 callee expansion, E013 sibling collapse.
+- Dense re-ranking fused at equal weight (E012): -9 to -11 fix points at 1-2K.
+- Diversity, density and paragraph units on memory (M001-M003).
+- Skipping per-file `realpath` in scans: a test pins resolution-before-read, which
+  matters on Windows.
+
+KEEP: The six changes above, their CLI parity flags (`--no-definitions`,
+`--no-trim`, `--strict`, `--map-share`), and NPK-Bench itself. Dense similarity
+wins on conversation memory (M004: +6 to +8 points at 2K-8K). The product-form
+test mate (E016b: tests +7 points at 2K, fix unchanged within noise) awaits
+held-out confirmation.
+
+NEXT: See `NEXT_STEPS.md`. In order:
+- Held-out confirmation of E016b and E005c (H001).
+- The documentation channel (E018) and prose/code query segmentation (E022).
+- Import-aware entity extraction (E023).
+- Dense as one fusion channel (E012b) for code.
+- The shipped hybrid mode on memory (M006).

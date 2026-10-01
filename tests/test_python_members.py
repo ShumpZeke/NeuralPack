@@ -14,12 +14,17 @@ def test_small_method_can_fit_without_unrelated_class_methods(tmp_path):
     old, new = tmp_path / "old.npk", tmp_path / "new.npk"
     compile_pack(root, old)
     compile_pack(root, new, python_members=True)
-    assert PackSelector(old).select("target_value", budget_tokens=40).seed_failed
-    result = PackSelector(new).select("target_value", budget_tokens=40)
-    assert "return 4242" in result.context_text()
-    assert "helper_" not in result.context_text()
-    assert result.total_tokens <= 40
-    assert verify(new)["ok"]
+    # Whole-class blocks cannot fit; without trimming nothing is selected.
+    assert PackSelector(old, enable_trim=False).select("target_value", budget_tokens=40).seed_failed
+    # Method blocks (python_members) and top-block trimming (default) both
+    # recover the small method without unrelated class methods.
+    for pack, selector in ((new, PackSelector(new)), (old, PackSelector(old))):
+        result = selector.select("target_value", budget_tokens=40)
+        assert "return 4242" in result.context_text()
+        assert "helper_" not in result.context_text()
+        assert result.total_tokens <= 40
+        assert verify(pack)["ok"]
+    assert "trimmed" in PackSelector(old).select("target_value", budget_tokens=40).evidence[0].channels
 
 
 def test_nested_classes_decorators_and_context_keep_exact_source_spans():

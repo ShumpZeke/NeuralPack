@@ -1,0 +1,6 @@
+gym-heldout-b: 51 issues, 500 cells, 500 identical
+gym-dev: 90 issues, 890 cells, 890 identical
+poly-dev-b: 33 issues, 305 cells, 305 identical
+ood-multi-dev: 11 issues, 110 cells, 110 identical
+ood-multi-sample: 12 issues, 120 cells, 120 identical
+total: 1925 of 1925 cells identical

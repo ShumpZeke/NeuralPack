@@ -1,0 +1,177 @@
+{
+ "arms": {
+  "b002_bm25_chars1000_split": {
+   "budgets": {
+    "1024": {
+     "all_found": 0.49,
+     "fallback": 0,
+     "file_recall": 0.7905,
+     "hunk_recall": 0.6305,
+     "hunk_recall_repo_macro": 0.6322,
+     "latency_ms_p50": 119.74,
+     "latency_ms_p95": 162.87,
+     "line_recall": 0.551,
+     "n": 100,
+     "tokens_mean": 1011.9
+    },
+    "2048": {
+     "all_found": 0.66,
+     "fallback": 0,
+     "file_recall": 0.8787,
+     "hunk_recall": 0.7498,
+     "hunk_recall_repo_macro": 0.7515,
+     "latency_ms_p50": 119.74,
+     "latency_ms_p95": 162.87,
+     "line_recall": 0.6882,
+     "n": 100,
+     "tokens_mean": 2036.5
+    },
+    "256": {
+     "all_found": 0.18,
+     "fallback": 0,
+     "file_recall": 0.5303,
+     "hunk_recall": 0.3237,
+     "hunk_recall_repo_macro": 0.3222,
+     "latency_ms_p50": 119.74,
+     "latency_ms_p95": 162.87,
+     "line_recall": 0.2471,
+     "n": 100,
+     "tokens_mean": 244.6
+    },
+    "4096": {
+     "all_found": 0.72,
+     "fallback": 0,
+     "file_recall": 0.932,
+     "hunk_recall": 0.805,
+     "hunk_recall_repo_macro": 0.8293,
+     "latency_ms_p50": 119.74,
+     "latency_ms_p95": 162.87,
+     "line_recall": 0.7602,
+     "n": 100,
+     "tokens_mean": 4085.4
+    },
+    "512": {
+     "all_found": 0.33,
+     "fallback": 0,
+     "file_recall": 0.6382,
+     "hunk_recall": 0.4732,
+     "hunk_recall_repo_macro": 0.4804,
+     "latency_ms_p50": 119.74,
+     "latency_ms_p95": 162.87,
+     "line_recall": 0.3854,
+     "n": 100,
+     "tokens_mean": 499.4
+    },
+    "8192": {
+     "all_found": 0.78,
+     "fallback": 0,
+     "file_recall": 0.9788,
+     "hunk_recall": 0.8753,
+     "hunk_recall_repo_macro": 0.8785,
+     "latency_ms_p50": 119.74,
+     "latency_ms_p95": 162.87,
+     "line_recall": 0.8277,
+     "n": 100,
+     "tokens_mean": 8181.0
+    }
+   },
+   "ranking": {}
+  },
+  "npk_default": {
+   "budgets": {
+    "1024": {
+     "all_found": 0.59,
+     "fallback": 0,
+     "file_recall": 0.8683,
+     "hunk_recall": 0.6875,
+     "hunk_recall_repo_macro": 0.6905,
+     "latency_ms_p50": 1.67,
+     "latency_ms_p95": 3.32,
+     "line_recall": 0.6834,
+     "n": 100,
+     "tokens_mean": 1006.5
+    },
+    "2048": {
+     "all_found": 0.69,
+     "fallback": 0,
+     "file_recall": 0.9042,
+     "hunk_recall": 0.7492,
+     "hunk_recall_repo_macro": 0.7447,
+     "latency_ms_p50": 1.66,
+     "latency_ms_p95": 3.33,
+     "line_recall": 0.745,
+     "n": 100,
+     "tokens_mean": 2030.6
+    },
+    "256": {
+     "all_found": 0.43,
+     "fallback": 0,
+     "file_recall": 0.7562,
+     "hunk_recall": 0.5295,
+     "hunk_recall_repo_macro": 0.4876,
+     "latency_ms_p50": 2.28,
+     "latency_ms_p95": 5.38,
+     "line_recall": 0.5295,
+     "n": 100,
+     "tokens_mean": 241.3
+    },
+    "4096": {
+     "all_found": 0.72,
+     "fallback": 0,
+     "file_recall": 0.9248,
+     "hunk_recall": 0.7948,
+     "hunk_recall_repo_macro": 0.8153,
+     "latency_ms_p50": 1.9,
+     "latency_ms_p95": 3.87,
+     "line_recall": 0.7948,
+     "n": 100,
+     "tokens_mean": 4071.0
+    },
+    "512": {
+     "all_found": 0.52,
+     "fallback": 0,
+     "file_recall": 0.8022,
+     "hunk_recall": 0.6122,
+     "hunk_recall_repo_macro": 0.597,
+     "latency_ms_p50": 1.67,
+     "latency_ms_p95": 4.04,
+     "line_recall": 0.6122,
+     "n": 100,
+     "tokens_mean": 496.1
+    },
+    "8192": {
+     "all_found": 0.77,
+     "fallback": 0,
+     "file_recall": 0.9588,
+     "hunk_recall": 0.8377,
+     "hunk_recall_repo_macro": 0.8472,
+     "latency_ms_p50": 2.23,
+     "latency_ms_p95": 4.02,
+     "line_recall": 0.8377,
+     "n": 100,
+     "tokens_mean": 8100.8
+    }
+   },
+   "ranking": {
+    "all_found_in_pool": 87,
+    "n": 100,
+    "tokens_to_all_median": 809,
+    "tokens_to_all_median_all_tasks": 1277,
+    "tokens_to_first_median": 331
+   }
+  }
+ },
+ "builds": {
+  "72f3bc0c237eeddd": {
+   "compile_s_mean": 0.25,
+   "compile_s_total": 24.7,
+   "pack_mb_mean": 1.61,
+   "packs": 100,
+   "tasks_with_blockers": 0
+  }
+ },
+ "elapsed_s": 4.1,
+ "errors": 0,
+ "fingerprints_stable": true,
+ "tasks": 100
+}

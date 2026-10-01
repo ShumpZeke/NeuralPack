@@ -1,0 +1,53 @@
+{
+ "split": "dev",
+ "arms": [
+  "npk_default",
+  "e035_mirror_any",
+  "e035_fused",
+  "e036_header",
+  "e036_header2",
+  "e034_title_x3",
+  "e034_title_x4",
+  "e039_qtf_cap3_title3"
+ ],
+ "budgets": [
+  1024,
+  2048,
+  4096,
+  8192,
+  16384
+ ],
+ "tasks": 300,
+ "targets": [
+  "fix",
+  "tests",
+  "docs"
+ ],
+ "ephemeral_packs": true,
+ "load": [
+  "benchmarks.npkbench.prototypes.mate_file",
+  "benchmarks.npkbench.prototypes.header",
+  "benchmarks.npkbench.prototypes.title_weight",
+  "benchmarks.npkbench.prototypes.query_tf"
+ ],
+ "environment": {
+  "git_commit": "c390bfdf6d9bf400f740f934e6ec9d7f29898628",
+  "git_dirty": false,
+  "python": "3.12.3",
+  "sqlite": "3.45.1",
+  "platform": "Linux-6.18.44-fc-v37-x86_64-with-glibc2.39",
+  "cpus": 4,
+  "bench_version": "npkbench-1.1"
+ },
+ "started_unix": 1790475803.6805067,
+ "compiler_fingerprints": {
+  "npk_default": "5effbb3d57dcedd5",
+  "e035_mirror_any": "5effbb3d57dcedd5",
+  "e035_fused": "5effbb3d57dcedd5",
+  "e036_header": "5effbb3d57dcedd5",
+  "e036_header2": "5effbb3d57dcedd5",
+  "e034_title_x3": "5effbb3d57dcedd5",
+  "e034_title_x4": "5effbb3d57dcedd5",
+  "e039_qtf_cap3_title3": "5effbb3d57dcedd5"
+ }
+}

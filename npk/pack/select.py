@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import collections
+import contextlib
 import copy
 import math
 import re
@@ -103,6 +104,24 @@ class Evidence:
         return d
 
 
+@dataclass(frozen=True)
+class Location:
+    """A ranked place worth reading, listed without its text (context map)."""
+
+    path: str
+    span: str
+    kind: str
+    name: str
+    score: float
+
+    def line(self) -> str:
+        return f"{self.span} {self.kind} {self.name}".rstrip()
+
+    def as_dict(self) -> Dict[str, Any]:
+        return {"path": self.path, "span": self.span, "kind": self.kind, "name": self.name,
+                "score": round(self.score, 6)}
+
+
 @dataclass
 class Selection:
     """Result of a query. Carries its own uncertainty and fallback reasoning."""
@@ -123,6 +142,10 @@ class Selection:
     conflicts_resolved: List[Dict[str, Any]] = field(default_factory=list)
     tokenizer: Optional[Dict[str, Any]] = None
     available_tokens_estimate: Optional[int] = None
+    #: Context map (``select(map_share=...)``): ranked places beyond the text
+    #: evidence, one line each; ``map_tokens`` is their estimated cost.
+    locations: List[Location] = field(default_factory=list)
+    map_tokens: int = 0
 
     def context_text(self, separator: str = "\n\n", *, order: str = "relevance",
                      tokenizer: Optional[LocalTokenizer] = None) -> str:
@@ -150,6 +173,13 @@ class Selection:
         raise ValueError(f"unknown order {order!r}; expected 'relevance' or 'canonical'")
 
     def as_dict(self, include_text: bool = True) -> Dict[str, Any]:
+        result = self._as_dict(include_text)
+        if self.locations or self.map_tokens:
+            result["locations"] = [loc.as_dict() for loc in self.locations]
+            result["map_tokens"] = self.map_tokens
+        return result
+
+    def _as_dict(self, include_text: bool) -> Dict[str, Any]:
         return {
             "query": self.query,
             "evidence": [e.as_dict(include_text) for e in self.evidence],
@@ -199,6 +229,7 @@ def _copy_selection(selection: Selection) -> Selection:
     result.notes = list(selection.notes)
     result.conflicts_resolved = copy.deepcopy(selection.conflicts_resolved)
     result.tokenizer = copy.deepcopy(selection.tokenizer)
+    result.locations = list(selection.locations)
     return result
 
 
@@ -217,6 +248,114 @@ def _symbol_channel(con: sqlite3.Connection, query: str, limit: int) -> List[int
     return [r["block_id"] for r in rows]
 
 
+#: Issue-form scaffolding removed from queries before retrieval (E031).
+_TEMPLATE_COMMENT = re.compile(r"<!--.*?(?:-->|\Z)", re.S)
+_TEMPLATE_CHECKLIST = re.compile(r"^\s*[-*+]\s*\[[ xX]\]")
+_TEMPLATE_HEADING = re.compile(r"^\s*(?:#{1,6}\s+(?P<h>.+?)\s*#*|\*\*(?P<b>[^*]+)\*\*\s*:?)\s*$")
+TEMPLATE_HEADING_MAX_WORDS = 6
+#: Environment dumps (E052): ``pd.show_versions()``, ``sklearn.show_versions()``,
+#: ``pydantic.version.version_info()`` or ``dvc doctor`` output lists dozens of
+#: ``package: version`` lines whose names match a project's version-printing
+#: module better than the code an issue is about. A block of ``key: value`` lines
+#: (blank and bare ``Header:`` lines may sit inside it) is dropped when at least
+#: ``ENV_DUMP_MIN_LINES`` values are version numbers or ``None`` and such values
+#: make up at least half of its key-value lines; booleans do not count, so
+#: configuration snippets (``warn_return_any = True``) stay.
+ENV_DUMP_MIN_LINES = 3
+_ENV_KV = re.compile(r"^\s*[A-Za-z_][\w .()/#\-]{0,40}?\s*(?:(?<!:):(?!:)|==?)\s*"
+                     r"(?P<value>[^\s;{].{0,100}?)\s*,?\s*$")
+_ENV_VERSION = re.compile(r"\d+\.\d+|^(None|not installed)$", re.IGNORECASE)
+_ENV_NEUTRAL = re.compile(r"^\s*$|^\s*[A-Za-z][\w .()\-]{0,40}:\s*$|^\s*(INSTALLED VERSIONS|[-=]{3,})\s*$",
+                          re.IGNORECASE)
+_ENV_CODE_END = re.compile(r"[;{}]\s*$")
+
+
+def _strip_environment(lines: List[str]) -> List[str]:
+    """*lines* without environment-dump blocks (the first line is always kept)."""
+    out: List[str] = lines[:1]
+    block: List[str] = []
+    versions = pairs = 0
+    for line in lines[1:] + [None]:
+        match = (_ENV_KV.match(line) if line is not None and not _ENV_CODE_END.search(line) else None)
+        if match:
+            pairs += 1
+            versions += bool(_ENV_VERSION.search(match.group("value")))
+            block.append(line)
+            continue
+        if line is not None and block and _ENV_NEUTRAL.match(line):
+            block.append(line)
+            continue
+        if not (versions >= ENV_DUMP_MIN_LINES and 2 * versions >= pairs):
+            out.extend(block)
+        block, versions, pairs = [], 0, 0
+        if line is not None:
+            out.append(line)
+    return out
+
+
+#: URLs (E053): scheme, host and GitHub scaffolding (``https``, ``github``, ``com``,
+#: ``blob``, organisation and project names) add the same words to every issue with
+#: links, and they match READMEs, docs and CI files. Image links and GitHub
+#: attachments are dropped; a GitHub ``blob``/``tree``/``raw`` link keeps the
+#: repository path it points to; other GitHub links (issues, pull requests,
+#: commits) are dropped; any other URL keeps its path and fragment words.
+#: Bounded so unterminated markup in a pasted log cannot make the scan quadratic (each ``![``
+#: would otherwise search to the end of the line): the longest image link in 4,237
+#: benchmark queries is 190 characters, and base64 data URIs, the one long form, go first.
+_URL_IMAGE = re.compile(r"!\[[^\]]{0,500}\]\([^)]{0,2000}\)|<img\b[^>]{0,2000}>", re.IGNORECASE)
+_DATA_URI = re.compile(r"data:[\w.+/-]{1,100};base64,[A-Za-z0-9+/=]+")
+_URL = re.compile(r"https?://[^\s)>\]\"'`<]+", re.IGNORECASE)
+_ATTACHMENT_HOSTS = ("user-images.githubusercontent.com", "private-user-images.githubusercontent.com")
+
+
+def _rewrite_url(match: "re.Match[str]") -> str:
+    host, _, rest = match.group(0).split("://", 1)[1].partition("/")
+    host = host.lower()
+    if host in _ATTACHMENT_HOSTS or rest.startswith("user-attachments/"):
+        return " "
+    if host in ("github.com", "www.github.com"):
+        parts = rest.split("/")
+        if len(parts) > 4 and parts[2] in ("blob", "tree", "raw"):
+            return " " + "/".join(parts[4:]).split("#", 1)[0] + " "
+        return " "
+    path, _, fragment = rest.partition("#")
+    return " " + path.split("?", 1)[0].replace("/", " ") + " " + fragment + " "
+
+
+def _strip_urls(line: str) -> str:
+    return _URL.sub(_rewrite_url, _URL_IMAGE.sub(" ", _DATA_URI.sub(" ", line)))
+
+
+def _strip_issue_template(query: str) -> str:
+    """The query without issue-form scaffolding.
+
+    GitHub issue forms wrap the reporter's words in section headings ("Steps
+    to reproduce", "Expected behavior"), checklists ("- [x] I searched the
+    existing issues") and HTML-comment instructions. Those words are rare in
+    code but common in CONTRIBUTING.md, READMEs and changelogs, which then
+    outrank the code. HTML comments, checklist lines and heading lines of at
+    most ``TEMPLATE_HEADING_MAX_WORDS`` words (markdown ``#`` headings or
+    bold-only lines) are removed, then environment dumps (E052), then URLs are
+    reduced to their informative parts (E053); the first line, an issue's
+    title, is always kept, and a query that would become empty is used
+    unchanged.
+    """
+    text = _TEMPLATE_COMMENT.sub(" ", query)
+    lines = text.split("\n")
+    kept = lines[:1]
+    for line in lines[1:]:
+        if _TEMPLATE_CHECKLIST.match(line):
+            continue
+        heading = _TEMPLATE_HEADING.match(line)
+        if heading and len((heading.group("h") or heading.group("b") or "").split()) <= TEMPLATE_HEADING_MAX_WORDS:
+            continue
+        kept.append(line)
+    cleaned = "\n".join(_strip_environment(kept))
+    lines = (cleaned if cleaned.strip() else query).split("\n")
+    rewritten = "\n".join(lines[:1] + [_strip_urls(line) for line in lines[1:]])
+    return rewritten if rewritten.strip() else query
+
+
 def _explicit_literals(query: str) -> List[str]:
     """Atomic inline code references override prose stopwords/length filters.
 
@@ -226,6 +365,14 @@ def _explicit_literals(query: str) -> List[str]:
     literals = re.findall(r"(?<!`)`(\w+(?:\.\w+)*)`(?!`)", query)
     return list(dict.fromkeys(part.lower() for literal in literals
                              for part in (literal, *literal.split("."))))
+
+
+#: Most distinct lexical terms a query keeps, in first-occurrence order (E043).
+#: ``bm25()`` works per term and matching row, so a pasted log or dump with
+#: thousands of distinct words costs seconds per query; issues rarely exceed a
+#: few hundred (p99 300-470 on the benchmark splits). Backticked literals are
+#: always kept.
+MAX_QUERY_TERMS = 512
 
 
 def _lexical_terms(_con: sqlite3.Connection, query: str) -> List[str]:
@@ -240,8 +387,12 @@ def _lexical_terms(_con: sqlite3.Connection, query: str) -> List[str]:
         term for term in analyzed_terms(query)
         if (term not in FUNCTION_WORDS and len(term) > 1) or term in explicit
     ]
-    terms.extend(term for term in explicit if term not in terms)
-    return list(dict.fromkeys(terms))
+    terms.extend(term for term in _explicit_literals(query) if term not in terms)
+    unique = list(dict.fromkeys(terms))
+    if len(unique) <= MAX_QUERY_TERMS:
+        return unique
+    kept = unique[:MAX_QUERY_TERMS]
+    return kept + [term for term in unique[MAX_QUERY_TERMS:] if term in explicit]
 
 
 def _whole_lexical_terms(query: str) -> List[str]:
@@ -252,8 +403,59 @@ def _whole_lexical_terms(query: str) -> List[str]:
         if (term.lower() not in FUNCTION_WORDS and len(term) > 1)
         or term.lower() in explicit
     ]
-    terms.extend(term for term in explicit if term not in terms)
+    terms.extend(term for term in _explicit_literals(query) if term not in terms)
     return list(dict.fromkeys(terms))
+
+
+#: Weighted term lists longer than this are scored one weight class at a time (E056).
+#: ``bm25()`` merges the instances of every OR phrase in each matching row, which
+#: costs about rows x phrases, and a term repeated ``k`` times (E039) is scored
+#: ``k`` times. BM25 is a sum over phrases whose IDF, frequency and length terms do
+#: not depend on the other phrases, so one query per weight over distinct terms,
+#: summed per row as ``weight * bm25`` in weight order, gives the same ranking: a
+#: 498-phrase query on a 31,000-block pack takes 0.44 s instead of 1.8 s. Shorter
+#: lists keep the single query, where splitting costs more than it saves.
+LEXICAL_SPLIT_MIN_PHRASES = 128
+
+
+def _rank_lexical_split(con: sqlite3.Connection, terms: Sequence[str], limit: int) -> List[int]:
+    weights: Dict[str, int] = {}
+    for term in terms:
+        weights[term] = weights.get(term, 0) + 1
+    classes: Dict[int, List[str]] = {}
+    for term, weight in weights.items():
+        classes.setdefault(weight, []).append(term)
+    cursor = con.cursor()
+    cursor.row_factory = None
+    total: Dict[int, float] = {}
+    for weight in sorted(classes):
+        factor = float(weight)
+        match = " OR ".join(f'"{term}"' for term in classes[weight])
+        for block_id, score in cursor.execute(
+                "SELECT rowid, bm25(lexical,1.0,1.0,1.0) FROM lexical WHERE lexical MATCH ?", (match,)):
+            total[block_id] = total.get(block_id, 0.0) + factor * score
+    ordered = sorted(total, key=total.__getitem__)
+    # ORDER BY score, path, ordinal LIMIT n: rows tied with the last kept score are
+    # ordered by path and ordinal before the cut; rows without a block are skipped.
+    size = limit
+    while True:
+        end = min(size, len(ordered))
+        if end < len(ordered):
+            boundary = total[ordered[end - 1]]
+            while end < len(ordered) and total[ordered[end]] == boundary:
+                end += 1
+        head = ordered[:end]
+        place: Dict[int, Tuple[str, int]] = {}
+        for i in range(0, len(head), 500):
+            part = head[i:i + 500]
+            place.update((row[0], (row[1], row[2])) for row in cursor.execute(
+                "SELECT b.id, f.path, b.ordinal FROM blocks b JOIN files f ON f.id=b.file_id "
+                f"WHERE b.id IN ({','.join('?' * len(part))})", part))
+        kept = [b for b in head if b in place]
+        if len(kept) >= limit or end == len(ordered):
+            kept.sort(key=lambda b: (total[b], place[b][0], place[b][1]))
+            return kept[:limit]
+        size *= 2
 
 
 def _rank_lexical_terms(
@@ -261,6 +463,8 @@ def _rank_lexical_terms(
 ) -> List[int]:
     if not terms:
         return []
+    if len(terms) > LEXICAL_SPLIT_MIN_PHRASES and limit > 0:
+        return _rank_lexical_split(con, terms, limit)
     match = " OR ".join(f'"{term}"' for term in terms)
     rows = con.execute(
         "SELECT lexical.rowid AS block_id FROM lexical JOIN blocks b ON b.id=lexical.rowid "
@@ -272,12 +476,46 @@ def _rank_lexical_terms(
     return [row["block_id"] for row in rows]
 
 
-def _lexical_channel(con: sqlite3.Connection, query: str, limit: int) -> List[int]:
+#: Extra weight for the terms of an issue's title, the first line of a multi-line
+#: query (E034/E039): each counts ``TITLE_WEIGHT - 1`` more times in the lexical OR.
+TITLE_WEIGHT = 3
+#: Most times a query term counts from its frequency in a multi-line query:
+#: ``min(TF_CAP, 1 + floor(log2(tf)))`` (E039). 1 ignores frequency.
+TF_CAP = 3
+
+
+def _weighted_terms(con: sqlite3.Connection, query: str, terms: Sequence[str],
+                    title_weight: int = 1, tf_cap: int = 1) -> List[str]:
+    """Lexical terms repeated by their weight in an issue-style query.
+
+    The lexical OR lists each distinct term once, so a word the reporter
+    repeats throughout the issue, or states in its title (the one-line summary
+    of the topic), counts no more than one from a traceback or an environment
+    listing. ``bm25()`` sums repeated OR phrases, so a term repeated ``k`` times
+    counts ``k`` times. Single-line queries are left unweighted.
+    """
+    title, newline, body = query.strip().partition("\n")
+    if not newline or not body.strip() or (title_weight == 1 and tf_cap == 1):
+        return list(terms)
+    counts = collections.Counter(analyzed_terms(query))
+    in_title = set(_lexical_terms(con, title)) if title_weight > 1 else set()
+    weighted: List[str] = []
+    for term in terms:
+        reps = min(tf_cap, 1 + int(math.log2(max(1, counts.get(term, 1)))))
+        if term in in_title:
+            reps += title_weight - 1
+        weighted.extend([term] * reps)
+    return weighted
+
+
+def _lexical_channel(con: sqlite3.Connection, query: str, limit: int,
+                     title_weight: int = 1, tf_cap: int = 1) -> List[int]:
     try:
         terms = _lexical_terms(con, query)
         if not terms:
             return []
-        expanded = _rank_lexical_terms(con, terms, limit)
+        weighted = _weighted_terms(con, query, terms, title_weight, tf_cap)
+        expanded = _rank_lexical_terms(con, weighted, limit)
         whole_terms = _whole_lexical_terms(query)
         if whole_terms == terms or len(whole_terms) != 1:
             return expanded
@@ -326,6 +564,219 @@ def _relation_channel(con: sqlite3.Connection, query: str, limit: int) -> List[i
         row["path"], row["ordinal"], row["block_id"],
     ))
     return [row["block_id"] for row in ordered[:limit]]
+
+
+_IDENT = r"[A-Za-z_][A-Za-z0-9_]*"
+_DOTTED_NAME = re.compile(rf"(?<![\w.]){_IDENT}(?:\.{_IDENT})+")
+_CALLED_NAME = re.compile(rf"(?<![\w.])({_IDENT})\(")
+_BACKTICKED = re.compile(r"`([^`\n]{1,200})`")
+_IDENT_WORD = re.compile(_IDENT)
+
+#: A name with more definitions than this is too ambiguous to be evidence
+#: (``__init__``, ``get``). NPK-Bench E002b measured 3-25 within noise.
+MAX_DEFINITION_AMBIGUITY = 10
+
+
+def _code_like(token: str) -> bool:
+    """snake_case, camel humps, or letters mixed with digits (not prose)."""
+    core = token.strip("_")
+    if not core or len(token) < 3:
+        return False
+    if "_" in core:
+        return True
+    if re.search(r"[a-z][A-Z]", core) or re.search(r"[A-Z]{2,}[a-z]", core):
+        return True
+    return bool(re.search(r"[A-Za-z]", core) and re.search(r"\d", core))
+
+
+def _query_entities(query: str) -> List[str]:
+    """Code identifiers a query names explicitly, in first-mention order.
+
+    Sources: dotted references (``django.core.exceptions.ValidationError``,
+    ``Signal.send_robust``), called names (``send_robust(``), backticked code,
+    and words that are code-like by spelling. Plain prose words are ignored.
+    """
+    names: List[str] = []
+    for match in _DOTTED_NAME.finditer(query):
+        parts = match.group(0).split(".")
+        if all(len(part) <= 2 for part in parts):  # e.g. "e.g", "v2.0"
+            continue
+        names.extend(part for part in parts
+                     if len(part) >= 3 and part.lower() not in FUNCTION_WORDS)
+    names.extend(m.group(1) for m in _CALLED_NAME.finditer(query) if len(m.group(1)) >= 3)
+    for match in _BACKTICKED.finditer(query):
+        names.extend(w for w in _IDENT_WORD.findall(match.group(1)) if len(w) >= 3)
+    names.extend(w for w in _IDENT_WORD.findall(query) if _code_like(w))
+    return list(dict.fromkeys(names))
+
+
+#: Lexical ranking depth reused by the test-mate lookup.
+TEST_MATE_DEPTH = 1000
+#: Default (``enable_test_mate=None``): place the test mate from this budget up.
+#: Below it the mate displaced fix sites (held-out H001 at 1K); at and above it
+#: the fresh heldout-b confirmed a net gain (E016c/HB01).
+TEST_MATE_MIN_BUDGET = 2048
+#: Test files by each language's convention (E047): Python (``tests/``,
+#: ``test_*.py``, ``*_test.py``, ``conftest.py``), Jest (``__tests__/``,
+#: ``*.test.js``/``*.spec.ts``), JUnit/PHPUnit/NUnit (``FooTest``, ``FooTests``,
+#: ``FooTestCase``, ``TestFoo``, Maven's ``FooIT``), Go (``*_test.go``), gtest
+#: (``*_test.cc``, ``*_unittest.cc``) and RSpec (``*_spec.rb``). None of the
+#: non-Python forms can match a ``.py`` path.
+TEST_PATH = re.compile(
+    r"(^|/)(tests?|testing)(/|$)|(^|/)test_[^/]*$|_tests?\.py$|(^|/)conftest\.py$"
+    r"|(^|/)__tests__/|\.(test|spec)\.[cm]?[jt]sx?$"
+    r"|(^|/)[^/]*(Test|Tests|TestCase)\.(java|kt|scala|groovy|php|cs)$"
+    r"|(^|/)[^/]*[a-z0-9]IT\.(java|kt|scala|groovy)$"
+    r"|(^|/)Test[A-Z0-9][^/]*\.(java|kt|scala|groovy|php|cs)$"
+    r"|_test\.(go|c|cc|cpp)$|_unittest\.(c|cc|cpp)$|_spec\.rb$")
+DOC_PATH = re.compile(r"(^|/)(docs?|doc_src)(/|$)|\.(rst|md|txt)$")
+#: Historical release notes (E054): changelogs, release notes, "what's new" pages and
+#: release blog posts describe past changes in an issue's own words and rank high, but a
+#: fix adds a new entry rather than editing the historical one that matched. Only prose
+#: files count, so a code module named ``history.js`` or a ``releases/`` package stays.
+_RELEASE_WORDS = re.compile(
+    r"(^|/)(changelog|changes|history|news|release[-_ ]?notes?|whatsnew|blog|releases?)([-_./]|$)", re.IGNORECASE)
+_PROSE_FILE = re.compile(r"\.(md|mdx|rst|txt|adoc|html)$|(^|/)[A-Z][A-Z_-]*$", re.IGNORECASE)
+
+
+def _release_notes(path: str) -> bool:
+    return bool(_RELEASE_WORDS.search(path)) and bool(_PROSE_FILE.search(path))
+_GENERIC_PATH_PARTS = frozenset({"tests", "test", "testing", "src", "lib", "py", "__init__", "unit", "units", "t"})
+#: A test class named after its subject: ``FooTest``, ``FooTests``, ``FooIT``,
+#: ``FooTestCase``, ``FooSpec`` or ``TestFoo`` (the affix is capitalized).
+_TEST_AFFIX = re.compile(r"^(?:Test(?=[A-Z0-9])(?P<prefixed>.+)|(?P<suffixed>.+?[a-z0-9])(?:Tests?|IT|TestCase|Spec))$")
+
+
+def _path_parts(path: str) -> List[str]:
+    stem = re.sub(r"\.[A-Za-z0-9]+$", "", path)
+    return [part for part in re.split(r"[/_.-]+", stem.lower()) if part]
+
+
+def _test_path_parts(path: str) -> List[str]:
+    """A test file's path parts plus its name without a CamelCase test affix.
+
+    ``ServiceConfigTest.java`` then mirrors ``ServiceConfig.java`` as
+    ``test_mod.py`` mirrors ``mod.py``; without it every test of the package
+    tied (E047).
+    """
+    parts = _path_parts(path)
+    match = _TEST_AFFIX.match(re.sub(r"\.[A-Za-z0-9]+$", "", path.rsplit("/", 1)[-1]))
+    if match:
+        parts.append((match.group("prefixed") or match.group("suffixed")).lower())
+    return parts
+
+
+def _mate_score(impl: str, test: str, test_parts: Optional[frozenset] = None,
+                impl_parts: Optional[List[str]] = None) -> float:
+    """How strongly a test path mirrors an implementation path (0 = unrelated).
+
+    ``pkg/mod.py`` -> ``tests/pkg/test_mod.py``: the module name counts 2, its
+    package 1, any other shared non-generic path part 0.25. A test that shares
+    neither the module nor the package name is no mirror, however many other
+    parts it shares (Java's ``src/test/java/org/apache/...`` shares four with
+    every class of the project; E047).
+    """
+    ip = impl_parts if impl_parts is not None else _path_parts(impl)
+    tp = test_parts if test_parts is not None else frozenset(_test_path_parts(test))
+    if not ip or not tp:
+        return 0.0
+    module, parent = ip[-1], (ip[-2] if len(ip) > 1 else "")
+    score = 0.0
+    if module in tp and module not in _GENERIC_PATH_PARTS:
+        score += 2.0
+    if parent and parent in tp and parent not in _GENERIC_PATH_PARTS:
+        score += 1.0
+    if not score:
+        return 0.0
+    shared = (set(ip) & tp) - _GENERIC_PATH_PARTS - {module, parent}
+    return score + 0.25 * len(shared)
+
+
+def _test_paths(con: sqlite3.Connection) -> List[Tuple[str, frozenset]]:
+    """Test-file paths with their path parts (callers cache this per snapshot)."""
+    return [(row[0], frozenset(_test_path_parts(row[0]))) for row in con.execute("SELECT path FROM files")
+            if TEST_PATH.search(row[0])]
+
+
+def _test_mate(con: sqlite3.Connection, query: str, impl_path: str, exclude: Set[int],
+               test_paths: Optional[List[Tuple[str, frozenset]]] = None,
+               deep: Optional[Sequence[int]] = None) -> Optional[int]:
+    """Best query-matching block of the test file that mirrors *impl_path*.
+
+    *deep* is the lexical channel's ranking to ``TEST_MATE_DEPTH`` for a
+    multi-word query (same MATCH and order); when it is complete enough it
+    answers without a second full-text query.
+    """
+    paths = test_paths if test_paths is not None else _test_paths(con)
+    impl_parts = _path_parts(impl_path)
+    scored = sorted(((_mate_score(impl_path, path, parts, impl_parts), path) for path, parts in paths),
+                    key=lambda pair: (-pair[0], pair[1]))
+    if not scored or scored[0][0] < 1.0:
+        return None
+    mates = [path for score, path in scored[:3] if score == scored[0][0]]
+    terms = _lexical_terms(con, query)
+    if not terms:
+        return None
+    if deep is not None:
+        # The main lexical ranking already orders every block by the same
+        # MATCH; its mate-file blocks, in order, are this query's result.
+        marks = ",".join("?" * len(mates))
+        mate_ids = {row[0] for row in con.execute(
+            f"SELECT b.id FROM blocks b JOIN files f ON f.id=b.file_id WHERE f.path IN ({marks})", mates)}
+        found = [b for b in deep if b in mate_ids][:5]
+        if len(found) == 5 or len(deep) < TEST_MATE_DEPTH:
+            return next((b for b in found if b not in exclude), None)
+    marks = ",".join("?" * len(mates))
+    try:
+        rows = con.execute(
+            "SELECT lexical.rowid FROM lexical JOIN blocks b ON b.id=lexical.rowid "
+            "JOIN files f ON f.id=b.file_id WHERE lexical MATCH ? "
+            f"AND f.path IN ({marks}) ORDER BY bm25(lexical,1.0,1.0,1.0),"
+            "f.path COLLATE BINARY,b.ordinal LIMIT 5",
+            (" OR ".join(f'"{term}"' for term in terms), *mates)).fetchall()
+    except sqlite3.OperationalError:
+        return None
+    return next((row[0] for row in rows if row[0] not in exclude), None)
+
+
+def _definition_channel(con: sqlite3.Connection, query: str, limit: int,
+                        lexical: Sequence[int]) -> List[int]:
+    """Blocks that define identifiers the query names.
+
+    Issue-style queries name the code they concern, but a flat OR over many
+    prose terms lets documentation and tests that repeat the vocabulary
+    outrank the definition. Each named identifier votes for its defining
+    blocks with weight ``1/log2(1+n)`` for ``n`` distinct definitions; names
+    defined in more than ``MAX_DEFINITION_AMBIGUITY`` blocks are ignored.
+    Ties keep lexical rank, then source order (never mutable row IDs).
+    """
+    names = _query_entities(query)
+    if not names:
+        return []
+    marks = ",".join("?" * len(names))
+    try:
+        rows = con.execute(
+            "SELECT s.name, s.block_id, f.path, b.ordinal FROM symbols s "
+            "JOIN blocks b ON b.id=s.block_id JOIN files f ON f.id=b.file_id "
+            f"WHERE s.is_def=1 AND s.name IN ({marks})", tuple(names)).fetchall()
+    except sqlite3.OperationalError:
+        return []
+    by_name: Dict[str, Set[int]] = {}
+    position: Dict[int, Tuple[str, int]] = {}
+    for row in rows:
+        by_name.setdefault(row[0], set()).add(row[1])
+        position[row[1]] = (row[2], row[3])
+    score: Dict[int, float] = {}
+    for blocks in by_name.values():
+        if len(blocks) > MAX_DEFINITION_AMBIGUITY:
+            continue
+        weight = 1.0 / math.log2(1 + len(blocks))
+        for block_id in blocks:
+            score[block_id] = score.get(block_id, 0.0) + weight
+    lexical_rank = {block_id: rank for rank, block_id in enumerate(lexical)}
+    unranked = len(lexical_rank)
+    ordered = sorted(score, key=lambda b: (-score[b], lexical_rank.get(b, unranked), position[b]))
+    return ordered[:limit]
 
 
 def _embedding_channel(con: sqlite3.Connection, query: str, limit: int,
@@ -407,6 +858,71 @@ def _expand_dependencies(con: sqlite3.Connection, seeds: Sequence[int], depth: i
 
 
 # ---------------------------------------------------------------------------
+# Graceful degradation for an oversized top-ranked block
+# ---------------------------------------------------------------------------
+
+#: Only Python blocks at least this large are split into member spans.
+TRIM_MIN_TOKENS = 200
+#: Budget for the full ranking a context map is drawn from (no block is cut).
+MAP_POOL_BUDGET = 10**9
+
+
+def _member_spans(con: sqlite3.Connection, block: Block) -> List[Tuple[int, int, str, str]]:
+    """Member spans of a Python class block, as the python_members splitter cuts them.
+
+    The file is rebuilt from its stored blocks (exact line spans; gaps are
+    blank lines), so classes that were cut into several line-window chunks
+    still parse. Every member overlapping *block* is returned, clipped to the
+    block's lines: a method that straddles a chunk boundary stays eligible.
+    """
+    import ast
+    from .compile import _class_member_spans
+
+    lines: List[str] = []
+    for start, text in con.execute(
+            "SELECT start_line, text FROM blocks WHERE file_id=? ORDER BY start_line", (block.file_id,)):
+        body = text.split("\n")
+        if len(lines) < start - 1:
+            lines.extend([""] * (start - 1 - len(lines)))
+        lines[start - 1:start - 1 + len(body)] = body
+    try:
+        tree = ast.parse("\n".join(lines))
+    except (SyntaxError, ValueError, RecursionError, MemoryError):
+        return []
+    spans = [span for node in tree.body if isinstance(node, ast.ClassDef)
+             for span in _class_member_spans(node, node.name)]
+    lo, hi = block.start_line, block.end_line
+    return [(max(s, lo), min(e, hi), kind, name) for s, e, kind, name in spans if s <= hi and e >= lo]
+
+
+def _rank_members(con: sqlite3.Connection, block: Block, members, query: str):
+    """Order member spans by BM25-style overlap with the query.
+
+    IDF is local to the block's file (rarity among its blocks), which needs
+    no index writes and distinguishes sibling methods of one class.
+    """
+    terms = _lexical_terms(con, query)
+    rows = [r[0] for r in con.execute("SELECT text FROM blocks WHERE file_id=?", (block.file_id,))]
+    vocab = [set(analyzed_terms(text)) for text in rows]
+    total = len(vocab)
+    idf = {t: max(0.0, math.log((total - sum(t in v for v in vocab) + 0.5)
+                                / (sum(t in v for v in vocab) + 0.5))) + 0.01 for t in terms}
+    lines = block.text.split("\n")
+    ranked = []
+    for index, (start, end, kind, name) in enumerate(members):
+        text = "\n".join(lines[start - block.start_line:end - block.start_line + 1])
+        counts: Dict[str, int] = {}
+        for term in analyzed_terms(text):
+            counts[term] = counts.get(term, 0) + 1
+        n = sum(counts.values()) or 1
+        score = sum(idf[t] * counts[t] * 2.2 / (counts[t] + 1.2 * (0.25 + 0.75 * n / 200))
+                    for t in terms if t in counts)
+        ranked.append((-score, index, start, end, kind, name, text))
+    ranked.sort()
+    return [(start, end, kind, name, text) for _s, _i, start, end, kind, name, text in ranked]
+
+
+# ---------------------------------------------------------------------------
 # Selector
 # ---------------------------------------------------------------------------
 
@@ -430,6 +946,13 @@ class PackSelector:
         dense_floor: float = 0.35,
         tokenizer: Optional[LocalTokenizer] = None,
         enable_relations: bool = True,
+        enable_definitions: bool = True,
+        enable_trim: bool = True,
+        enable_test_mate: Optional[bool] = None,
+        enable_query_cleaning: bool = True,
+        demote_release_notes: bool = True,
+        title_weight: int = TITLE_WEIGHT,
+        tf_cap: int = TF_CAP,
         enable_cache: bool = True,
         max_cache_entries: int = 128,
     ):
@@ -451,6 +974,29 @@ class PackSelector:
         if type(enable_relations) is not bool:
             raise ValueError("enable_relations must be a boolean")
         self.enable_relations = enable_relations
+        if type(enable_definitions) is not bool:
+            raise ValueError("enable_definitions must be a boolean")
+        self.enable_definitions = enable_definitions
+        if type(enable_trim) is not bool:
+            raise ValueError("enable_trim must be a boolean")
+        self.enable_trim = enable_trim
+        if enable_test_mate is not None and type(enable_test_mate) is not bool:
+            raise ValueError("enable_test_mate must be None (budget-gated), True or False")
+        self.enable_test_mate = enable_test_mate
+        if type(enable_query_cleaning) is not bool:
+            raise ValueError("enable_query_cleaning must be a boolean")
+        self.enable_query_cleaning = enable_query_cleaning
+        if type(demote_release_notes) is not bool:
+            raise ValueError("demote_release_notes must be a boolean")
+        self.demote_release_notes = demote_release_notes
+        if type(title_weight) is not int or title_weight < 1:
+            raise ValueError("title_weight must be an integer >= 1 (1 = no title emphasis)")
+        self.title_weight = title_weight
+        if type(tf_cap) is not int or tf_cap < 1:
+            raise ValueError("tf_cap must be an integer >= 1 (1 = ignore query term frequency)")
+        self.tf_cap = tf_cap
+        self._test_paths_cache: Optional[List[Tuple[str, frozenset]]] = None
+        self._test_paths_key: Optional[str] = None
         self._con: Optional[sqlite3.Connection] = None
         self._manifest: Optional[Dict[str, str]] = None
         self._data_version: Optional[int] = None
@@ -528,13 +1074,27 @@ class PackSelector:
         budget_tokens: Optional[int] = None,
         target_model: Optional[str] = None,
         allow_escalation: bool = True,
+        map_share: float = 0.0,
     ) -> Selection:
+        """Select evidence for *query* within *budget_tokens*.
+
+        ``map_share`` (0 <= share < 1) reserves that fraction of the budget for
+        a context map: the evidence is selected within the rest, and
+        ``Selection.locations`` lists further ranked places (``path:start-end
+        kind name``; Python classes as their members) whose estimated line cost
+        fits the reserved tokens. For callers that can open files: a 25% map
+        locates as many fix sites at 2K tokens as full text does at 4K (E017).
+        """
         started = time.perf_counter()
         # target_model is accepted for provider-independent integrations. No
         # pricing lookup or automatic model-to-tokenizer inference happens here.
         budget = self.default_budget if budget_tokens is None else budget_tokens
         if type(budget) is not int or budget <= 0:
             raise ValueError("budget_tokens must be a positive integer")
+        if type(map_share) not in (int, float) or not 0 <= map_share < 1:
+            raise ValueError("map_share must be a number in [0, 1)")
+        if map_share:
+            return self._select_with_map(query, budget, target_model, allow_escalation, map_share, started)
 
         if self._con is not None:
             self._con.execute("BEGIN")
@@ -564,6 +1124,46 @@ class PackSelector:
                 con, manifest, query, budget, target_model, allow_escalation, started
             )
 
+    def _select_with_map(self, query: str, budget: int, target_model: Optional[str],
+                         allow_escalation: bool, map_share: float, started: float) -> Selection:
+        map_budget = int(budget * map_share)
+        result = _copy_selection(self.select(query, budget_tokens=budget - map_budget,
+                                             target_model=target_model, allow_escalation=allow_escalation))
+        result.budget_tokens = budget
+        if map_budget > 0:
+            ranked = self.select(query, budget_tokens=MAP_POOL_BUDGET, target_model=target_model,
+                                 allow_escalation=False)
+            result.locations, result.map_tokens = self._map_locations(
+                ranked.evidence, {e.span for e in result.evidence}, map_budget)
+        result.latency_ms = (time.perf_counter() - started) * 1000.0
+        return result
+
+    def _map_locations(self, ranked: Sequence[Evidence], shown: Set[str],
+                       budget: int) -> Tuple[List[Location], int]:
+        """Ranked places not already shown, in fused order, until *budget* is spent."""
+        locations: List[Location] = []
+        used = 0
+        with contextlib.ExitStack() as stack:
+            con = self._con if self._con is not None else stack.enter_context(open_pack(self.pack_path))
+            blocks = {b.id: b for b in load_blocks(con, [e.block_id for e in ranked])}
+            for evidence in ranked:
+                blk = blocks.get(evidence.block_id)
+                if blk is None or evidence.span in shown:
+                    continue
+                members = (_member_spans(con, blk) if blk.path.endswith((".py", ".pyi"))
+                           and blk.tokens >= TRIM_MIN_TOKENS else [])
+                entries = members if len(members) > 1 else [(blk.start_line, blk.end_line, blk.kind, blk.name or "")]
+                for start, end, kind, name in entries:
+                    location = Location(blk.path, f"{blk.path}:{start}-{end}", kind, name or "", evidence.score)
+                    if location.span in shown:
+                        continue
+                    cost = len(location.line()) // 4 + 1
+                    if used + cost > budget:
+                        return locations, used
+                    used += cost
+                    locations.append(location)
+        return locations, used
+
     def _select_with_con(
         self,
         con: sqlite3.Connection,
@@ -589,6 +1189,13 @@ class PackSelector:
                     self.resolve_conflicts,
                     self.candidate_limit,
                     self.enable_relations,
+                    self.enable_definitions,
+                    self.enable_trim,
+                    self.enable_test_mate,
+                    self.enable_query_cleaning,
+                    self.demote_release_notes,
+                    self.title_weight,
+                    self.tf_cap,
                     self.tokenizer.sha256 if self.tokenizer is not None else None,
                 )
                 if cache_key in self._cache:
@@ -605,13 +1212,16 @@ class PackSelector:
             except (KeyError, ValueError) as exc:
                 raise PackError("artifact has invalid available-token metadata; recompile") from exc
 
-            sel = self._select_once(con, manifest, query, budget, self.candidate_limit)
+            # Retrieval reads the reporter's words; the selection reports the
+            # caller's query unchanged.
+            retrieval_query = _strip_issue_template(query) if self.enable_query_cleaning else query
+            sel = self._select_once(con, manifest, retrieval_query, budget, self.candidate_limit)
             escalations: List[str] = []
 
             # Escalation ladder -- deterministic and local at every rung.
             if allow_escalation and (sel.seed_failed or not sel.evidence):
                 escalations.append("widen_retrieval")
-                sel = self._select_once(con, manifest, query, budget,
+                sel = self._select_once(con, manifest, retrieval_query, budget,
                                         self.candidate_limit * 4)
 
             if allow_escalation and self.enable_dependency_expansion and sel.evidence:
@@ -620,13 +1230,14 @@ class PackSelector:
                     limit=self.candidate_limit)
                 if extra:
                     escalations.append("expand_dependencies")
-                    sel = self._assemble(con, query, sel, extra, budget)
+                    sel = self._assemble(con, retrieval_query, sel, extra, budget)
 
             if self.resolve_conflicts and len(sel.evidence) > 1:
-                sel = self._drop_contradictions(con, sel, query)
+                sel = self._drop_contradictions(con, sel, retrieval_query)
 
             self._enforce_final_budget(sel, budget)
-            sel.risk_band = self._risk({ch: [] for ch in sel.channels_used}, sel.evidence, query)
+            sel.risk_band = self._risk({ch: [] for ch in sel.channels_used}, sel.evidence, retrieval_query)
+            sel.query = query
 
             if not sel.evidence:
                 # Nothing survived. Report an explicit failure rather than an
@@ -685,13 +1296,26 @@ class PackSelector:
             sym = _symbol_channel(con, query, limit)
             if sym:
                 ranks["symbol"] = sym
-        lex = _lexical_channel(con, query, limit)
+        deep = None
+        use_mate = (budget >= TEST_MATE_MIN_BUDGET if self.enable_test_mate is None
+                    else self.enable_test_mate)
+        if use_mate and len(_whole_lexical_terms(query)) != 1:
+            # One ranking serves the channel (its top-limit prefix) and the
+            # test-mate lookup; ORDER BY is total, so prefixes are identical.
+            deep = _lexical_channel(con, query, max(limit, TEST_MATE_DEPTH), self.title_weight, self.tf_cap)
+            lex = deep[:limit]
+        else:
+            lex = _lexical_channel(con, query, limit, self.title_weight, self.tf_cap)
         if lex:
             ranks["lexical"] = lex
         if self.enable_relations:
             relation = _relation_channel(con, query, limit)
             if relation:
                 ranks["relation"] = relation
+        if self.enable_definitions:
+            definition = _definition_channel(con, query, limit, lex)
+            if definition:
+                ranks["definition"] = definition
 
         if self.retrieval == "hybrid":
             emb, top_sim = _embedding_channel(con, query, limit, manifest)
@@ -716,15 +1340,31 @@ class PackSelector:
                 channels_of.setdefault(block_id, []).append(channel)
 
         ordered_ids = sorted(fused, key=lambda b: -fused[b])
+        if use_mate and ordered_ids:
+            ordered_ids = self._place_test_mate(con, manifest, query, ordered_ids, fused, channels_of, deep)
         blocks = {b.id: b for b in load_blocks(con, ordered_ids)}
+        if self.demote_release_notes:
+            # Historical release notes go behind every other candidate (E054).
+            history = [b for b in ordered_ids if b in blocks and _release_notes(blocks[b].path)]
+            if history:
+                late = set(history)
+                ordered_ids = [b for b in ordered_ids if b not in late] + history
 
         evidence: List[Evidence] = []
         used_chars = 0
+        top = ordered_ids[0] if ordered_ids else None
         for block_id in ordered_ids:
             blk = blocks.get(block_id)
             if blk is None:
                 continue
             if not self._fits(evidence, blk.text, budget, used_chars=used_chars):
+                # The best candidate never silently disappears: when it alone
+                # cannot fit, admit its most query-relevant member spans.
+                # Lower-ranked blocks that do not fit are skipped as before.
+                if block_id == top and self.enable_trim:
+                    used_chars = self._admit_members(
+                        con, blk, query, budget, evidence, used_chars,
+                        fused[block_id], channels_of.get(block_id, []), notes)
                 continue
             used_chars += len(blk.text) + (2 if evidence else 0)
             evidence.append(Evidence(
@@ -740,6 +1380,70 @@ class PackSelector:
             channels_used=sorted(ranks), escalations=[],
             risk_band=risk, seed_failed=not evidence, latency_ms=0.0, notes=notes,
         )
+
+    def _place_test_mate(self, con, manifest: Dict[str, str], query: str, ordered_ids: List[int],
+                         fused: Dict[int, float], channels_of: Dict[int, List[str]],
+                         deep: Optional[Sequence[int]] = None) -> List[int]:
+        """Put the test block that mirrors the top implementation file right after it.
+
+        On by default from ``TEST_MATE_MIN_BUDGET`` tokens (``enable_test_mate``
+        None); ``True``/``False`` force it on/off. Tests that exercise the code under
+        change are where a regression test goes; lexical ranking alone places
+        them far down once definitions rank first (E002). The mate is chosen
+        structurally (path convention) and lexically within that file, never by
+        demoting anything else. Held-out (E016b/H001): regression-test sites
+        found +1.1 to +4.5 points at 1K-16K, fix sites -0.3 to -1.4 points; gated
+        at 2K and above on the fresh heldout-b (HB01): tests +2.3 to +6.0, fix -0.4
+        to -1.1, net utility +1.9 to +5.0 points.
+        """
+        paths = dict(con.execute(
+            f"SELECT b.id, f.path FROM blocks b JOIN files f ON f.id=b.file_id "
+            f"WHERE b.id IN ({','.join('?' * len(ordered_ids))})", ordered_ids).fetchall())
+        position = next((i for i, b in enumerate(ordered_ids)
+                         if not TEST_PATH.search(paths.get(b, "")) and not DOC_PATH.search(paths.get(b, ""))), None)
+        if position is None:
+            return ordered_ids
+        snapshot = manifest.get("root_sha256", "")
+        if self._test_paths_key != snapshot or self._test_paths_cache is None:
+            self._test_paths_cache, self._test_paths_key = _test_paths(con), snapshot
+        mate = _test_mate(con, query, paths[ordered_ids[position]], set(ordered_ids[:position + 1]),
+                          self._test_paths_cache, deep)
+        if mate is None:
+            return ordered_ids
+        reordered = [b for b in ordered_ids if b != mate]
+        reordered.insert(position + 1, mate)
+        fused.setdefault(mate, 0.0)
+        channels_of.setdefault(mate, []).append("test_mate")
+        return reordered
+
+    def _admit_members(self, con, blk: Block, query: str, budget: int, evidence: List[Evidence],
+                       used_chars: int, score: float, channels: List[str], notes: List[str]) -> int:
+        """Admit the best member spans of an oversized block; return used chars.
+
+        Members are exact line slices of the block with their own spans, so
+        each can be cited and the elided remainder re-read by span. Only
+        Python class blocks of at least ``TRIM_MIN_TOKENS`` are split.
+        """
+        if not blk.path.endswith((".py", ".pyi")) or blk.tokens < TRIM_MIN_TOKENS:
+            return used_chars
+        members = _member_spans(con, blk)
+        if len(members) <= 1:
+            return used_chars
+        added = 0
+        for start, end, kind, name, text in _rank_members(con, blk, members, query):
+            if not text.strip() or not self._fits(evidence, text, budget, used_chars=used_chars):
+                continue
+            used_chars += len(text) + (2 if evidence else 0)
+            evidence.append(Evidence(
+                block_id=blk.id, path=blk.path, span=f"{blk.path}:{start}-{end}",
+                kind=kind, name=name, tokens=max(1, len(text) // 4), text=text,
+                score=score, channels=list(channels) + ["trimmed"],
+            ))
+            added += 1
+        if added:
+            notes.append(f"top-ranked block {blk.span} exceeds the budget; "
+                         f"emitted {added} of its {len(members)} member spans")
+        return used_chars
 
     def _assemble(self, con, query, base: Selection, extra_ids: List[int], budget: int) -> Selection:
         have = {e.block_id for e in base.evidence}

@@ -1,0 +1,46 @@
+{
+ "split": "ood-multi-sample",
+ "arms": [
+  "npk_default",
+  "e058_d",
+  "b002_bm25_chars1000_split",
+  "b003_bm25_chars1000_split_e058d"
+ ],
+ "budgets": [
+  1024,
+  2048,
+  4096,
+  8192,
+  16384
+ ],
+ "tasks": 114,
+ "task_ids_sha256": "b1a2d3dc573e5ee5d55c3376e6a5d06b3f731816b87e5fb3f8791757fd1edab5",
+ "repos": "",
+ "limit": 0,
+ "targets": [
+  "fix",
+  "tests"
+ ],
+ "ephemeral_packs": true,
+ "load": [
+  "benchmarks.npkbench.prototypes.baselines",
+  "benchmarks.npkbench.prototypes.baselines_e058"
+ ],
+ "environment": {
+  "git_commit": "9772b299b7671f91876fc67febc03348bf215c93",
+  "git_dirty": false,
+  "python": "3.12.3",
+  "sqlite": "3.45.1",
+  "platform": "Linux-6.18.44-fc-v50-x86_64-with-glibc2.39",
+  "cpus": 4,
+  "bench_version": "npkbench-1.1"
+ },
+ "started_unix": 1790845567.2970934,
+ "source_digest": "540252028d5b7c01ef2d444f52e38d9625b0a947a7206cf4e9448958fff9b82d",
+ "compiler_fingerprints": {
+  "npk_default": "b3222983e8713f3b",
+  "e058_d": "d1078bcf1d5969bc",
+  "b002_bm25_chars1000_split": "b3222983e8713f3b",
+  "b003_bm25_chars1000_split_e058d": "d1078bcf1d5969bc"
+ }
+}

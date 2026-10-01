@@ -12,7 +12,167 @@ Your question → local search → selected passages → your chosen AI answers
 The compiler and default runtime use **zero generative LLM calls** and require
 no API key. The final answering model belongs to your application.
 
-## Evidence status: PIVOT REQUIRED
+## Current evidence: NPK-Bench (2026-09-27)
+
+Measured on [NPK-Bench](benchmarks/npkbench/__init__.py), which was built for this
+purpose. Queries are real SWE-bench issue reports, which NeuralPack's developers
+neither wrote nor tuned against. The score is whether the selected context contains
+the lines the maintainers' fix edited ("hunk recall"). Decisions were made on SWE-bench
+Lite and confirmed once on a **held-out** split (SWE-bench Verified minus Lite,
+407 issues). Details: [BASELINE.md](BASELINE.md) and the
+[experiment log](experiments/npkbench/EXPERIMENTS.md).
+
+| Held-out, fix locations found (hunk recall) | 1K | 2K | 4K | 8K | 16K |
+|---|---:|---:|---:|---:|---:|
+| Standard RAG baseline: BM25 over 60-line chunks (identifier-split) | 0.101 | 0.149 | 0.217 | 0.267 | 0.321 |
+| NeuralPack before this loop's retrieval changes | 0.136 | 0.206 | 0.302 | 0.393 | 0.490 |
+| Code-first ranking (definition channel, top-block trimming, test mate from 2K) | 0.230 | 0.303 | 0.385 | 0.472 | 0.569 |
+| **Current default** (+ issue-form cleaning, title and repetition weighting, test-file conventions, URL cleaning, release notes last) | **0.258** | **0.349** | **0.465** | **0.580** | **0.644** |
+| Current default, regression-test sites found (tests target) | 0.088 | 0.184 | 0.266 | 0.353 | 0.451 |
+
+The query-handling changes of the last row were decided on other fresh splits (heldout-c,
+heldout-d). On this split they add +2.3 / +4.3 / +6.8 / +9.9 / +7.0 points of fix sites
+and +3.0 to +12.0 points of regression-test sites, all significant (run R002). The later
+changes were each confirmed on their own fresh split and cost nothing significant here:
+test-file conventions and environment-dump cleaning (E047, E052; run R004) leave fix recall
+unchanged and add +0.1 to +0.6 points of regression-test sites (not significant), and URL
+cleaning with release notes last (E053, E054) add +0.5 to +0.9 points of fix sites
+(significant at 4K) and -0.1 to +2.3 points of regression-test sites (significant at 4K, 8K
+and 16K) over run R004. The table shows run R006, the current default.
+
+- **Against a standard RAG pipeline** (same files, budgets and gold; BM25 over fixed
+  60-line chunks, filled in score order): NeuralPack finds 2.0-2.6x as many fix sites on
+  held-out (significant at every budget) and 1.5-2.2x as many regression-test sites
+  (significant from 2K). The baseline still finds somewhat more of the documentation
+  maintainers edit at 2K-8K (at 2K: 0.31 vs 0.22; 33 of 407 held-out issues edit docs),
+  but the gap is no longer significant at any budget; before the query-handling changes
+  it was 0.31 vs 0.17 at 2K. Documentation remains the weakest target.
+- **Beyond Python** (SWE-bench Multilingual sample: 114 issues in 41 Rust, Ruby, Java,
+  Go, C/C++, PHP and JS/TS repositories, never used for decisions): fix-site recall is
+  0.202 / 0.258 / 0.312 / 0.372 / 0.468 at 1K-16K, 2.0-3.2x a BM25 baseline over
+  1,000-character chunks, and regression-test recall 0.079 / 0.122 / 0.190 / 0.286 / 0.322,
+  2.4-3.0x the baseline (every gap significant; run R007, with E047, E052, E053 and E054). The
+  query handling (issue-form cleaning and title/repetition weighting) matters most here:
+  it adds +8.9 to +13.5 fix points (0.164 -> 0.260 at 2K; run R003). Absolute recall is
+  still about three quarters of Python's; C/C++ and JS/TS were weakest before these
+  changes. On SWE-PolyBench's Java, JavaScript and TypeScript issues (`poly-dev`, 199
+  issues in 12 repositories, measured before any tuning on it; run P001) fix recall is
+  0.195 / 0.244 / 0.319 / 0.404 / 0.476, 1.6-2.2x B002, and the query handling adds +6.0
+  to +8.9 fix points (all significant). A ceiling to keep in mind when reading JS/TS
+  regression-test numbers: the pack indexes a fixed set of file types, and Jest snapshot
+  files (`.snap`, mostly prettier's) are 37-58% of the test hunks of the larger
+  SWE-PolyBench splits, so test recall there cannot exceed about 42-62% whatever the ranking
+  (similar, smaller ceilings: mypy's `.test` data files 5-17% of gym-dev and gym-heldout test
+  hunks, Redis' `.tcl` and C++ `.cc` tests). Indexing more types was measured (E058) and does
+  not pay for itself as a default: mypy's `.test` files raise regression-test recall by +1 to
+  +3 points on 254 fresh issues but cost 0.2-1.0 fix points (significant at 2K, 8K and 16K),
+  Jest snapshots move recall from other test hunks to snapshot hunks, `.vue`/`.svelte`
+  fixtures displace code in sveltejs/svelte and prettier, and Tcl displaces Redis' C fix sites.
+  The default scan therefore keeps its file types; only source directories called `env` or
+  `venv` are now kept unless they are virtualenvs (E059; NEXT_STEPS has the measurements).
+- **Definition channel** (default): code identifiers named in the query
+  (`Signal.send_robust()`, `django.core.exceptions.ValidationError`) resolve to their
+  defining blocks. On the held-out split it adds +5.7 to +10.3 points at every
+  budget (2K: +0.103, 95% CI [+0.071, +0.136]), and file recall at 2K rises from 0.350
+  to 0.538. **Tradeoff:** recall of where maintainers put regression tests falls 2.4
+  to 4.5 points, and recall of the documentation they edited falls about 10 points at
+  2-4K (33 held-out issues edit docs). Weighted by how often each target exists, the net
+  effect is clearly positive. Pass `enable_definitions=False` to disable it.
+- **Top-block trimming** (default): if the best candidate alone exceeds the budget,
+  NeuralPack emits its most relevant methods (exact source lines with their own spans)
+  instead of dropping it. On dev this adds +13.9 / +7.3 points at 512 / 1K tokens;
+  held-out confirms +3.8 points at 1K, and selections are identical at 2K and above.
+  Pass `enable_trim=False` to disable it.
+- **Test mate** (default from a 2K budget; `enable_test_mate=True/False` or
+  `--test-mate always|never` override it): places the best query-matching block of the
+  test file that mirrors the top implementation file (`pkg/mod.py` ->
+  `tests/.../test_mod.py`) right after it. On a fresh held-out split (heldout-b, 400
+  issues) it finds +5.7 / +6.0 / +3.7 / +2.3 points more regression-test sites at
+  2K-16K (all significant) for 0.4-1.1 points of fix sites. Below 2K the trade was even
+  on held-out, so it stays off there. Test files are recognized by each language's
+  convention: Python, Jest (`Button.test.js`, `__tests__/`), JUnit/PHPUnit/NUnit
+  (`FooTest`, `TestFoo`, `FooIT`), Go (`_test.go`), gtest and RSpec. A CamelCase test
+  class mirrors its subject (`ServiceConfigTest.java` -> `ServiceConfig.java`). On the
+  JS/TS/Java held-out split (poly-heldout, 133 issues) this finds +1.8 / +0.9 / +1.6 /
+  +1.5 points more regression-test sites at 2K-16K at no fix cost (E047, PH01).
+- **Issue-form cleaning** (default; `enable_query_cleaning=False` or `--raw-query` turn
+  it off): issue templates wrap the reporter's words in headings ("Steps to reproduce",
+  "Expected behavior"), checklists and HTML-comment instructions, and those words match
+  CONTRIBUTING guides and changelogs better than code. Short headings (up to six words),
+  checklist lines and HTML comments are removed before retrieval; the first line (the
+  issue title) is always kept, and the selection reports the caller's query unchanged.
+  On a fresh held-out split (heldout-c, 400 issues) fix sites rise +0.7 / +0.9 / +1.2
+  points at 4K / 8K / 16K and regression-test sites +0.4 at 1K and +1.4 at 16K (all
+  significant), with no significant loss at any budget. On the multilingual development
+  split the effect was mixed (fix -0.3 to +1.4 points). Environment dumps are removed
+  too: `show_versions()`, `version_info()` or `doctor` output (blocks of `package: version`
+  lines, mostly version numbers) otherwise pulls the project's version-printing module
+  to the top. On a fresh held-out split of 300 SWE-Gym issues (10 Python repositories
+  SWE-bench does not use) this adds +0.5 / +1.4 / +1.0 fix points at 1K-4K and +1.1 to
+  +1.6 regression-test points at 2K-16K (significant; E052, GH01). URLs keep only their
+  informative parts: image links and GitHub attachments are dropped, a link to a source file
+  keeps its repository path, and other links keep their path words, because scheme, host and
+  GitHub words otherwise match READMEs, docs and CI files. On 320 fresh JS/TS issues
+  (poly-heldout-b) this adds +1.8 to +3.3 fix points at every budget and +1.1 to +2.2
+  regression-test points from 2K (all significant; E053, PHB01).
+- **Release notes last** (default; `demote_release_notes=False` or
+  `--no-release-notes-last` turn it off): changelogs, release notes, "what's new" pages and
+  release blog posts describe past changes in an issue's own words, so they rank high, but a
+  fix adds a new entry rather than editing the old one. They are placed after every other
+  candidate. On poly-heldout-b this adds +1.2 to +1.7 fix points and +0.4 to +0.6
+  regression-test points at 2K-8K; together with the URL rule, +1.6 to +3.6 fix points and
+  +1.1 to +2.6 regression-test points at every budget (all significant; E054, PHB01).
+- **Title and repetition weighting** (default; `title_weight=1, tf_cap=1` or
+  `--title-weight 1 --tf-cap 1` turn it off): in a multi-line query, the terms of the first
+  line (an issue's title, the reporter's one-line summary) count three times in lexical
+  retrieval, and a term the reporter repeats counts up to three times (1 + log2 of its
+  count). Without it, every distinct word counts once, so words from reproduction code,
+  tracebacks and environment details match unrelated code and prose as strongly as the
+  topic. On a fresh held-out split (heldout-d, 401 issues) fix sites rise +1.4 / +2.9 / +3.2
+  / +4.6 points at 2K / 4K / 8K / 16K and regression-test sites +2.8 to +12.2 points at every
+  budget (all significant; no significant loss). The title part alone gained +6.5 to +8.2
+  fix points at 4K-16K on the non-Python development split. Single-line queries, including
+  chat-memory questions, are unchanged. Cost: FTS5 scores every repeated term again, so
+  lexical ranking takes about twice as long; median selection time rises about 55% (70 -> 109
+  ms at 4K on heldout-d, four parallel workers) and the 95th percentile about 1.9x.
+- **Long queries:** a query keeps its first 512 distinct search terms (backticked literals
+  always kept). Issues rarely have more than a few hundred (p99 300-470), but a pasted log can
+  have thousands; on Django a 20,000-identifier query now takes about 4 s instead of 114 s.
+  Shorter queries are unaffected.
+- **Robust ingestion:** as received, 46 of 103 benchmark snapshots failed to compile
+  because a single binary, non-UTF-8, or credential-like file aborted the build (for
+  example, every Django snapshot). Files that were never indexed are now skipped and
+  listed in `skipped_sources`. An *indexed* file that becomes unindexable still aborts
+  an update, and `--strict` restores the old behavior.
+- **Speed:** compiles are 1.5× faster with logically identical artifacts. A one-file
+  update of Django takes 0.8 s (was 1.2 s), and a no-op update takes 0.4 s (was 1.0 s).
+- **Context map** (opt-in, `select(map_share=0.25)` / `--map-share 0.25`): a quarter of
+  the budget lists further ranked places (`path:start-end kind name`) without their text.
+  For callers that can open files, a 25% map at 2K locates as many fix sites as full text
+  does at 4K. Held-out: located fix recall +9.6 / +12.3 / +13.0 / +11.4 / +7.2 points at
+  1K-16K over the default's full text, and regression-test sites +5 to +8 (all
+  significant). It is not the default because full-text recall drops 3-5 points.
+- **Conversation memory** (LongMemEval-S, about 120K-token chat histories): 1K tokens of
+  selected context keep 69% of evidence turns and 87% of evidence sessions. Against a
+  standard RAG baseline (BM25 over ~1,000-character chunks), turn-level blocks lead by 21
+  and 14 points at 256 and 512 tokens and tie from 1K to 4K. For chat
+  histories read with 4K tokens or more, compile with `--mode semantic` and query with
+  `--retrieval hybrid` (local MiniLM encoder). On 370 held-out questions, evidence
+  recall rises from 0.840 to 0.881 at 4K and from 0.871 to 0.931 at 8K (significant;
+  preferences and multi-session questions gain most). At 2K and below it is neutral.
+  Compiles become much slower (about 45 s instead of 0.2 s per history on one CPU
+  thread). The same dense signal does not pay off for code at small budgets.
+- Rejected with recorded evidence: path/role priors (they win only by ignoring tests
+  or documentation; demoting documentation costs 14-40 points of documentation recall),
+  budget portfolios, learned re-ranking over the existing channels, file aggregation,
+  callee expansion, coarse-to-fine emission, a documentation channel (trades code
+  recall for docs), reST sectioning of `.txt` docs, query segmentation, import-aware
+  entity extraction, time windows for chat memory, and diversity/density packing for
+  conversations.
+
+This measures localization evidence, not answer or patch correctness.
+
+## Evidence status before 2026-09-26: PIVOT REQUIRED
 
 NeuralPack is a working local compiler and retrieval runtime. A differentiated
 advantage over strong retrieval alternatives is **not established**. Previous
@@ -167,6 +327,20 @@ if selection.seed_failed or not selection.evidence:
 
 # target_llm is supplied by your application. NeuralPack never calls it.
 response = target_llm(query=query, context=selection.context_text())
+```
+
+Opt-in modes, each measured on NPK-Bench (see "Current evidence" above):
+
+```bash
+# Callers that can open files: 25% of the budget lists further ranked places
+# (path:start-end kind name) in "locations", without their text.
+npk query project.npk "Why is retry behavior wrong?" --budget 2000 --map-share 0.25
+# Test mate: the mirroring test file's best block follows the top implementation
+# block. Default "auto" places it from a 2048-token budget; "always" or "never" override.
+npk query project.npk "Why is retry behavior wrong?" --budget 1500 --test-mate always
+# Chat histories and other prose: local embeddings plus hybrid retrieval.
+npk compile ./chats chats.npk --mode semantic
+npk query chats.npk "Which book did I finish a week ago?" --retrieval hybrid
 ```
 
 Results include source paths and line spans, text, ranking scores, the original

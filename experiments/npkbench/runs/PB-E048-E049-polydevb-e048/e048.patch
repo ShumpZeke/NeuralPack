@@ -1,0 +1,76 @@
+From ef212dfba6f5b57481bd8bf786c2bc427df850ab Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Sun, 27 Sep 2026 07:56:25 +0000
+Subject: [PATCH] E048 (experiment): only a brace type's header fragment
+ defines its name
+
+---
+ npk/pack/compile.py | 18 ++++++++++++------
+ 1 file changed, 12 insertions(+), 6 deletions(-)
+
+diff --git a/npk/pack/compile.py b/npk/pack/compile.py
+index 2d021f5..b018478 100644
+--- a/npk/pack/compile.py
++++ b/npk/pack/compile.py
+@@ -123,6 +123,9 @@ class RawBlock:
+     text: str
+     symbols: List[Tuple[str, str, bool]] = field(default_factory=list)  # (name, kind, is_def)
+     imports: List[str] = field(default_factory=list)
++    #: False for a brace type's continuation fragments (the body between and
++    #: after its members): they carry the type's name but do not define it.
++    defines_name: bool = True
+ 
+ 
+ def _class_member_spans(node: ast.ClassDef, qualified_name: str) -> List[Tuple[int,int,str,str]]:
+@@ -324,12 +327,13 @@ def _rst_heading_events(lines: Sequence[str]) -> List[Tuple[int, int, str]]:
+ 
+ 
+ def _append_source_block(blocks: List[RawBlock], lines: Sequence[str], start: int, end: int,
+-                         kind: str, name: Optional[str]) -> None:
++                         kind: str, name: Optional[str], defines_name: bool = True) -> None:
+     if start > end:
+         return
+     text = "\n".join(lines[start:end + 1])
+     if text.strip():
+-        blocks.append(RawBlock(len(blocks), kind, name, start + 1, end + 1, text))
++        blocks.append(RawBlock(len(blocks), kind, name, start + 1, end + 1, text,
++                               defines_name=defines_name))
+ 
+ 
+ def _split_rst_segment(blocks: List[RawBlock], lines: Sequence[str], start: int, end: int,
+@@ -584,10 +588,11 @@ def _split_braces(source: str, language: str) -> List[RawBlock]:
+         cursor = item.start
+         for child in direct:
+             _append_source_block(blocks, lines, cursor, child.start - 1,
+-                                 item.kind + "_context", qualified)
++                                 item.kind + "_context", qualified, defines_name=cursor == item.start)
+             emit(child, qualified)
+             cursor = child.end + 1
+-        _append_source_block(blocks, lines, cursor, item.end, item.kind + "_context", qualified)
++        _append_source_block(blocks, lines, cursor, item.end, item.kind + "_context", qualified,
++                             defines_name=False)
+ 
+     cursor = 0
+     for root in roots:
+@@ -672,7 +677,7 @@ def _extract_symbols(block: RawBlock, language: str = "unknown") -> None:
+         seen[m.group(1)] = ("definition", True)
+     for m in CONST_RE.finditer(block.text):
+         seen.setdefault(m.group(1), ("constant", True))
+-    if block.name:
++    if block.name and block.defines_name:
+         seen.setdefault(block.name, ("definition", True))
+     block.symbols = [(n, k, d) for n, (k, d) in seen.items()]
+     block.imports = [m.group(1) or m.group(2) for m in IMPORT_RE.finditer(block.text)]
+@@ -709,7 +714,8 @@ def split_source(text: str, language: str, *, python_members: bool = False) -> L
+             chunk = "\n".join(chunk_lines)
+             if chunk.strip():
+                 capped.append(RawBlock(len(capped), b.kind, b.name,
+-                                       b.start_line + i, b.start_line + i + len(chunk_lines) - 1, chunk))
++                                       b.start_line + i, b.start_line + i + len(chunk_lines) - 1, chunk,
++                                       defines_name=b.defines_name))
+     for i, b in enumerate(capped):
+         b.ordinal = i
+         _extract_symbols(b, language=language)
+-- 
+2.43.0
+

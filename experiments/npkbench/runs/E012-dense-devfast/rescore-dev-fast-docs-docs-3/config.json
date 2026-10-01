@@ -1,0 +1,8 @@
+{
+ "rescored_from": "experiments/npkbench/runs/E012-dense-devfast",
+ "split": "dev-fast:docs",
+ "tasks": 13,
+ "tasks_in_split": 13,
+ "docs_version": "docs-3",
+ "bench_version": "npkbench-1.1"
+}

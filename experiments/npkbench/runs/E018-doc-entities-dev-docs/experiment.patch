@@ -1,0 +1,136 @@
+From 16a55b8cb4462491bacf768229457f8c66886514 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Sat, 26 Sep 2026 19:32:56 +0000
+Subject: [PATCH] E018 (experiment): documentation channel resolving named
+ entities to reST object directives
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01D7rZygmWjP9fbuvC5cX97z
+---
+ npk/pack/compile.py              | 10 ++++++++
+ npk/pack/select.py               | 10 ++++++--
+ tests/test_doc_entity_channel.py | 42 ++++++++++++++++++++++++++++++++
+ 3 files changed, 60 insertions(+), 2 deletions(-)
+ create mode 100644 tests/test_doc_entity_channel.py
+
+diff --git a/npk/pack/compile.py b/npk/pack/compile.py
+index 213f65a..77de00d 100644
+--- a/npk/pack/compile.py
++++ b/npk/pack/compile.py
+@@ -654,6 +654,13 @@ def _python_raise_sites(source: str) -> List[Tuple[int, int, str]]:
+ IDENT_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]{2,}")
+ DEF_RE = re.compile(r"^\s*(?:def|class|function|fn|func|type|struct|interface)\s+([A-Za-z_][A-Za-z0-9_]*)", re.MULTILINE)
+ CONST_RE = re.compile(r"^\s*([A-Z_][A-Z0-9_]{2,})\s*[:=]", re.MULTILINE)
++# reST object descriptions ("this page documents that entity"): Sphinx
++# domain directives, autodoc directives and common project-specific roles.
++DOC_ENTITY_RE = re.compile(
++    r"^[ \t]*\.\.[ \t]+(?:[a-z]+:)?(?:auto)?(?:method|function|attribute|class|exception|data|decorator"
++    r"|setting|confval|option|envvar|fieldlookup|templatetag|templatefilter|django-admin)::[ \t]*"
++    r"([A-Za-z_][\w.]*)", re.MULTILINE)
++DOC_LANGUAGES = frozenset({"rst", "text", "markdown"})
+ IMPORT_RE = re.compile(r"^\s*(?:from\s+([\w.]+)\s+import|import\s+([\w.]+))", re.MULTILINE)
+ 
+ 
+@@ -674,6 +681,9 @@ def _extract_symbols(block: RawBlock, language: str = "unknown") -> None:
+         seen.setdefault(m.group(1), ("constant", True))
+     if block.name:
+         seen.setdefault(block.name, ("definition", True))
++    if language in DOC_LANGUAGES:
++        for m in DOC_ENTITY_RE.finditer(block.text):
++            seen.setdefault(m.group(1).rsplit(".", 1)[-1], ("documents", False))
+     block.symbols = [(n, k, d) for n, (k, d) in seen.items()]
+     block.imports = [m.group(1) or m.group(2) for m in IMPORT_RE.finditer(block.text)]
+ 
+diff --git a/npk/pack/select.py b/npk/pack/select.py
+index 274b1fa..d2aab03 100644
+--- a/npk/pack/select.py
++++ b/npk/pack/select.py
+@@ -373,7 +373,7 @@ def _query_entities(query: str) -> List[str]:
+ 
+ 
+ def _definition_channel(con: sqlite3.Connection, query: str, limit: int,
+-                        lexical: Sequence[int]) -> List[int]:
++                        lexical: Sequence[int], *, documents: bool = False) -> List[int]:
+     """Blocks that define identifiers the query names.
+ 
+     Issue-style queries name the code they concern, but a flat OR over many
+@@ -382,6 +382,8 @@ def _definition_channel(con: sqlite3.Connection, query: str, limit: int,
+     blocks with weight ``1/log2(1+n)`` for ``n`` distinct definitions; names
+     defined in more than ``MAX_DEFINITION_AMBIGUITY`` blocks are ignored.
+     Ties keep lexical rank, then source order (never mutable row IDs).
++    With ``documents=True`` the same rule resolves names to the prose blocks
++    that document them (reST object directives) instead.
+     """
+     names = _query_entities(query)
+     if not names:
+@@ -391,7 +393,8 @@ def _definition_channel(con: sqlite3.Connection, query: str, limit: int,
+         rows = con.execute(
+             "SELECT s.name, s.block_id, f.path, b.ordinal FROM symbols s "
+             "JOIN blocks b ON b.id=s.block_id JOIN files f ON f.id=b.file_id "
+-            f"WHERE s.is_def=1 AND s.name IN ({marks})", tuple(names)).fetchall()
++            f"WHERE {'s.kind=' + repr('documents') if documents else 's.is_def=1'} AND s.name IN ({marks})",
++            tuple(names)).fetchall()
+     except sqlite3.OperationalError:
+         return []
+     by_name: Dict[str, Set[int]] = {}
+@@ -853,6 +856,9 @@ class PackSelector:
+             definition = _definition_channel(con, query, limit, lex)
+             if definition:
+                 ranks["definition"] = definition
++            documentation = _definition_channel(con, query, limit, lex, documents=True)
++            if documentation:
++                ranks["documentation"] = documentation
+ 
+         if self.retrieval == "hybrid":
+             emb, top_sim = _embedding_channel(con, query, limit, manifest)
+diff --git a/tests/test_doc_entity_channel.py b/tests/test_doc_entity_channel.py
+new file mode 100644
+index 0000000..06ea45c
+--- /dev/null
++++ b/tests/test_doc_entity_channel.py
+@@ -0,0 +1,42 @@
++"""Named entities resolve to the prose that documents them (E018)."""
++from npk.pack import PackSelector, compile_pack
++from npk.pack.compile import split_source
++
++
++def _corpus(root):
++    (root / "pkg").mkdir()
++    (root / "docs").mkdir()
++    (root / "pkg" / "dispatch.py").write_text(
++        "class Signal:\n    def send_robust(self, sender, **named):\n        return []\n")
++    for i in range(30):
++        (root / "pkg" / f"filler{i}.py").write_text(
++            f"def helper_{i}(value):\n    '''Signals are sent to receivers.'''\n    return value\n")
++    sections = "\n\n".join(
++        f"Topic {i}\n========\n\nReceivers and senders of signals, number {i}.\n" for i in range(20))
++    (root / "docs" / "signals.txt").write_text(
++        "Signals\n#######\n\n" + sections + "\n\nRobust sending\n==============\n\n"
++        ".. method:: Signal.send_robust(sender, **kwargs)\n\n"
++        "    Send the signal and catch errors raised by receivers.\n")
++
++
++def test_doc_entity_symbols_come_only_from_object_directives():
++    blocks = split_source(".. method:: Signal.send_robust(sender)\n\n    Text.\n\n"
++                          ".. note:: not_an_entity\n", "rst")
++    documented = {(n, k, d) for b in blocks for n, k, d in b.symbols if k == "documents"}
++    assert documented == {("send_robust", "documents", False)}
++
++
++def test_named_method_reaches_its_documentation(tmp_path):
++    src = tmp_path / "src"
++    src.mkdir()
++    _corpus(src)
++    pack = tmp_path / "p.npk"
++    compile_pack(src, pack)
++    query = "Signal.send_robust() swallows receiver errors without logging them"
++    with PackSelector(str(pack), enable_cache=False) as selector:
++        chosen = selector.select(query, budget_tokens=10**6, allow_escalation=False).evidence
++    docs = [e for e in chosen if e.path == "docs/signals.txt" and "send_robust" in e.text]
++    assert docs and "documentation" in docs[0].channels
++    with PackSelector(str(pack), enable_cache=False, enable_definitions=False) as selector:
++        plain = selector.select(query, budget_tokens=10**6, allow_escalation=False).evidence
++    assert all("documentation" not in e.channels for e in plain)
+-- 
+2.43.0
+

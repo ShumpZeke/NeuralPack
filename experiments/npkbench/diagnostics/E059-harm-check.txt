@@ -1,0 +1,53 @@
+== gym-heldout-b (E059-env-gymheldoutb against the default arm of E058d-confirm-gymheldoutb)
+  1024    fix  +0.00  [+0.00,+0.00]  @tests  +0.00  [+0.00,+0.00]   U +0.00
+  2048    fix  +0.00  [+0.00,+0.00]  @tests  +0.00  [+0.00,+0.00]   U +0.00
+  4096    fix  +0.00  [+0.00,+0.00]  @tests  +0.00  [+0.00,+0.00]   U +0.00
+  8192    fix  +0.00  [+0.00,+0.00]  @tests  +0.00  [+0.00,+0.00]   U +0.00
+ 16384    fix  +0.00  [+0.00,+0.00]  @tests  +0.00  [+0.00,+0.00]   U +0.00
+utility >= 0 at every budget: True; significant fix/tests gain: False; no significant loss: True; passes: False; mean utility +0.00 points
+   conan-io/conan               n= 15 issues changed= 0 | fix  +0.00  +0.00  +0.00  +0.00  +0.00 | tests  +0.00  +0.00  +0.00  +0.00  +0.00
+   facebookresearch/hydra       n=  6 issues changed= 0 | fix  +0.00  +0.00  +0.00  +0.00  +0.00 | tests  +0.00  +0.00  +0.00  +0.00  +0.00
+   python/mypy                  n= 30 issues changed= 0 | fix  +0.00  +0.00  +0.00  +0.00  +0.00 | tests  +0.00  +0.00  +0.00  +0.00  +0.00
+== gym-dev (E059-env-gymdev against the default arm of E058-coverage-gymdev)
+  1024    fix  +0.00  [+0.00,+0.00]  @tests  +0.00  [+0.00,+0.00]   U +0.00
+  2048    fix  +0.00  [+0.00,+0.00]  @tests  +0.13  [+0.00,+0.38]   U +0.12
+  4096    fix  +1.22  [+0.00,+3.56]  @tests  +0.00  [+0.00,+0.00]   U +1.22
+  8192    fix  +1.11  [+0.00,+3.33]  @tests  +0.06  [+0.00,+0.19]   U +1.17
+ 16384    fix  +1.11  [+0.00,+3.33]  @tests  +0.06  [+0.00,+0.19]   U +1.17
+utility >= 0 at every budget: True; significant fix/tests gain: False; no significant loss: True; passes: False; mean utility +0.74 points
+   conan-io/conan               n= 30 issues changed= 2 | fix  +0.00  +0.00  +3.67  +3.33  +3.33 | tests  +0.00  +0.38  +0.00  +0.19  +0.19
+   facebookresearch/hydra       n= 30 issues changed= 0 | fix  +0.00  +0.00  +0.00  +0.00  +0.00 | tests  +0.00  +0.00  +0.00  +0.00  +0.00
+   python/mypy                  n= 30 issues changed= 0 | fix  +0.00  +0.00  +0.00  +0.00  +0.00 | tests  +0.00  +0.00  +0.00  +0.00  +0.00
+== poly-dev-b (E059-env-polydevb against the default arm of E058-coverage-polydevb)
+  1024    fix  +0.00  [+0.00,+0.00]  @tests  +0.00  [+0.00,+0.00]   U +0.00
+  2048    fix  +0.00  [+0.00,+0.00]  @tests  +0.00  [+0.00,+0.00]   U +0.00
+  4096    fix  +0.00  [+0.00,+0.00]  @tests  +0.00  [+0.00,+0.00]   U +0.00
+  8192    fix  +0.00  [+0.00,+0.00]  @tests  +0.00  [+0.00,+0.00]   U +0.00
+ 16384    fix  +0.00  [+0.00,+0.00]  @tests  +0.00  [+0.00,+0.00]   U +0.00
+utility >= 0 at every budget: True; significant fix/tests gain: False; no significant loss: True; passes: False; mean utility +0.00 points
+   apache/dubbo                 n= 15 issues changed= 0 | fix  +0.00  +0.00  +0.00  +0.00  +0.00 | tests  +0.00  +0.00  +0.00  +0.00  +0.00
+   coder/code-server            n=  7 issues changed= 0 | fix  +0.00  +0.00  +0.00  +0.00  +0.00 | tests  +0.00  +0.00  +0.00  +0.00  +0.00
+   trinodb/trino                n= 11 issues changed= 0 | fix  +0.00  +0.00  +0.00  +0.00  +0.00 | tests  +0.00  +0.00  +0.00  +0.00  +0.00
+== ood-multi-dev (E059-env-multidev against the default arm of E058b-coverage-multidev)
+  1024    fix  +0.00  [+0.00,+0.00]  @tests  +0.00  [+0.00,+0.00]   U +0.00
+  2048    fix  +0.00  [+0.00,+0.00]  @tests  +0.00  [+0.00,+0.00]   U +0.00
+  4096    fix  +1.14  [+0.00,+3.41]  @tests  +0.00  [+0.00,+0.00]   U +1.14
+  8192    fix  +1.14  [+0.00,+3.41]  @tests  +0.00  [+0.00,+0.00]   U +1.14
+ 16384    fix  +1.14  [+0.00,+3.41]  @tests  +0.00  [+0.00,+0.00]   U +1.14
+utility >= 0 at every budget: True; significant fix/tests gain: False; no significant loss: True; passes: False; mean utility +0.68 points
+   astral-sh/ruff               n=  4 issues changed= 0 | fix  +0.00  +0.00  +0.00  +0.00  +0.00 | tests  +0.00  +0.00  +0.00  +0.00  +0.00
+   axios/axios                  n=  3 issues changed= 0 | fix  +0.00  +0.00  +0.00  +0.00  +0.00 | tests  +0.00  +0.00  +0.00  +0.00  +0.00
+   nushell/nushell              n=  2 issues changed= 0 | fix  +0.00  +0.00  +0.00  +0.00  +0.00 | tests  +0.00  +0.00  +0.00  +0.00  +0.00
+   uutils/coreutils             n=  2 issues changed= 1 | fix  +0.00  +0.00  +6.25  +6.25  +6.25 | tests  +0.00  +0.00  +0.00  +0.00  +0.00
+== ood-multi-sample (E059-env-multisample against the default arm of E058d-guard-multisample)
+  1024    fix  +0.00  [+0.00,+0.00]  @tests  +0.00  [+0.00,+0.00]   U +0.00
+  2048    fix  +0.00  [+0.00,+0.00]  @tests  +0.00  [+0.00,+0.00]   U +0.00
+  4096    fix  +0.00  [+0.00,+0.00]  @tests  +0.00  [+0.00,+0.00]   U +0.00
+  8192    fix  +0.00  [+0.00,+0.00]  @tests  +0.00  [+0.00,+0.00]   U +0.00
+ 16384    fix  +0.00  [+0.00,+0.00]  @tests  +0.00  [+0.00,+0.00]   U +0.00
+utility >= 0 at every budget: True; significant fix/tests gain: False; no significant loss: True; passes: False; mean utility +0.00 points
+   astral-sh/ruff               n=  3 issues changed= 0 | fix  +0.00  +0.00  +0.00  +0.00  +0.00 | tests  +0.00  +0.00  +0.00  +0.00  +0.00
+   axios/axios                  n=  3 issues changed= 0 | fix  +0.00  +0.00  +0.00  +0.00  +0.00 | tests  +0.00  +0.00  +0.00  +0.00  +0.00
+   nushell/nushell              n=  3 issues changed= 0 | fix  +0.00  +0.00  +0.00  +0.00  +0.00 | tests  +0.00  +0.00  +0.00  +0.00  +0.00
+   uutils/coreutils             n=  3 issues changed= 0 | fix  +0.00  +0.00  +0.00  +0.00  +0.00 | tests  +0.00  +0.00  +0.00  +0.00  +0.00
+harm check (utility >= 0 at every budget and no significant loss): [('gym-heldout-b', True), ('gym-dev', True), ('poly-dev-b', True), ('ood-multi-dev', True), ('ood-multi-sample', True)]

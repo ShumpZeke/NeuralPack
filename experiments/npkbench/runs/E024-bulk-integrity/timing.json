@@ -1,0 +1,7 @@
+{
+ "task": "django__django-11039 (compile), django__django-11564 (verify)",
+ "compile_paired_median_s": {"main": 12.857, "e024": 12.636, "speedup": 1.018, "logically_identical": true},
+ "verify_s_alternating": {"main": [9.806, 9.419, 9.507], "e024": [8.786, 9.149, 9.298]},
+ "leaf_microbenchmark_cold_pack_s": {"main": [1.32, 1.41, 1.48, 1.50], "e024": [0.47, 0.49, 0.59, 0.52], "identical": true},
+ "note": "The cold-pack microbenchmark (2.7x) overstated the in-compile gain: during compile the per-file queries hit hot pages. verify is dominated by the deliberate FTS source-parity rebuild (~10 of ~14 s profiled)."
+}

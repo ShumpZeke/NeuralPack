@@ -1,0 +1,51 @@
+{
+ "split": "dev-fast:tests",
+ "arms": [
+  "npk_default",
+  "npk_nodefs",
+  "e002_defs",
+  "e002_deflim3",
+  "e002_deflim5",
+  "e002_deflim10",
+  "e002_deflim20",
+  "e002_defk120",
+  "e002_deflim5_k120",
+  "e005c_fit_or_trim",
+  "e005c_fit_or_trim_ref"
+ ],
+ "budgets": [
+  1024,
+  2048,
+  4096,
+  8192,
+  16384
+ ],
+ "tasks": 103,
+ "load": [
+  "benchmarks.npkbench.prototypes.entity_query",
+  "benchmarks.npkbench.prototypes.coarse_fine"
+ ],
+ "environment": {
+  "git_commit": "eea17c36e4bf7e7e56280eae332c44e94dc7abfb",
+  "git_dirty": true,
+  "python": "3.12.3",
+  "sqlite": "3.45.1",
+  "platform": "Linux-6.18.44-fc-v37-x86_64-with-glibc2.39",
+  "cpus": 4,
+  "bench_version": "npkbench-1.1"
+ },
+ "started_unix": 1790447156.6528182,
+ "compiler_fingerprints": {
+  "npk_default": "72f3bc0c237eeddd",
+  "npk_nodefs": "72f3bc0c237eeddd",
+  "e002_defs": "72f3bc0c237eeddd",
+  "e002_deflim3": "72f3bc0c237eeddd",
+  "e002_deflim5": "72f3bc0c237eeddd",
+  "e002_deflim10": "72f3bc0c237eeddd",
+  "e002_deflim20": "72f3bc0c237eeddd",
+  "e002_defk120": "72f3bc0c237eeddd",
+  "e002_deflim5_k120": "72f3bc0c237eeddd",
+  "e005c_fit_or_trim": "72f3bc0c237eeddd",
+  "e005c_fit_or_trim_ref": "72f3bc0c237eeddd"
+ }
+}
