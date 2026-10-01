@@ -1,0 +1,10 @@
+W=24 depth=200: 238 tasks with a gold block in the lexical top 200
+  lexical        top1  46 top3  71 top10 123 top30 185  median rank 9  mean reciprocal 0.293
+  proximity      top1  28 top3  44 top10  93 top30 133  median rank 22  mean reciprocal 0.201
+  rrf(lex,prox)  top1  40 top3  67 top10 119 top30 158  median rank 10  mean reciprocal 0.266
+  rrf vs lexical: better 63, worse 123, equal 52
+W=60 depth=200: 238 tasks with a gold block in the lexical top 200
+  lexical        top1  46 top3  71 top10 123 top30 185  median rank 9  mean reciprocal 0.293
+  proximity      top1  29 top3  52 top10  92 top30 133  median rank 20  mean reciprocal 0.211
+  rrf(lex,prox)  top1  42 top3  71 top10 114 top30 165  median rank 12  mean reciprocal 0.272
+  rrf vs lexical: better 75, worse 118, equal 45

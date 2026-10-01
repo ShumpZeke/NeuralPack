@@ -539,8 +539,19 @@ with code quote repository code, 21 of them at a fix site (25 fix hunks; the def
 at 1K and 2K, 22 at 4K); `gym-dev` 93 of 230, 30 at a fix site (41 hunks; 18 / 27 / 32 covered
 at 1K / 2K / 4K). A channel ranking the blocks that contain such lines could recover some of
 the missed sites but would add blocks for the ~60% of quoting issues whose quote is not at a
-fix site (precision is lower than the traceback frames'). Both Python screens are in use by E057
-now; declare a plan (screens, confirmation split) before any run.
+the missed sites but would add blocks for the ~60% of quoting issues whose quote is not at a
+fix site (precision is lower than the traceback frames', whose channel did not replicate on
+heldout-e, E055b); not declared, and unlikely to survive the same fresh-split test.
+
+### D2 (2026-10-01, diagnostic only): term proximity adds nothing to BM25
+
+BM25 scores query terms independently, so a block where several distinct query terms occur close
+together might deserve a boost. On the 238 cached-pack tasks (dev-fast, gym-dev, poly-dev,
+poly-dev-b, ood-multi-dev) whose lexical top 200 holds a gold block, ranking the candidates by the
+largest number of distinct query terms inside a window of 24 or 60 analyzed tokens puts the first
+gold block at median rank 22 / 20 against 9 for the lexical order (top 10: 93 / 92 against 123),
+and RRF of the two orders is worse than the lexical order alone (better in 63 / 75 tasks, worse in
+123 / 118). No channel is built. Data and script: `experiments/npkbench/diagnostics/D2-*`.
 
 ## Semantic evidence for code: what has been measured
 
