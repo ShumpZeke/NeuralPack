@@ -75,5 +75,6 @@ for name, idx in (("lexical", 1), ("proximity", 2), ("rrf(lex,prox)", 3)):
     ranks = [r[idx] for r in rows]
     print(f"  {name:14s} top1 {sum(r == 0 for r in ranks):3d} top3 {sum(r < 3 for r in ranks):3d} top10 {sum(r < 10 for r in ranks):3d} "
           f"top30 {sum(r < 30 for r in ranks):3d}  median rank {statistics.median(ranks) + 1:.0f}  mean reciprocal {statistics.mean(1 / (r + 1) for r in ranks):.3f}")
-better = sum(r[3] < r[1] for r in rows); worse = sum(r[3] > r[1] for r in rows)
+better = sum(r[3] < r[1] for r in rows)
+worse = sum(r[3] > r[1] for r in rows)
 print(f"  rrf vs lexical: better {better}, worse {worse}, equal {len(rows) - better - worse}")
