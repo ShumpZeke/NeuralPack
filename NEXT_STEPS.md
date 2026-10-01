@@ -777,6 +777,62 @@ issues): run `E058d-confirm-gymheldoutb`, arms `npk_default` and `e058_d`, targe
 needs utility >= 0 at every budget there, no significant loss, and a significant fix or tests gain. The
 guard `E058d-guard-multisample` runs as declared above.
 
+### E058 outcome: rejected as a whole (2026-10-01)
+
+`E058d-confirm-gymheldoutb` (254 fresh issues, arms `npk_default` and `e058_d`) fails the declared
+promotion rule. Regression-test recall rises +0.96 / +1.35 / +2.26 / +2.27 / +3.02 points at 1K-16K
+(significant at every budget) but fix recall falls -0.63 / -1.01 / -0.19 / -0.76 / -0.56, significantly at
+2K, 8K and 16K (utility +0.32 / +0.33 / +2.04 / +1.49 / +2.43, mean +1.32, so the loss is what fails it).
+All of it is mypy: 15 of its 30 issues change (fix -5.3 / -8.6 / -1.6 / -6.4 / -4.7 points, tests +8.3 /
++11.8 / +19.6 / +19.8 / +26.2) and the other 224 issues select exactly as the default, including conan and
+hydra, whose `env` directories the profile unlocks. Every issue that loses fix recall at 8K has `.test`
+spans among its added ones (6 of 6; 5 of 5 at 16K): mypy's data-driven `check-*.test` files hold its
+regression tests and also match issue text well enough to displace the fix blocks, the same transfer
+between targets as in the other rejected experiments. The gym-dev screen had shown it only as a
+non-significant fix change (-0.9 to +0.5); the fresh split caught it, as in E055b.
+The multilingual guard `E058d-guard-multisample` (114 issues, same arms plus the chunk baselines on both kinds
+of pack) shows no significant effect either way: tests +0.47 / +0.00 / +1.42 / +1.89 / +1.89, fix -0.05 /
+-0.05 / +0.00 / -0.44 / -0.14 (all intervals reach zero), recall 0.202 / 0.258 / 0.312 / 0.367 / 0.466 against
+0.202 / 0.258 / 0.312 / 0.372 / 0.468 for the default; the baseline gains at most 0.1 point from the new
+files, so the README's ratios are unchanged. Nothing from E058 enters the default scan except what E059
+below carries. The three confirmation splits: `gym-heldout-b` is spent on E058d; `poly-heldout-c` and
+`gym-heldout-c` stay unused.
+
+What E058 established, for whoever decides these product questions (none changes a default):
+mypy-style data-driven test files (`.test`) trade fix for test recall (+1 to +3 tests, -0.2 to -1.0
+fix on fresh issues; a candidate for a caller-declared option, not a default); the C++ `.cc` family and
+yacc/lex files recover test and fix hunks in fmt and jq (multilingual dev) with no measured cost, but
+fresh multilingual issues are too few to confirm it; single-file components (`.vue`, `.svelte`) cost fix
+recall where component fixtures abound (sveltejs/svelte, prettier: -0.7 points at 16K on 371 issues);
+Tcl moves Redis' fix sites out of reach; Jest snapshots move recall from other test hunks to snapshot
+hunks (the 646 snapshot hunks of poly-dev-b: 0.05-0.30 found with them, 0 without; the 1,105 other test
+hunks lose 0.4-1.1 points); ES-module JS, Cython and protobuf files covered no gold on any screen. An
+application written only in those types has no indexed source today, and the compile output does not say
+so: reporting the counts of unindexed files by suffix (and by skipped directory name) in the compile
+stats, plus a caller-declared include list, would make the gap visible without touching a default.
+The credential-name rule (a file called `credentials.js` is dropped) is untouched, as before.
+
+### E059 (declared 2026-10-01, before any E059 run): keep real source directories named env or venv
+
+One part of E058 is a correctness fix rather than a ranking change: the scan skips every directory named
+`env`, `venv`, `dist` or `secrets`, so a source package called `env` (conan's `conan/tools/env`, hydra's
+`conf/hydra/env`, coreutils' `src/uu/env`, nushell's `nu-command/src/env`, trino's `.../launcher/env`) vanishes
+from the pack without a trace. The change: `env` and `venv` are skipped only when they are virtualenvs (a
+`pyvenv.cfg`, `bin/activate` or `Scripts/activate` inside); the suffix whitelist is unchanged (profile
+`env_only`, arm `e059_env`). It changes packs only where such a directory exists (inventory of the base
+commits: `gym-dev` 75 issues, `gym-heldout-b` 45, `poly-dev-b` 12, `ood-multi-dev` 11, `ood-multi-sample` 12;
+`dev-fast`, `heldout`, `poly-heldout-c` none), so the evidence is gathered on those issues only (arm `e059_env`
+on the affected repositories of each split, `--repos`; the other tasks are identical by construction) and
+compared with the default arm of the earlier run of the same split (`report --judge-runs`, which pairs the
+tasks present in both). Standard, declared as such: this is a harm check on a bug fix, in the class of E004
+and E056, not a gain test on ranking, so there is no significant-gain requirement. Accepted iff on every one
+of the five splits utility is >= 0 at every budget and there is no significant loss on any target, and at
+least one repository recovers fix or tests hunks it could not reach (coreutils in `ood-multi-dev` did in the
+E058 arms: fix +6.3 points on its issues). The fresh-split condition is met by `gym-heldout-b` (45 issues
+that were not used for any decision before E058d) and `ood-multi-sample`. If any split fails, nothing is
+merged. After acceptance the product form is `_excluded_dir` (worktree `np-e058p`), proved equal to
+`e059_env` on these issues, with its four mutants, and the README/architecture text records the change.
+
 ## Semantic evidence for code: what has been measured
 
 Dense and neural evidence has not helped code retrieval on this benchmark so far: equal-weight
