@@ -27,21 +27,24 @@ Lite and confirmed once on a **held-out** split (SWE-bench Verified minus Lite,
 | Standard RAG baseline: BM25 over 60-line chunks (identifier-split) | 0.101 | 0.149 | 0.217 | 0.267 | 0.321 |
 | NeuralPack before this loop's retrieval changes | 0.136 | 0.206 | 0.302 | 0.393 | 0.490 |
 | Code-first ranking (definition channel, top-block trimming, test mate from 2K) | 0.230 | 0.303 | 0.385 | 0.472 | 0.569 |
-| **Current default** (+ issue-form cleaning, title and repetition weighting) | **0.254** | **0.343** | **0.456** | **0.572** | **0.638** |
-| Current default, regression-test sites found (tests target) | 0.090 | 0.183 | 0.257 | 0.344 | 0.428 |
+| **Current default** (+ issue-form cleaning, title and repetition weighting, test-file conventions, URL cleaning, release notes last) | **0.258** | **0.349** | **0.465** | **0.580** | **0.644** |
+| Current default, regression-test sites found (tests target) | 0.088 | 0.184 | 0.266 | 0.353 | 0.451 |
 
 The query-handling changes of the last row were decided on other fresh splits (heldout-c,
 heldout-d). On this split they add +2.3 / +4.3 / +6.8 / +9.9 / +7.0 points of fix sites
 and +3.0 to +12.0 points of regression-test sites, all significant (run R002). The later
-test-file conventions and environment-dump cleaning (E047, E052; confirmed on poly-heldout
-and gym-heldout) leave this split's fix recall unchanged and add +0.1 to +0.6 points of
-regression-test sites (not significant; run R004, whose numbers the table shows).
+changes were each confirmed on their own fresh split and cost nothing significant here:
+test-file conventions and environment-dump cleaning (E047, E052; run R004) leave fix recall
+unchanged and add +0.1 to +0.6 points of regression-test sites (not significant), and URL
+cleaning with release notes last (E053, E054) add +0.5 to +0.9 points of fix sites
+(significant at 4K) and -0.1 to +2.3 points of regression-test sites (significant at 4K, 8K
+and 16K) over run R004. The table shows run R006, the current default.
 
 - **Against a standard RAG pipeline** (same files, budgets and gold; BM25 over fixed
-  60-line chunks, filled in score order): NeuralPack finds 2.0-2.5x as many fix sites on
-  held-out (significant at every budget) and 1.5-2.1x as many regression-test sites
+  60-line chunks, filled in score order): NeuralPack finds 2.0-2.6x as many fix sites on
+  held-out (significant at every budget) and 1.5-2.2x as many regression-test sites
   (significant from 2K). The baseline still finds somewhat more of the documentation
-  maintainers edit at 2K-8K (at 2K: 0.31 vs 0.25; 33 of 407 held-out issues edit docs),
+  maintainers edit at 2K-8K (at 2K: 0.31 vs 0.22; 33 of 407 held-out issues edit docs),
   but the gap is no longer significant at any budget; before the query-handling changes
   it was 0.31 vs 0.17 at 2K. Documentation remains the weakest target.
 - **Beyond Python** (SWE-bench Multilingual sample: 114 issues in 41 Rust, Ruby, Java,
