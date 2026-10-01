@@ -878,6 +878,26 @@ higher threshold, then fewer blocks). Confirmation, once each and declared now: 
 promotion iff utility >= 0 at every budget on both, no significant loss on either, and a significant
 fix or tests gain on at least one. If no arm is a candidate nothing is merged and both splits stay unused.
 
+### E060b declared (2026-10-01, before any E060b run; after the E060 `ood-multi-dev` and `gym-dev` screens)
+
+State when written: `E060-mate-ends-multidev` and `E060-mate-ends-gymdev` are finished, `dev` and `poly-dev-b`
+are still running. All control arms equal the default (1,785 and 3,235 cells). `ood-multi-dev`: the three
+tail arms pass (e.g. `e060_tail_2k`: tests +2.9 / +3.8 / +1.2 / +1.5 points at 2K-16K, significant, fix
+unchanged), `e060_headtail_4k` has a significant fix loss at 8K. `gym-dev`: tests +2.0 / +2.6 / +2.0 / +2.0
+(significant) for every arm, but every arm also has the same small significant fix loss at 8K (-0.41
+points, interval [-0.87, -0.07]), so by the declared rule none is a candidate there. The cost of a block
+that rests on a prior and not on query evidence is paid by every task, so E060b limits it to the cases
+where the prior is reliable. D4 follow-up (208 tasks with a mate, same data): the mate's mirror score
+(`_mate_score`: module name 2, package 1, 0.25 per other shared part) predicts that its file is a gold
+test file: 57% of the 99 mates with score >= 3 against 18% of the 67 with 2 <= score < 3 and 21% of the
+42 below 2; the tail block covers a gold hunk in 18% of the strong mates against 3% and 7%, the head
+block in 15% against 6% and 2%; tail blocks are small (median 98 tokens, p90 515). Arms (same prototype
+file): `e060b_tail_s3_2k`, `e060b_tail_s3_4k`, `e060b_headtail_s3_4k` (as `e060_*` but only when the score
+is >= 3) and `e060b_control` (must equal `npk_default`). Screens, rule, tie-breaking and the declared
+confirmations (`gym-heldout-c`, `poly-heldout-c`) are as for E060; all `e060*` arms compete, the winner is the
+passing arm with the highest mean utility over the four screens, and `e060b` arms are run on the same four
+splits (`E060b-mate-ends-*`).
+
 ## Semantic evidence for code: what has been measured
 
 Dense and neural evidence has not helped code retrieval on this benchmark so far: equal-weight

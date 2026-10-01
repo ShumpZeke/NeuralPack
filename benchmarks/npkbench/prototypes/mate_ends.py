@@ -9,6 +9,7 @@ block (``head``) right after the mate; everything else is the product's.
 """
 from __future__ import annotations
 
+import importlib
 import time
 from pathlib import Path
 from typing import Dict, List, Sequence
@@ -19,10 +20,16 @@ from ..arms import Arm, ArmResult, _span, register
 from ..data import Task
 
 
+sel = importlib.import_module("npk.pack.select")
+
+
 class MateEndsSelector(PackSelector):
     min_budget = 4096
     tail = True
     head = False
+    #: E060b: only when the mate's path mirrors the implementation file this strongly
+    #: (``_mate_score``: module name 2 + package name 1 + 0.25 per other shared part).
+    min_mate_score = 0.0
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -42,6 +49,14 @@ class MateEndsSelector(PackSelector):
         row = con.execute("SELECT f.path FROM blocks b JOIN files f ON f.id=b.file_id WHERE b.id=?", (mate,)).fetchone()
         if row is None:
             return out
+        if self.min_mate_score:
+            marks = ",".join("?" * len(out))
+            paths = dict(con.execute(
+                f"SELECT b.id, f.path FROM blocks b JOIN files f ON f.id=b.file_id WHERE b.id IN ({marks})", out).fetchall())
+            impl = next((b for b in out if not sel.TEST_PATH.search(paths.get(b, ""))
+                         and not sel.DOC_PATH.search(paths.get(b, ""))), None)
+            if impl is None or sel._mate_score(paths[impl], row[0]) < self.min_mate_score:
+                return out
         ids = [r[0] for r in con.execute(
             "SELECT b.id FROM blocks b JOIN files f ON f.id=b.file_id WHERE f.path=? ORDER BY b.ordinal", (row[0],))]
         wanted: List[tuple] = []
@@ -63,8 +78,9 @@ class MateEndsSelector(PackSelector):
         return out
 
 
-def make(name: str, min_budget: int, tail: bool = True, head: bool = False) -> Arm:
-    cls = type(f"MateEnds{name}", (MateEndsSelector,), {"min_budget": min_budget, "tail": tail, "head": head})
+def make(name: str, min_budget: int, tail: bool = True, head: bool = False, min_score: float = 0.0) -> Arm:
+    cls = type(f"MateEnds{name}", (MateEndsSelector,),
+               {"min_budget": min_budget, "tail": tail, "head": head, "min_mate_score": min_score})
 
     def runner(pack: Path, task: Task, budgets: Sequence[int]) -> Dict[int, ArmResult]:
         out: Dict[int, ArmResult] = {}
@@ -87,3 +103,8 @@ make("e060_tail_2k", 2048)
 make("e060_tail_4k", 4096)
 make("e060_tail_8k", 8192)
 make("e060_headtail_4k", 4096, tail=True, head=True)
+# E060b: the same, only behind a mate that mirrors both the module and its package (score >= 3).
+make("e060b_tail_s3_2k", 2048, min_score=3.0)
+make("e060b_tail_s3_4k", 4096, min_score=3.0)
+make("e060b_headtail_s3_4k", 4096, tail=True, head=True, min_score=3.0)
+make("e060b_control", 10**9, min_score=3.0)  # must equal npk_default
